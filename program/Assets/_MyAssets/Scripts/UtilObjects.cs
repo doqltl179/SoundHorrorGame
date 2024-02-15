@@ -17,6 +17,8 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         }
     }
 
+    public Vector3 CamPos => Cam.transform.position;
+
     private void Awake() {
         DontDestroyOnLoad(gameObject);
     }

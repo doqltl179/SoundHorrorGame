@@ -10,6 +10,7 @@
 
         [Header(Util Properties)]
         [HideInInspector] _RimArrayLength ("Rim Array Length", Integer) = 50
+        _ColorStrengthMax ("Color Strength Max", Float) = 1.5
     }
     SubShader
     {
@@ -48,6 +49,8 @@
             fixed4 _RimColor;
             float _RimThickness;
 
+            float _ColorStrengthMax;
+
             int _RimArrayLength;
             uniform fixed4 _RimPosArray[256];
             uniform float _RimRadiusArray[256];
@@ -57,24 +60,19 @@
             // RenderType을 Transparent로 설정하지 않았기 때문에 투명도가 적용되지 않음
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 c = _BaseColor;
-
-                float dist;
-                // for(int j = 0; j < _RimArrayLength; j++) {
-                //     dist = distance(i.worldPos, _RimPosArray[j].xyz);
-                //     if(_RimRadiusArray[j] - _RimThickness < dist && dist < _RimRadiusArray[j]) {
-                //         //c = fixed4(_RimColor.xyz, _RimAlphaArray[j]);
-                //         c = _RimAlphaArray[j];
-                //         break;
-                //     }
-                // }
+                float dist = 0.0;
+                float l = 0.0;
                 for(int j = 0; j < _RimArrayLength; j++) {
                     dist = distance(i.worldPos, _RimPosArray[j].xyz);
                     if(_RimRadiusArray[j] - _RimThickness < dist && dist < _RimRadiusArray[j]) {
                         //c = fixed4(_RimColor.xyz, _RimAlphaArray[j]);
-                        c += _RimAlphaArray[j];
+                        //c += lerp(_BaseColor, _RimColor, _RimAlphaArray[j]);
+                        l += _RimAlphaArray[j];
                     }
                 }
+
+                if(l > _ColorStrengthMax) l = _ColorStrengthMax;
+                fixed4 c = lerp(_BaseColor, _RimColor, l);
 
                 return c;
             }

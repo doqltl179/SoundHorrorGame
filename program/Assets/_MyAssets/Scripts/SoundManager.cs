@@ -29,9 +29,9 @@ public class SoundManager : GenericSingleton<SoundManager> {
         DontDestroyOnLoad(gameObject);
     }
 
-    bool soundObjectRemoveChecker;
+    bool soundObjectRemovedChecker;
     private void FixedUpdate() {
-        soundObjectRemoveChecker = false;
+        soundObjectRemovedChecker = false;
         for(int i = 0; i < soundObjectList.Count; i++) {
             if(!soundObjectList[i].Source.isPlaying) {
                 soundObjectList[i].Stop();
@@ -40,19 +40,20 @@ public class SoundManager : GenericSingleton<SoundManager> {
                 soundObjectList.RemoveAt(i);
                 i--;
 
-                soundObjectRemoveChecker = true;
+                soundObjectRemovedChecker = true;
             }
         }
 
-        if(soundObjectRemoveChecker) {
+        if(soundObjectRemovedChecker) {
             OnWorldSoundRemoved?.Invoke();
         }
     }
 
     #region Utility
-    public void PlaySoundOnWorld(Vector3 worldPos, SoundType type, float volumeOffset = 1.0f) {
+    public void PlayOnWorld(Vector3 worldPos, SoundType type, float volumeOffset = 1.0f) {
         SoundObject so = GetSoundObject(type);
         so.Position = worldPos;
+        so.Volume = 1.0f * volumeOffset;
 
         so.Play();
         soundObjectList.Add(so);
@@ -61,23 +62,42 @@ public class SoundManager : GenericSingleton<SoundManager> {
     }
 
     #region Material Property Util Func
-    public List<Vector4> GetSoundObjectPosList() {
+    public Vector4[] GetSoundObjectPosArray() {
         Vector4 vec3ToVec4(Vector3 v) => new Vector4(v.x, v.y, v.z);
-        return soundObjectList.Select(t => vec3ToVec4(t.Source.transform.position)).ToList();
+        return soundObjectList.Select(t => vec3ToVec4(t.Source.transform.position)).ToArray();
     }
 
-    public List<float> GetSoudObjectRadiusList(float standardRadius) {
-        return soundObjectList.Select(t => t.CurrentTime * standardRadius).ToList();
+    public float[] GetSoundObjectRadiusArray(float spreadTime, float spreadLength) {
+        float calculateFunc(SoundObject so) {
+            float radius = so.CurrentTime / spreadTime * spreadLength;
+
+            float dist = Vector3.Distance(so.Position, UtilObjects.Instance.CamPos);
+            float radiusOffset = Mathf.Clamp01(1.0f - dist / spreadLength);
+
+            return radius * radiusOffset;
+        }
+        return soundObjectList.Select(t => calculateFunc(t)).ToArray();
     }
 
-    public List<float> GetSoundObjectAlphaList(float standardTime = 1.0f) {
-        const float minRatio = 0.7f;
+    public float[] GetSoundObjectAlphaArray(float spreadTime, float spreadLength) {
+        const float minRatio = 0.3f;
         const float maxRatio = 1.0f;
-        return soundObjectList.Select(t => 
-            t.Length > standardTime ?
-            1.0f - Mathf.Clamp01(Mathf.InverseLerp(minRatio, maxRatio, t.CurrentTime / standardTime)) : 
-            1.0f - Mathf.InverseLerp(minRatio, maxRatio, t.NormalizedTime)
-            ).ToList();
+        float calculateFunc(SoundObject so) {
+            float alpha = 0.0f;
+            if(so.Length > spreadTime) {
+                alpha = 1.0f - Mathf.Clamp01(Mathf.InverseLerp(minRatio, maxRatio, so.CurrentTime / spreadTime));
+            }
+            else {
+                alpha = 1.0f - Mathf.InverseLerp(minRatio, maxRatio, so.NormalizedTime);
+            }
+
+            float dist = Vector3.Distance(so.Position, UtilObjects.Instance.CamPos);
+            float alphaOffset = Mathf.Clamp01(1.0f - dist / spreadLength);
+
+            return alpha * alphaOffset;
+        }
+
+        return soundObjectList.Select(t => calculateFunc(t)).ToArray();
     }
     #endregion
     #endregion
@@ -136,6 +156,16 @@ public class SoundManager : GenericSingleton<SoundManager> {
             }
         }
 
+        private float volume = 1.0f;
+        public float Volume {
+            get => volume;
+            set {
+                Source.volume = value;
+
+                volume = value;
+            }
+        }
+
 
 
         public SoundObject() {
@@ -144,6 +174,11 @@ public class SoundManager : GenericSingleton<SoundManager> {
                 go.transform.SetParent(SoundManager.Instance.transform);
 
                 AudioSource source = go.AddComponent<AudioSource>();
+                source.playOnAwake = false;
+                source.spatialBlend = 1.0f;
+                source.rolloffMode = AudioRolloffMode.Linear;
+                source.minDistance = 0.0f;
+                source.maxDistance = LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH;
 
                 Source = source;
             }

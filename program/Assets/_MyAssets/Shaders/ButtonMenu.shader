@@ -2,7 +2,8 @@ Shader "MyCustomShader/ButtonMenu"
 {
     Properties
     {
-        _BasicColor ("Basic Color", Color) = (0.0, 1.0, 1.0, 1.0)
+        [HDR] _BasicColor ("Basic Color", Color) = (0.0, 1.0, 1.0, 1.0)
+        [Toggle(USE_PRESS)] _Press ("Press", float) = 0.0
         [Toggle(USE_HIGHLIGHT)] _Highlight ("Highlight", float) = 0.0
     }
     SubShader
@@ -17,6 +18,7 @@ Shader "MyCustomShader/ButtonMenu"
             #pragma vertex vert
             #pragma fragment frag
 
+            #pragma shader_feature USE_PRESS
             #pragma shader_feature USE_HIGHLIGHT
 
             #include "UnityCG.cginc"
@@ -45,23 +47,30 @@ Shader "MyCustomShader/ButtonMenu"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                fixed4 col = _BasicColor;
+                fixed4 col = (0.0, 0.0, 0.0, 0.0);
 
                 #ifdef USE_HIGHLIGHT
-                    float2 center = float2(0.5, 0.5);
-                    float dist = distance(center, i.uv);
-                    float alpha = 0.0;
-                    if(dist > 0.47) {
-                        alpha = 1.0 - smoothstep(0.4, 0.3, dist);
-                        col = col * (1.0 - smoothstep(0.5, 0.47, dist));
+                    const float maxHighlightRadio = 0.85;
+                    const float minHighlightRadio = 0.65;
+
+                    float normalizedUvX = abs(i.uv.x - 0.5) * 2.0;
+                    if(maxHighlightRadio < normalizedUvX) {
+                        col = _BasicColor * (1.0 - smoothstep(maxHighlightRadio, 1.0, normalizedUvX));
                     }
-                    else if(dist > 0.3) {
-                        alpha = 1.0 - smoothstep(0.47, 0.3, dist);
+                    else if(minHighlightRadio < normalizedUvX) {
+                        col = _BasicColor * smoothstep(minHighlightRadio, maxHighlightRadio, normalizedUvX);
                     }
 
-                    col = fixed4(col.rgb, alpha);
+                    float normalizedUvY = abs(i.uv.y - 0.5) * 2.0;
+                    if(normalizedUvY > maxHighlightRadio) {
+                        col *= (1.0 - smoothstep(maxHighlightRadio, 1.0, normalizedUvY));
+                    }
                 #else
+                #endif
 
+                #ifdef USE_PRESS 
+
+                #else
                 #endif
 
                 return col;

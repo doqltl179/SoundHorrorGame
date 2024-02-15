@@ -17,7 +17,7 @@ public class MainController : MonoBehaviour {
         SetUIProperties();
 
         // Lobby 레벨 생성
-        //LevelLoader.Instance.LoadLevel(5, 5, true);
+        //LevelLoader.Instance.LoadLevel(10, 10, true);
         LevelLoader.Instance.LoadLevel(25, 25);
 
         if(mainCameraAnimationCoroutine != null) StopCoroutine(mainCameraAnimationCoroutine);
@@ -30,7 +30,10 @@ public class MainController : MonoBehaviour {
             Ray ray = UtilObjects.Instance.Cam.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
             if(Physics.Raycast(ray, out hit) && hit.transform.CompareTag(MazeBlock.TagName)) {
-                SoundManager.Instance.PlaySoundOnWorld(hit.point, SoundManager.SoundType.MouseClick);
+                SoundManager.Instance.PlayOnWorld(
+                    hit.point, 
+                    SoundManager.SoundType.MouseClick, 
+                    Mathf.Clamp01(1.0f - hit.distance / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH));
             }
         }
     }

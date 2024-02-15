@@ -36,9 +36,18 @@ public class MazeBlock : MonoBehaviour {
     }
 
     public static readonly string TagName = "MazeBlock";
-    public static readonly int BasicBlockSize = 2;
-    public static readonly Vector3 BlockAnchor = new Vector3(0.5f, 0.0f, 0.5f);
-    public static readonly Vector3 BlockScale = new Vector3(1.0f, 2.0f, 1.0f);
+
+    public static readonly Vector3 StandardBlockAnchor = new Vector3(0.5f, 0.0f, 0.5f);
+
+    private static readonly float FloorScale = 4.0f;
+    private static readonly float WallHeightScale = 3.0f;
+    public static readonly Vector3 StandardBlockScale = new Vector3(FloorScale, WallHeightScale, FloorScale);
+
+    public static readonly float StandardBlockSize = 2.0f;
+    /// <summary>
+    /// StandardSize * Scale
+    /// </summary>
+    public static readonly float BlockSize = StandardBlockSize * FloorScale;
 
 
 
