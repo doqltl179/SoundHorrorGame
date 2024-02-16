@@ -156,7 +156,7 @@ PlayerSettings:
   applicationIdentifier:
     Standalone: com.DefaultCompany.SoundHorrorGame
   buildNumber:
-    Standalone: 0
+    Standalone: 1
     VisionOS: 0
     iPhone: 0
     tvOS: 0

@@ -129,6 +129,34 @@ public static class MazeCreator {
                 }
             }
         }
+
+        // 이미 생성된 미로 안에서 랜덤하게 벽을 제거
+        // 이동 가능한 방향을 늘리기 위함
+        List<ActiveWall> activatedWallList = new List<ActiveWall>();
+        ActiveWall tempWallInfo;
+        ActiveWall removeWall;
+        for(int x = 1; x < width - 1; x++) {
+            for(int y = 1; y < height - 1; y++) {
+                activatedWallList.Clear();
+
+                tempWallInfo = Maze[x, y];
+                if(tempWallInfo.HasFlag(ActiveWall.R)) activatedWallList.Add(ActiveWall.R);
+                if(tempWallInfo.HasFlag(ActiveWall.F)) activatedWallList.Add(ActiveWall.F);
+                if(tempWallInfo.HasFlag(ActiveWall.L)) activatedWallList.Add(ActiveWall.L);
+                if(tempWallInfo.HasFlag(ActiveWall.B)) activatedWallList.Add(ActiveWall.B);
+
+                if(activatedWallList.Count > 2) {
+                    removeWall = activatedWallList[Random.Range(0, activatedWallList.Count)];
+                    Maze[x, y] &= ~removeWall;
+                    switch(removeWall) {
+                        case ActiveWall.R: Maze[x + 1, y] &= ~ActiveWall.L; break;
+                        case ActiveWall.F: Maze[x, y + 1] &= ~ActiveWall.B; break;
+                        case ActiveWall.L: Maze[x - 1, y] &= ~ActiveWall.R; break;
+                        case ActiveWall.B: Maze[x, y - 1] &= ~ActiveWall.F; break;
+                    }
+                }
+            }
+        }
     }
 
     // currentPoint로 부터 이동 가능한 point를 반환
