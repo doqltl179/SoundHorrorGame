@@ -20,7 +20,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
     private List<SoundObject> soundObjectList = new List<SoundObject>();
     private List<SoundObject> soundObjectPool = new List<SoundObject>();
 
-    public Action OnWorldSoundAdded;
+    public Action<SoundObject> OnWorldSoundAdded;
     public Action OnWorldSoundRemoved;
 
 
@@ -58,7 +58,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         so.Play();
         soundObjectList.Add(so);
 
-        OnWorldSoundAdded?.Invoke();
+        OnWorldSoundAdded?.Invoke(so);
     }
 
     #region Material Property Util Func
@@ -139,69 +139,69 @@ public class SoundManager : GenericSingleton<SoundManager> {
                 return string.Empty;
         }
     }
+}
 
-    private class SoundObject {
-        public AudioSource Source { get; private set; }
-        public float CurrentTime { get { return Source.time; } }
-        public float Length { get { return Source.clip.length; } }
-        public float NormalizedTime { get { return CurrentTime / Length;  } }
+public class SoundObject {
+    public AudioSource Source { get; private set; }
+    public float CurrentTime { get { return Source.time; } }
+    public float Length { get { return Source.clip.length; } }
+    public float NormalizedTime { get { return CurrentTime / Length; } }
 
-        private Vector3 position = Vector3.zero;
-        public Vector3 Position {
-            get => position;
-            set {
-                Source.transform.position = value;
+    private Vector3 position = Vector3.zero;
+    public Vector3 Position {
+        get => position;
+        set {
+            Source.transform.position = value;
 
-                position = value;
-            }
+            position = value;
         }
-
-        private float volume = 1.0f;
-        public float Volume {
-            get => volume;
-            set {
-                Source.volume = value;
-
-                volume = value;
-            }
-        }
-
-
-
-        public SoundObject() {
-            if(Source == null) {
-                GameObject go = new GameObject(nameof(SoundObject));
-                go.transform.SetParent(SoundManager.Instance.transform);
-
-                AudioSource source = go.AddComponent<AudioSource>();
-                source.playOnAwake = false;
-                source.spatialBlend = 1.0f;
-                source.rolloffMode = AudioRolloffMode.Linear;
-                source.minDistance = 0.0f;
-                source.maxDistance = LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH;
-
-                Source = source;
-            }
-        }
-
-        #region Utility
-        public void Play() {
-            if(Source.clip == null) {
-                Debug.LogWarning("Clip is NULL");
-
-                return;
-            }
-
-            Source.gameObject.SetActive(true);
-
-            Source.Play();
-        }
-
-        public void Stop() {
-            Source.Stop();
-
-            Source.gameObject.SetActive(false);
-        }
-        #endregion
     }
+
+    private float volume = 1.0f;
+    public float Volume {
+        get => volume;
+        set {
+            Source.volume = value;
+
+            volume = value;
+        }
+    }
+
+
+
+    public SoundObject() {
+        if(Source == null) {
+            GameObject go = new GameObject(nameof(SoundObject));
+            go.transform.SetParent(SoundManager.Instance.transform);
+
+            AudioSource source = go.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.spatialBlend = 1.0f;
+            source.rolloffMode = AudioRolloffMode.Linear;
+            source.minDistance = 0.0f;
+            source.maxDistance = LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH;
+
+            Source = source;
+        }
+    }
+
+    #region Utility
+    public void Play() {
+        if(Source.clip == null) {
+            Debug.LogWarning("Clip is NULL");
+
+            return;
+        }
+
+        Source.gameObject.SetActive(true);
+
+        Source.Play();
+    }
+
+    public void Stop() {
+        Source.Stop();
+
+        Source.gameObject.SetActive(false);
+    }
+    #endregion
 }

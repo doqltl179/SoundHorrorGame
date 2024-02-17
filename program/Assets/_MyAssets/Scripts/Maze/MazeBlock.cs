@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -41,7 +42,7 @@ public class MazeBlock : MonoBehaviour {
     public static readonly Vector3 StandardBlockAnchor = new Vector3(0.5f, 0.0f, 0.5f);
 
     private static readonly float FloorScale = 4.0f;
-    private static readonly float WallHeightScale = 3.0f;
+    private static readonly float WallHeightScale = 10.0f;
     public static readonly Vector3 StandardBlockScale = new Vector3(FloorScale, WallHeightScale, FloorScale);
 
     public static readonly float StandardBlockSize = 2.0f;
@@ -73,27 +74,31 @@ public class MazeBlock : MonoBehaviour {
     }
 
     #region Utility
-    public void SetMaterial(Material mat1, Material mat2 = null) {
-        if(mat2 == null) {
-            floor.GetComponent<MeshRenderer>().material = mat1;
-            ceiling.GetComponent<MeshRenderer>().material = mat1;
-            foreach(GameObject edge in edges) {
-                edge.GetComponent<MeshRenderer>().material = mat1;
-            }
-            foreach(GameObject wall in walls) {
-                wall.GetComponent<MeshRenderer>().material = mat1;
-            }
+#if Use_Two_Materials_On_MazeBlock
+    public void SetMaterial(Material mat1, Material mat2) {
+#else
+    public void SetMaterial(Material mat1) {
+#endif
+
+#if Use_Two_Materials_On_MazeBlock
+        floor.GetComponent<MeshRenderer>().material = mat1;
+        ceiling.GetComponent<MeshRenderer>().material = mat1;
+        foreach(GameObject edge in edges) {
+            edge.GetComponent<MeshRenderer>().material = mat2;
         }
-        else {
-            floor.GetComponent<MeshRenderer>().material = mat1;
-            ceiling.GetComponent<MeshRenderer>().material = mat1;
-            foreach(GameObject edge in edges) {
-                edge.GetComponent<MeshRenderer>().material = mat2;
-            }
-            foreach(GameObject wall in walls) {
-                wall.GetComponent<MeshRenderer>().material = mat2;
-            }
+        foreach(GameObject wall in walls) {
+            wall.GetComponent<MeshRenderer>().material = mat2;
         }
+#else
+        floor.GetComponent<MeshRenderer>().material = mat1;
+        ceiling.GetComponent<MeshRenderer>().material = mat1;
+        foreach(GameObject edge in edges) {
+            edge.GetComponent<MeshRenderer>().material = mat1;
+        }
+        foreach(GameObject wall in walls) {
+            wall.GetComponent<MeshRenderer>().material = mat1;
+        }
+#endif
     }
 
     /// <summary>
@@ -127,7 +132,7 @@ public class MazeBlock : MonoBehaviour {
         }
 
         // Collider를 벽에 딱 붙게 하지 않게 하기 위해서 1.05를 곱해줌
-        float calculatedRadius = (BlockSize - EdgeSize) * Mathf.Sqrt(2) * 0.5f - radius * 1.05f;
+        float calculatedRadius = (BlockSize - (EdgeSize * 2)) * 0.5f * Mathf.Sqrt(2) - radius * 1.05f;
         Vector3 direction = new Vector3(Mathf.Cos(angle), 0.0f, Mathf.Sin(angle));
         return transform.position + direction * calculatedRadius;
     }

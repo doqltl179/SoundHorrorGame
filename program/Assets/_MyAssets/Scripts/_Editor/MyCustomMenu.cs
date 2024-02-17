@@ -10,35 +10,35 @@ public class MyCustomMenu : MonoBehaviour
 
     private const string SymbolsMenuName = MenuName + "/Symbols";
 
-    private const string SymbolsMenuItemName_UseMazeBlockMaterial = SymbolsMenuName + "/Use MazeBlock Material";
+    private const string SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock = SymbolsMenuName + "/Use Two Materials On MazeBlock";
 
     private static string def_UNITY_POST_PROCESSING_STACK_V2 = "UNITY_POST_PROCESSING_STACK_V2";
-    private static string def_Use_MazeBlock_Material = "Use_MazeBlock_Material";
+    private static string def_Use_Two_Materials_On_MazeBlock = "Use_Two_Materials_On_MazeBlock";
 
     private static List<string> symbolList = new List<string>() {
         def_UNITY_POST_PROCESSING_STACK_V2
     };
 
-    private static bool useMazeBlockMaterial = true;
+    private static bool useTwoMaterialsOnMazeBlock = false;
 
 
 
     private void Awake() {
-        if(useMazeBlockMaterial) {
-            symbolList.Add(def_Use_MazeBlock_Material);
-            Menu.SetChecked(SymbolsMenuItemName_UseMazeBlockMaterial, useMazeBlockMaterial);
+        if(useTwoMaterialsOnMazeBlock) {
+            symbolList.Add(def_Use_Two_Materials_On_MazeBlock);
+            Menu.SetChecked(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock, useTwoMaterialsOnMazeBlock);
         }
     }
 
-    [MenuItem(SymbolsMenuItemName_UseMazeBlockMaterial)]
+    [MenuItem(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock)]
     private static void UseMazeBlockMaterial() {
-        useMazeBlockMaterial = !useMazeBlockMaterial;
-        if(useMazeBlockMaterial) symbolList.Add(def_Use_MazeBlock_Material);
-        else symbolList.Remove(def_Use_MazeBlock_Material);
+        useTwoMaterialsOnMazeBlock = !useTwoMaterialsOnMazeBlock;
+        if(useTwoMaterialsOnMazeBlock) symbolList.Add(def_Use_Two_Materials_On_MazeBlock);
+        else symbolList.Remove(def_Use_Two_Materials_On_MazeBlock);
 
         PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, symbolList.ToArray());
 
-        Menu.SetChecked(SymbolsMenuItemName_UseMazeBlockMaterial, useMazeBlockMaterial);
+        Menu.SetChecked(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock, useTwoMaterialsOnMazeBlock);
     }
 }
 #endif

@@ -9,20 +9,8 @@ public class MainController : MonoBehaviour {
 
 
 
-    List<Vector3> testPath;
-    private void OnDrawGizmos() {
-        if(testPath == null || testPath.Count < 2)
-            return;
 
-        // Gizmos 색상 설정
-        Gizmos.color = Color.green;
-
-        // points 배열에 있는 모든 좌표들을 순서대로 잇는 선을 그립니다.
-        for(int i = 0; i < testPath.Count - 1; i++) {
-            Gizmos.DrawLine(testPath[i], testPath[i + 1]);
-        }
-    }
-
+    public MonsterController testMonster = null;
     private IEnumerator Start() {
         canvas.worldCamera = UtilObjects.Instance.Cam;
         canvas.planeDistance = 5.0f;
@@ -33,10 +21,8 @@ public class MainController : MonoBehaviour {
         // Lobby 레벨 생성
         LevelLoader.Instance.LoadLevel(25, 25, false);
         yield return null;
-        Vector3 testStartPos = LevelLoader.Instance.GetBlockPos(0, 0);
-        Vector3 testEndPos = LevelLoader.Instance.GetBlockPos(24, 24);
-        testPath = LevelLoader.Instance.GetPath(testStartPos, testEndPos, PlayerController.Radius);
-        Debug.Log(LevelLoader.Instance.GetPathDistance(testPath));
+        testMonster.transform.position = LevelLoader.Instance.GetBlockPos(0, 0);
+        testMonster.StartMove();
 
         if(mainCameraAnimationCoroutine != null) StopCoroutine(mainCameraAnimationCoroutine);
         mainCameraAnimationCoroutine = MainCameraAnimationCoroutine();

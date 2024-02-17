@@ -2,7 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
+
+using Random = UnityEngine.Random;
 
 public class LevelLoader : GenericSingleton<LevelLoader> {
     private MazeBlock[,] mazeBlocks = null;
@@ -13,13 +14,15 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private readonly Vector3 blockPosOffset = MazeBlock.StandardBlockAnchor * MazeBlock.BlockSize;
 
     private Material blockFloorMaterial = null;
+#if Use_Two_Materials_On_MazeBlock
     private Material blockWallMaterial = null;
-    private readonly string MAT_RIM_THICKNESS_NAME = "_RimThickness";
-    private readonly string MAT_RIM_ARRAY_LENGTH_NAME = "_RimArrayLength";
-    private readonly string MAT_RIM_POSITION_ARRAY_NAME = "_RimPosArray";
-    private readonly string MAT_RIM_RADIUS_ARRAY_NAME = "_RimRadiusArray";
-    //private readonly string MAT_RIM_THICKNESS_ARRAY_NAME = "_RimThicknessArray";
-    private readonly string MAT_RIM_ALPHA_ARRAY_NAME = "_RimAlphaArray";
+#endif
+    private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
+    private const string MAT_RIM_ARRAY_LENGTH_NAME = "_RimArrayLength";
+    private const string MAT_RIM_POSITION_ARRAY_NAME = "_RimPosArray";
+    private const string MAT_RIM_RADIUS_ARRAY_NAME = "_RimRadiusArray";
+    //private const string MAT_RIM_THICKNESS_ARRAY_NAME = "_RimThicknessArray";
+    private const string MAT_RIM_ALPHA_ARRAY_NAME = "_RimAlphaArray";
 
     private static readonly int LIST_MAX_LENGTH = 256;
     private Vector4[] rimPosArray = new Vector4[LIST_MAX_LENGTH];
@@ -56,8 +59,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         blockFloorMaterial.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
         blockFloorMaterial.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
+#if Use_Two_Materials_On_MazeBlock
         blockWallMaterial.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
         blockWallMaterial.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
+#endif
     }
 
     #region Utility
@@ -69,18 +74,20 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         GameObject resourceObj = ResourceLoader.GetResource<GameObject>(componentName);
 
         if(blockFloorMaterial == null) {
-            Material mat = new Material(Shader.Find("MyCustomShader/MazeBlock"));
+            Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.25f);
 
             blockFloorMaterial = mat;
         }
+#if Use_Two_Materials_On_MazeBlock
         if(blockWallMaterial == null) {
-            Material mat = new Material(Shader.Find("MyCustomShader/MazeBlock"));
+            Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.25f);
             mat.SetColor("_BaseColor", Color.red);
 
             blockWallMaterial = mat;
         }
+#endif
 
 
         mazeBlocks = new MazeBlock[width, height];
@@ -94,7 +101,11 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
                 MazeBlock mb = go.GetComponent<MazeBlock>();
                 mb.WallInfo = MazeCreator.Maze[x, z];
+#if Use_Two_Materials_On_MazeBlock
                 mb.SetMaterial(blockFloorMaterial, blockWallMaterial);
+#else
+                mb.SetMaterial(blockFloorMaterial);
+#endif
 
                 mazeBlocks[x, z] = mb;
             }
@@ -104,6 +115,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         LevelHeight = height;
 
         SetReverbZone();
+    }
+
+    public Vector3 GetBlockPos(Vector2Int coord) {
+        return GetBlockPos(coord.x, coord.y);
     }
 
     public Vector3 GetBlockPos(float x, float y) {
@@ -128,7 +143,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         Vector3 p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //임의로 player의 높이를 적용
         Vector3 direction = (endPos - startPos).normalized;
         // 벽과 플레이어만 감지하도록 설정
-        int mask = LayerMask.NameToLayer(PlayerController.LayerName) | LayerMask.NameToLayer(MazeBlock.WallLayerName);
+        int mask = (1 << LayerMask.NameToLayer(PlayerController.LayerName)) | 
+            (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         if(Physics.CapsuleCast(p1, p2, rayRadius, direction, out tempPathHit, float.MaxValue, mask) && 
             tempPathHit.collider.CompareTag(PlayerController.TagName)) {
             Debug.Log("Can move on straight line to player.");
@@ -312,29 +328,47 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     public Vector2Int GetMazeCoordinate(Vector3 pos) =>
         new Vector2Int(Mathf.FloorToInt(pos.x / MazeBlock.BlockSize), Mathf.FloorToInt(pos.z / MazeBlock.BlockSize));
+
+    public List<Vector3> GetRandomPointPath(Vector3 currentPos, float rayRadius) {
+        Vector2Int currentPoint = GetMazeCoordinate(currentPos);
+        Vector2Int endpoint = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
+        while(IsSameVec2Int(currentPoint, endpoint)) {
+            endpoint = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
+        }
+
+        return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
+    }
 #endregion
 
     #region Action
-    private void OnWorldSoundAdded() {
+    private void OnWorldSoundAdded(SoundObject so) {
         Vector4[] currentRimPosList = SoundManager.Instance.GetSoundObjectPosArray();
         blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
+#if Use_Two_Materials_On_MazeBlock
         blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
+#endif
 
         Array.Copy(currentRimPosList, 0, rimPosArray, 0, currentRimPosList.Length);
         blockFloorMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+#if Use_Two_Materials_On_MazeBlock
         blockWallMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+#endif
     }
 
     private void OnWorldSoundRemoved() {
         Vector4[] currentRimPosList = SoundManager.Instance.GetSoundObjectPosArray();
         blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
+#if Use_Two_Materials_On_MazeBlock
         blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
+#endif
 
         Array.Copy(currentRimPosList, 0, rimPosArray, 0, currentRimPosList.Length);
         blockFloorMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+#if Use_Two_Materials_On_MazeBlock
         blockWallMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+#endif
     }
-    #endregion
+#endregion
 
     private void SetReverbZone() {
         if(reverbZone == null) {
