@@ -289,30 +289,30 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         pathList.Add(endPos); //마지막 위치 설정
 
         // 심층 단순화
-        //if(pathList.Count > 2) {
-        //    Vector3 tempPast;
-        //    Vector3 tempNext;
-        //    float distance;
-        //    for(int i = 1; i < pathList.Count - 1; i++) {
-        //        tempPast = pathList[i - 1];
-        //        tempNext = pathList[i + 1];
+        if(pathList.Count > 2) {
+            Vector3 tempPast;
+            Vector3 tempNext;
+            float distance;
+            for(int i = 1; i < pathList.Count - 1; i++) {
+                tempPast = pathList[i - 1];
+                tempNext = pathList[i + 1];
 
-        //        p1 = tempPast;
-        //        p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //임의로 player의 높이를 적용
-        //        direction = (tempNext - tempPast).normalized;
-        //        distance = Vector3.Distance(tempPast, tempNext);
-        //        if(!Physics.CapsuleCast(p1, p2, rayRadius, direction, out tempPathHit, distance, mask)) {
-        //            pathList.RemoveAt(i);
-        //            i--;
-        //        }
-        //    }
-        //}
+                p1 = tempPast;
+                p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //임의로 player의 높이를 적용
+                direction = (tempNext - tempPast).normalized;
+                distance = Vector3.Distance(tempPast, tempNext);
+                if(!Physics.CapsuleCast(p1, p2, rayRadius, direction, out tempPathHit, distance, mask)) {
+                    pathList.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
 
         return pathList;
     }
 
     public float GetPathDistance(List<Vector3> path) {
-        if(path.Count < 2) {
+        if(path == null || path.Count < 2) {
             Debug.LogWarning("Path not enough.");
 
             return 0.0f;

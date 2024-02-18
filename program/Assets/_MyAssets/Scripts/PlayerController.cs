@@ -12,7 +12,14 @@ public class PlayerController : GenericSingleton<PlayerController> {
     /// </summary>
     public static readonly float Radius = 0.3f * MazeBlock.BlockSize;
 
-    public Vector3 Pos { get { return transform.position; } }
+    public Vector3 Pos { 
+        get {
+            return transform.position; 
+        } 
+        set {
+            transform.position = value;
+        }
+    }
 
     private CapsuleCollider collider = null;
 

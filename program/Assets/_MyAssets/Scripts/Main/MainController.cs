@@ -20,13 +20,15 @@ public class MainController : MonoBehaviour {
 
         // Lobby 레벨 생성
         LevelLoader.Instance.LoadLevel(25, 25, false);
-        yield return null;
-        testMonster.transform.position = LevelLoader.Instance.GetBlockPos(0, 0);
-        testMonster.StartMove();
 
+        // Lobby 카메라 애니메이션
         if(mainCameraAnimationCoroutine != null) StopCoroutine(mainCameraAnimationCoroutine);
         mainCameraAnimationCoroutine = MainCameraAnimationCoroutine();
         StartCoroutine(mainCameraAnimationCoroutine);
+
+        yield return null;
+        testMonster.transform.position = LevelLoader.Instance.GetBlockPos(0, 0);
+        testMonster.StartMove();
     }
 
     private void Update() {
@@ -54,7 +56,15 @@ public class MainController : MonoBehaviour {
         UtilObjects.Instance.Cam.transform.position = cameraPos;
         UtilObjects.Instance.Cam.transform.forward = cameraForward;
 
-        yield return null;
+        float cameraDist = MazeBlock.BlockSize * 0.5f;
+        Vector3 camPos;
+        while(true) {
+            camPos = testMonster.HeadPos + testMonster.HeadForward * cameraDist;
+            UtilObjects.Instance.Cam.transform.position = camPos;
+            UtilObjects.Instance.Cam.transform.forward = (testMonster.HeadPos - camPos).normalized;
+
+            yield return null;
+        }
 
         mainCameraAnimationCoroutine = null;
     }

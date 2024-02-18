@@ -34,10 +34,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         soundObjectRemovedChecker = false;
         for(int i = 0; i < soundObjectList.Count; i++) {
             if(!soundObjectList[i].Source.isPlaying) {
-                soundObjectList[i].Stop();
-                soundObjectPool.Add(soundObjectList[i]);
-
-                soundObjectList.RemoveAt(i);
+                StartCoroutine(StopSoundObject(i)); 
                 i--;
 
                 soundObjectRemovedChecker = true;
@@ -47,6 +44,20 @@ public class SoundManager : GenericSingleton<SoundManager> {
         if(soundObjectRemovedChecker) {
             OnWorldSoundRemoved?.Invoke();
         }
+    }
+
+    /// <summary>
+    /// <br/> 사운드가 끝나자마자 Stop을 했을 때에 '지지직'하는 사운드가 끊기는 듯한 소리가 들리게 되므로
+    /// <br/> 한 프레임 텀을 줘서 Stop을 실행
+    /// </summary>
+    private IEnumerator StopSoundObject(int index) {
+        SoundObject so = soundObjectList[index];
+        soundObjectList.RemoveAt(index);
+
+        yield return null;
+
+        so.Stop();
+        soundObjectPool.Add(so);
     }
 
     #region Utility

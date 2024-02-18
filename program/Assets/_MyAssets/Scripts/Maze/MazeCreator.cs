@@ -145,7 +145,7 @@ public static class MazeCreator {
                 if(tempWallInfo.HasFlag(ActiveWall.L)) activatedWallList.Add(ActiveWall.L);
                 if(tempWallInfo.HasFlag(ActiveWall.B)) activatedWallList.Add(ActiveWall.B);
 
-                if(activatedWallList.Count > 2) {
+                if(activatedWallList.Count > 1) {
                     removeWall = activatedWallList[Random.Range(0, activatedWallList.Count)];
                     Maze[x, y] &= ~removeWall;
                     switch(removeWall) {
