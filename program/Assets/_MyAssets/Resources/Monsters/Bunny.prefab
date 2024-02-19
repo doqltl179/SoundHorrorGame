@@ -141,7 +141,10 @@ MonoBehaviour:
   headPos: {fileID: 878996460391872765}
   scaleScalar: 1
   moveSpeed: 1
+  moveAnimationSpeed: 1
+  moveBoost: 0.4
   rotateSpeed: 1
+  moveSoundOffset: 0
 --- !u!54 &6204383258893231526
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -183,6 +186,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 135452891633574922, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
       propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 135452891633574922, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 135452891633574922, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+      propertyPath: m_ReflectionProbeUsage
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 285585116440405929, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
@@ -255,6 +266,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1599487602480819172, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
       propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1599487602480819172, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1599487602480819172, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+      propertyPath: m_ReflectionProbeUsage
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1946233599000607970, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
@@ -351,6 +370,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6307845091980049567, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
       propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6307845091980049567, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6307845091980049567, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+      propertyPath: m_ReflectionProbeUsage
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6583961713865013579, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}

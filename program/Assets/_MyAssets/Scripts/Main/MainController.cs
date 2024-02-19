@@ -5,13 +5,24 @@ using UnityEngine;
 public class MainController : MonoBehaviour {
     [SerializeField] private Canvas canvas = null;
 
+    [Header("Camera Animation Properties")]
+    [SerializeField, Range(0.1f, 10.0f)] private float cameraRotateSpeed = 1.0f;
+    [SerializeField, Range(0.0f, 180.0f)] private float cameraRotateAngle = 120.0f;
+
+
     private IEnumerator mainCameraAnimationCoroutine = null;
 
 
 
 
-    public MonsterController testMonster = null;
-    private IEnumerator Start() {
+    private void OnDestroy() {
+        if(mainCameraAnimationCoroutine != null) {
+            StopCoroutine(mainCameraAnimationCoroutine);
+            mainCameraAnimationCoroutine = null;
+        }
+    }
+
+    private void Start() {
         canvas.worldCamera = UtilObjects.Instance.Cam;
         canvas.planeDistance = 5.0f;
 
@@ -19,16 +30,13 @@ public class MainController : MonoBehaviour {
         SetUIProperties();
 
         // Lobby 레벨 생성
-        LevelLoader.Instance.LoadLevel(25, 25, false);
+        LevelLoader.Instance.ResetLevel();
+        LevelLoader.Instance.LoadLevel(5, 5, true);
 
         // Lobby 카메라 애니메이션
         if(mainCameraAnimationCoroutine != null) StopCoroutine(mainCameraAnimationCoroutine);
         mainCameraAnimationCoroutine = MainCameraAnimationCoroutine();
         StartCoroutine(mainCameraAnimationCoroutine);
-
-        yield return null;
-        testMonster.transform.position = LevelLoader.Instance.GetBlockPos(0, 0);
-        testMonster.StartMove();
     }
 
     private void Update() {
@@ -53,15 +61,15 @@ public class MainController : MonoBehaviour {
         Vector3 levelSidePos = LevelLoader.Instance.GetBlockPos((LevelLoader.Instance.LevelWidth - 1) * 0.5f, 0.0f);
         Vector3 cameraPos = new Vector3(levelCenterPos.x, PlayerController.PlayerHeight, levelSidePos.z);
         Vector3 cameraForward = (levelCenterPos - levelSidePos).normalized;
-        UtilObjects.Instance.Cam.transform.position = cameraPos;
-        UtilObjects.Instance.Cam.transform.forward = cameraForward;
+        UtilObjects.Instance.CamPos = cameraPos;
+        UtilObjects.Instance.CamForward = cameraForward;
 
-        float cameraDist = MazeBlock.BlockSize * 0.5f;
-        Vector3 camPos;
+        Vector3 forwardMin = Quaternion.AngleAxis(cameraRotateAngle * 0.5f, Vector3.up) * cameraForward;
+        Vector3 forwardMax = Quaternion.AngleAxis(cameraRotateAngle * -0.5f, Vector3.up) * cameraForward;
+        float angleRatio = 0.5f; //cameraForward를 angle ratio 0.5로 설정
         while(true) {
-            camPos = testMonster.HeadPos + testMonster.HeadForward * cameraDist;
-            UtilObjects.Instance.Cam.transform.position = camPos;
-            UtilObjects.Instance.Cam.transform.forward = (testMonster.HeadPos - camPos).normalized;
+            angleRatio += Time.deltaTime * cameraRotateSpeed;
+            UtilObjects.Instance.CamForward = Vector3.Lerp(forwardMin, forwardMax, (Mathf.Sin(angleRatio) + 1) * 0.5f);
 
             yield return null;
         }
@@ -75,7 +83,7 @@ public class MainController : MonoBehaviour {
     }
 
     public void OnNewGameClicked() {
-
+        SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
     }
 
     public void OnSettingsClicked() {

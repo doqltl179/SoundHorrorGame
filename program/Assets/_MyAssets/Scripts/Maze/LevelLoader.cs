@@ -1,11 +1,27 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 using Random = UnityEngine.Random;
 
 public class LevelLoader : GenericSingleton<LevelLoader> {
+    #region Monter
+    public enum MonsterType {
+        Bunny,
+
+
+    }
+
+    private readonly string BASIC_PATH_OF_MONSTERS = "Monsters";
+
+    private Dictionary<MonsterType, GameObject> monsterResources = new Dictionary<MonsterType, GameObject>();
+
+    private List<MonsterController> monsters = new List<MonsterController>();
+    #endregion
+
+    #region Maze
     private MazeBlock[,] mazeBlocks = null;
     public int LevelWidth { get; private set; }
     public int LevelHeight { get; private set; }
@@ -33,6 +49,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 10.0f;
     // SpreadTime 동안 MazeBlock을 10칸 이동하기 위해 10을 곱함
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 10;
+    #endregion
 
     private AudioReverbZone reverbZone = null;
 
@@ -50,6 +67,13 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         SoundManager.Instance.OnWorldSoundRemoved -= OnWorldSoundRemoved;
     }
 
+    private void Start() {
+        MonsterController testMonster = FindObjectOfType<MonsterController>();
+        if(testMonster != null) {
+            monsters.Add(testMonster);
+        }
+    }
+
     private void Update() {
         float[] currentRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(STANDARD_RIM_RADIUS_SPREAD_TIME, STANDARD_RIM_RADIUS_SPREAD_LENGTH);
         float[] currentRimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(STANDARD_RIM_RADIUS_SPREAD_TIME, STANDARD_RIM_RADIUS_SPREAD_LENGTH);
@@ -63,9 +87,37 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         blockWallMaterial.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
         blockWallMaterial.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
 #endif
+
+        foreach(MonsterController mc in monsters) {
+            mc.Material.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
+            mc.Material.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
+        }
     }
 
     #region Utility
+    public void ResetLevel() {
+        if(mazeBlocks != null) {
+            int arrayLengthX = mazeBlocks.GetLength(0);
+            int arrayLengthY = mazeBlocks.GetLength(1);
+            for(int x = 0; x < arrayLengthX; x++) {
+                for(int y = 0; y < arrayLengthY; y++) {
+                    Destroy(mazeBlocks[x, y].gameObject);
+                }
+            }
+            LevelWidth = 0;
+            LevelHeight = 0;
+            mazeBlocks = null;
+        }
+
+        if(monsters.Count > 0) {
+            foreach(MonsterController mc in monsters) {
+                Destroy(mc.gameObject);
+            }
+
+            monsters.Clear();
+        }
+    }
+
     public void LoadLevel(int width, int height, bool createEmpty = false) {
         if(createEmpty) MazeCreator.CreateEmptyMaze(width, height);
         else MazeCreator.CreateMaze(width, height);
@@ -338,35 +390,41 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
     }
-#endregion
+    #endregion
 
     #region Action
     private void OnWorldSoundAdded(SoundObject so) {
         Vector4[] currentRimPosList = SoundManager.Instance.GetSoundObjectPosArray();
-        blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-#if Use_Two_Materials_On_MazeBlock
-        blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-#endif
-
         Array.Copy(currentRimPosList, 0, rimPosArray, 0, currentRimPosList.Length);
+
+        blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
         blockFloorMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
 #if Use_Two_Materials_On_MazeBlock
+        blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
         blockWallMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
 #endif
+
+        foreach(MonsterController mc in monsters) {
+            mc.Material.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
+            mc.Material.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+        }
     }
 
     private void OnWorldSoundRemoved() {
         Vector4[] currentRimPosList = SoundManager.Instance.GetSoundObjectPosArray();
-        blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-#if Use_Two_Materials_On_MazeBlock
-        blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-#endif
-
         Array.Copy(currentRimPosList, 0, rimPosArray, 0, currentRimPosList.Length);
+
+        blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
         blockFloorMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
 #if Use_Two_Materials_On_MazeBlock
+        blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
         blockWallMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
 #endif
+
+        foreach(MonsterController mc in monsters) {
+            mc.Material.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
+            mc.Material.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+        }
     }
 #endregion
 
@@ -389,6 +447,28 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     private bool IsSameVec2Int(Vector2Int v1, Vector2Int v2) => v1.x == v2.x && v1.y == v2.y;
+
+    private GameObject GetMonsterObject(MonsterType type) {
+        GameObject obj = null;
+        if(!monsterResources.TryGetValue(type, out obj)) {
+            string path = GetMonsterObjectPath(type);
+            obj = ResourceLoader.GetResource<GameObject>(path);
+
+            monsterResources.Add(type, obj);
+        }
+
+        return obj;
+    }
+
+    private string GetMonsterObjectPath(MonsterType type) {
+        switch(type) {
+            case MonsterType.Bunny:
+                return Path.Combine(BASIC_PATH_OF_MONSTERS, type.ToString());
+
+            default:
+                return string.Empty;
+        }
+    }
 
     #region 길찾기 Util Func
     private Vector2Int GetMoveToCoordRight(Vector2Int coord) => new Vector2Int(coord.x + 1, coord.y);

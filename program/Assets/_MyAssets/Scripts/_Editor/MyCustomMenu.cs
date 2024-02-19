@@ -24,6 +24,14 @@ public class MyCustomMenu : MonoBehaviour
 
 
     private void Awake() {
+        string[] defines;
+        PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, out defines);
+        if(defines != null) {
+            foreach(string d in defines) {
+                if(d == def_Use_Two_Materials_On_MazeBlock) useTwoMaterialsOnMazeBlock = true;
+            }
+        }
+
         if(useTwoMaterialsOnMazeBlock) {
             symbolList.Add(def_Use_Two_Materials_On_MazeBlock);
             Menu.SetChecked(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock, useTwoMaterialsOnMazeBlock);

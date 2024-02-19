@@ -15,7 +15,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
     private readonly string BASIC_PATH_OF_SFX = "Audios/SFX";
     private readonly string BASIC_PATH_OF_BGM = "Audios/BGM";
 
-    private Dictionary<SoundType, AudioClip> clips = new Dictionary<SoundType, AudioClip>();
+    private Dictionary<SoundType, AudioClip> clipResources = new Dictionary<SoundType, AudioClip>();
 
     private List<SoundObject> soundObjectList = new List<SoundObject>();
     private List<SoundObject> soundObjectPool = new List<SoundObject>();
@@ -72,6 +72,18 @@ public class SoundManager : GenericSingleton<SoundManager> {
         OnWorldSoundAdded?.Invoke(so);
     }
 
+    public AudioClip GetAudioClip(SoundType type) {
+        AudioClip clip = null;
+        if(!clipResources.TryGetValue(type, out clip)) {
+            string path = GetSoundPath(type);
+            clip = ResourceLoader.GetResource<AudioClip>(path);
+
+            clipResources.Add(type, clip);
+        }
+
+        return clip;
+    }
+
     #region Material Property Util Func
     public Vector4[] GetSoundObjectPosArray() {
         Vector4 vec3ToVec4(Vector3 v) => new Vector4(v.x, v.y, v.z);
@@ -124,21 +136,9 @@ public class SoundManager : GenericSingleton<SoundManager> {
             so = new SoundObject();
         }
 
-        so.Source.clip = GetAudioClip(type);
+        so.ChangeSoundType(type);
 
         return so;
-    }
-
-    private AudioClip GetAudioClip(SoundType type) {
-        AudioClip clip = null;
-        if(!clips.TryGetValue(type, out clip)) {
-            string path = GetSoundPath(type);
-            clip = ResourceLoader.GetResource<AudioClip>(path);
-
-            clips.Add(type, clip);
-        }
-
-        return clip;
     }
 
     private string GetSoundPath(SoundType type) {
@@ -154,6 +154,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
 public class SoundObject {
     public AudioSource Source { get; private set; }
+    public SoundManager.SoundType Type { get; private set; }
     public float CurrentTime { get { return Source.time; } }
     public float Length { get { return Source.clip.length; } }
     public float NormalizedTime { get { return CurrentTime / Length; } }
@@ -213,6 +214,12 @@ public class SoundObject {
         Source.Stop();
 
         Source.gameObject.SetActive(false);
+    }
+
+    public void ChangeSoundType(SoundManager.SoundType type) {
+        Source.clip = SoundManager.Instance.GetAudioClip(type);
+
+        Type = type;
     }
     #endregion
 }

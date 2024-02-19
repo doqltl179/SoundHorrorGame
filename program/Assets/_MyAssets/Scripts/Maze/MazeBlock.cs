@@ -42,7 +42,7 @@ public class MazeBlock : MonoBehaviour {
     public static readonly Vector3 StandardBlockAnchor = new Vector3(0.5f, 0.0f, 0.5f);
 
     private static readonly float FloorScale = 3.0f;
-    private static readonly float WallHeightScale = 10.0f;
+    private static readonly float WallHeightScale = 5.0f;
     public static readonly Vector3 StandardBlockScale = new Vector3(FloorScale, WallHeightScale, FloorScale);
 
     public static readonly float StandardBlockSize = 2.0f;

@@ -80,6 +80,32 @@
             //uniform float _RimThicknessArray[256];
             uniform float _RimAlphaArray[256];
 
+            float getRimRatio(float min, float max, float d) {
+                return (d - min) / (max - min);
+            }
+
+            float getColorRatio(float3 worldPos, float rimThicknessOffset = 1.0) {
+                const float blurOffset = 0.3;
+                float distanceRatioMin = 0.0 - blurOffset;
+                float distanceRatioMax = 1.0 + blurOffset;
+                float halfOfDistanceRatio = (distanceRatioMax + distanceRatioMin) * 0.5;
+
+                float dist = 0.0;
+                float distanceRatio = 0.0;
+                float r = 0.0;
+                for(int j = 0; j < _RimArrayLength; j++) {
+                    dist = distance(worldPos, _RimPosArray[j].xyz);
+                    distanceRatio = getRimRatio(_RimRadiusArray[j] - _RimThickness * rimThicknessOffset, _RimRadiusArray[j], dist);
+                    if(distanceRatioMin < distanceRatio && distanceRatio < distanceRatioMax) {
+                        float newRatio = abs(distanceRatio - halfOfDistanceRatio);
+                        r += _RimAlphaArray[j] * smoothstep(halfOfDistanceRatio, halfOfDistanceRatio - blurOffset, newRatio);
+                    }
+                }
+                if(r > _ColorStrengthMax) r = _ColorStrengthMax;
+
+                return r;
+            }
+
             // RenderType을 Transparent로 설정하지 않았기 때문에 투명도가 적용되지 않음
             fixed4 frag (v2f i) : SV_Target
             {
@@ -87,19 +113,8 @@
 
                 #if USE_BASE_COLOR
 
-                float dist = 0.0;
-                float l = 0.0;
-                for(int j = 0; j < _RimArrayLength; j++) {
-                    dist = distance(i.worldPos, _RimPosArray[j].xyz);
-                    if(_RimRadiusArray[j] - _RimThickness < dist && dist < _RimRadiusArray[j]) {
-                        //c = fixed4(_RimColor.xyz, _RimAlphaArray[j]);
-                        //c += lerp(_BaseColor, _RimColor, _RimAlphaArray[j]);
-                        l += _RimAlphaArray[j];
-                    }
-                }
-
-                if(l > _ColorStrengthMax) l = _ColorStrengthMax;
-                c = lerp(_BaseColor, _RimColor, l);
+                float colorRatio = getColorRatio(i.worldPos);
+                c = lerp(_BaseColor, _RimColor, colorRatio);
 
                 #else
 
@@ -118,8 +133,9 @@
                 
                 float3 ambient = albedo * 0.05; // Ambient light contribution
                 float3 finalColor = ambient + (diffuse + specular) * occlusion;
-                
-                c = fixed4(finalColor, 1.0);
+
+                float colorRatio = getColorRatio(i.worldPos, 20.0);
+                c = fixed4(finalColor * colorRatio, 1.0);
 
                 #endif
 

@@ -6,7 +6,7 @@ public class PlayerController : GenericSingleton<PlayerController> {
     public static readonly string TagName = "Player";
     public static readonly string LayerName = "Player";
 
-    public static readonly float PlayerHeight = 1.7f;
+    public static readonly float PlayerHeight = 0.8f;
     /// <summary>
     /// 플레이어의 두께 설정값
     /// </summary>
@@ -25,10 +25,17 @@ public class PlayerController : GenericSingleton<PlayerController> {
 
 
 
-    private void Start() {
+    private void Awake() {
+        DontDestroyOnLoad(gameObject);
+
+        // Tag 설정
+        gameObject.tag = TagName;
+
         // Layer 설정
         gameObject.layer = LayerMask.NameToLayer(LayerName);
+    }
 
+    private void Start() {
         // Collider 설정
         if(collider == null) {
             GameObject go = new GameObject(nameof(CapsuleCollider));
