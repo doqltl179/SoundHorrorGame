@@ -86,6 +86,9 @@ public class Bunny : MonsterController, IMove {
 
             if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
                 movePath.RemoveAt(0);
+                if(movePath.Count <= 0) {
+                    OnPathEnd?.Invoke();
+                }
             }
         }
         else {
@@ -135,7 +138,11 @@ public class Bunny : MonsterController, IMove {
                 break;
             case MonsterState.Move: {
                     if(movePath == null || movePath.Count <= 0) {
-                        movePath = LevelLoader.Instance.GetRandomPointPath(Pos, Radius);
+                        movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
+                            Pos,
+                            Radius,
+                            false,
+                            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
                     }
                 }
                 break;

@@ -23,7 +23,7 @@ public class MonsterController : MonoBehaviour {
         get => currentState;
         set {
             currentState = value;
-            OnCurrentStateChanged(value);
+            OnCurrentStateChanged?.Invoke(value);
         }
     }
 

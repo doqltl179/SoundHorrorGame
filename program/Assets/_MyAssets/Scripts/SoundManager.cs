@@ -25,8 +25,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
 
 
-    private void Awake() {
-        DontDestroyOnLoad(gameObject);
+    protected override void Awake() {
+        base.Awake();
     }
 
     bool soundObjectRemovedChecker;

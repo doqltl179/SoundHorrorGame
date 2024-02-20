@@ -15,12 +15,17 @@ public class GameController : MonoBehaviour {
 
         PlayerController.Instance.Pos = LevelLoader.Instance.GetCenterPos();
 
+#if Play_Game_Automatically
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(LevelLoader.MonsterType.Honey, 10);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(LevelLoader.MonsterType.Bunny, 10);
+#else
+#endif
+
         while(SceneLoader.Instance.IsLoading) {
             yield return null;
         }
 
 #if Play_Game_Automatically
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(LevelLoader.MonsterType.Bunny, 10);
         LevelLoader.Instance.PlayMonsters();
 #else
 #endif

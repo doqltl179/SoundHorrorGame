@@ -25,8 +25,8 @@ public class PlayerController : GenericSingleton<PlayerController> {
 
 
 
-    private void Awake() {
-        DontDestroyOnLoad(gameObject);
+    protected override void Awake() {
+        base.Awake();
 
         // Tag ¼³Á¤
         gameObject.tag = TagName;

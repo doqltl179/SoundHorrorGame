@@ -21,8 +21,8 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
 
 
 
-    private void Awake() {
-        DontDestroyOnLoad(gameObject);
+    protected override void Awake() {
+        base.Awake();
     }
 
     #region Utility

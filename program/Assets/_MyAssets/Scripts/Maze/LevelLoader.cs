@@ -11,7 +11,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     #region Monter
     public enum MonsterType {
         Bunny,
-
+        Honey,
 
     }
 
@@ -58,8 +58,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
 
 
-    private void Awake() {
-        DontDestroyOnLoad(gameObject);
+    protected override void Awake() {
+        base.Awake();
 
         SoundManager.Instance.OnWorldSoundAdded += OnWorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved += OnWorldSoundRemoved;
@@ -407,12 +407,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public Vector2Int GetMazeCoordinate(Vector3 pos) =>
         new Vector2Int(Mathf.FloorToInt(pos.x / MazeBlock.BlockSize), Mathf.FloorToInt(pos.z / MazeBlock.BlockSize));
 
-    public List<Vector3> GetRandomPointPath(Vector3 currentPos, float rayRadius) {
-        Vector2Int currentPoint = GetMazeCoordinate(currentPos);
-        Vector2Int endpoint = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
-        while(IsSameVec2Int(currentPoint, endpoint)) {
-            endpoint = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
-        }
+    /// <summary>
+    /// <br/> overDistance == true : currentPos를 기준으로 distance 보다 먼 좌표의 경로 반환
+    /// <br/> overDistance == false : currentPos를 기준으로 distance 보다 가까운 좌표의 경로 반환
+    /// </summary>
+    public List<Vector3> GetRandomPointPathCompareDistance(Vector3 currentPos, float rayRadius, bool overDistance, float distance) {
+        Vector2Int endpoint = overDistance ? GetRandomCoordOverDistance(currentPos, distance) : GetRandomCoordNearbyDistance(currentPos, distance);
 
         return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
     }
@@ -438,12 +438,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         Vector2Int[] currentMonstersCoordArray = monsters.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
         List<Vector2Int> usingCoordList = new List<Vector2Int>();
         while(usingCoordList.Count < count) {
-            Vector2Int randomCoord = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
-            float dist = Vector3.Distance(PlayerController.Instance.Pos, GetBlockPos(randomCoord));
+            // 플레이어와의 거리가 일정 거리 이상 떨어져 있는 coord 생성
+            Vector2Int randomCoord = GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
             // 현재 몬스터들과 겹치지 않는 위치 확인
-            // 플레이어와의 거리가 일정 거리 이상 떨어져 있는지 확인
-            if(dist > STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2 &&
-                Array.FindIndex(currentMonstersCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
+            if(Array.FindIndex(currentMonstersCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
                 usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0) {
                 usingCoordList.Add(randomCoord);
             }
@@ -509,7 +507,45 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mc.Material.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
         }
     }
-#endregion
+    #endregion
+
+    /// <summary>
+    /// compareDistance 보다 멀리 있는 coord를 반환
+    /// </summary>
+    private Vector2Int GetRandomCoordOverDistance(Vector3 currentPos, float compareDistance) {
+        Vector2Int randomCoord;
+        Vector3 tempPos;
+        float dist;
+        while(true) {
+            randomCoord = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
+            tempPos = GetBlockPos(randomCoord);
+            dist = Vector3.Distance(currentPos, tempPos);
+            if(dist > compareDistance) {
+                break;
+            }
+        }
+
+        return randomCoord;
+    }
+
+    /// <summary>
+    /// compareDistance 보다 가까이 있는 coord를 반환
+    /// </summary>
+    private Vector2Int GetRandomCoordNearbyDistance(Vector3 currentPos, float compareDistance) {
+        Vector2Int randomCoord;
+        Vector3 tempPos;
+        float dist;
+        while(true) {
+            randomCoord = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
+            tempPos = GetBlockPos(randomCoord);
+            dist = Vector3.Distance(currentPos, tempPos);
+            if(dist < compareDistance) {
+                break;
+            }
+        }
+
+        return randomCoord;
+    }
 
     private void SetReverbZone() {
         if(reverbZone == null) {
