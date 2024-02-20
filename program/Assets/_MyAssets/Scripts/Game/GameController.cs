@@ -8,8 +8,8 @@ public class GameController : MonoBehaviour {
 
 
     private IEnumerator Start() {
-        const int levelWidth = 100;
-        const int levelHeight = 100;
+        const int levelWidth = 50;
+        const int levelHeight = 50;
         LevelLoader.Instance.ResetLevel();
         LevelLoader.Instance.LoadLevel(levelWidth, levelHeight);
 
@@ -18,5 +18,11 @@ public class GameController : MonoBehaviour {
         while(SceneLoader.Instance.IsLoading) {
             yield return null;
         }
+
+#if Play_Game_Automatically
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(LevelLoader.MonsterType.Bunny, 10);
+        LevelLoader.Instance.PlayMonsters();
+#else
+#endif
     }
 }

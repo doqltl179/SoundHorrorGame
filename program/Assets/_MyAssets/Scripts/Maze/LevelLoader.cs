@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 using Random = UnityEngine.Random;
@@ -19,6 +20,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private Dictionary<MonsterType, GameObject> monsterResources = new Dictionary<MonsterType, GameObject>();
 
     private List<MonsterController> monsters = new List<MonsterController>();
+
+    public int MonsterCount { get { return monsters.Count; } }
     #endregion
 
     #region Maze
@@ -74,6 +77,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
 
+#if Play_Game_Automatically
+    int watchIndex = 0;
+#endif
     private void Update() {
         float[] currentRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(STANDARD_RIM_RADIUS_SPREAD_TIME, STANDARD_RIM_RADIUS_SPREAD_LENGTH);
         float[] currentRimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(STANDARD_RIM_RADIUS_SPREAD_TIME, STANDARD_RIM_RADIUS_SPREAD_LENGTH);
@@ -92,6 +98,26 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mc.Material.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
             mc.Material.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
         }
+
+#if Play_Game_Automatically
+        if(Input.GetKeyDown(KeyCode.Alpha1)) watchIndex = 1;
+        else if(Input.GetKeyDown(KeyCode.Alpha2)) watchIndex = 2;
+        else if(Input.GetKeyDown(KeyCode.Alpha3)) watchIndex = 3;
+        else if(Input.GetKeyDown(KeyCode.Alpha4)) watchIndex = 4;
+        else if(Input.GetKeyDown(KeyCode.Alpha5)) watchIndex = 5;
+        else if(Input.GetKeyDown(KeyCode.Alpha6)) watchIndex = 6;
+        else if(Input.GetKeyDown(KeyCode.Alpha7)) watchIndex = 7;
+        else if(Input.GetKeyDown(KeyCode.Alpha8)) watchIndex = 8;
+        else if(Input.GetKeyDown(KeyCode.Alpha9)) watchIndex = 9;
+        else if(Input.GetKeyDown(KeyCode.Alpha0)) watchIndex = 0;
+
+        if(watchIndex > 0) {
+            Vector3 camPos = monsters[watchIndex].HeadPos + monsters[watchIndex].HeadForward * MazeBlock.BlockSize;
+            Vector3 camForward = (monsters[watchIndex].HeadPos - camPos).normalized;
+            UtilObjects.Instance.CamPos = Vector3.Lerp(UtilObjects.Instance.CamPos, camPos, Time.deltaTime);
+            UtilObjects.Instance.CamForward = Vector3.Lerp(UtilObjects.Instance.CamForward, camForward, Time.deltaTime);
+        }
+#endif
     }
 
     #region Utility
@@ -389,6 +415,63 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
 
         return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
+    }
+
+    /// <summary>
+    /// <br/>현재 생성된 몬스터의 위치와 겹치지 않게 생성.
+    /// <br/>플레이어와의 거리가 일정 이상 떨어진 위치에 생성
+    /// </summary>
+    public void AddMonsterOnLevelRandomly(MonsterType type, int count) {
+        if(count <= 0) {
+            Debug.LogWarning($"Count not enough. Count: {count}");
+
+            return;
+        }
+
+        GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(BASIC_PATH_OF_MONSTERS, type.ToString()));
+        if(resource == null) {
+            Debug.LogError($"Monster Resource not found. type: {type}");
+
+            return;
+        }
+
+        Vector2Int[] currentMonstersCoordArray = monsters.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+        List<Vector2Int> usingCoordList = new List<Vector2Int>();
+        while(usingCoordList.Count < count) {
+            Vector2Int randomCoord = new Vector2Int(Random.Range(0, LevelWidth), Random.Range(0, LevelHeight));
+            float dist = Vector3.Distance(PlayerController.Instance.Pos, GetBlockPos(randomCoord));
+            // 현재 몬스터들과 겹치지 않는 위치 확인
+            // 플레이어와의 거리가 일정 거리 이상 떨어져 있는지 확인
+            if(dist > STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2 &&
+                Array.FindIndex(currentMonstersCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
+                usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0) {
+                usingCoordList.Add(randomCoord);
+            }
+        }
+
+        foreach(Vector2Int coord in usingCoordList) {
+            GameObject go = Instantiate(resource, transform);
+            go.transform.position = GetBlockPos(coord);
+
+            MonsterController mc = go.GetComponent<MonsterController>();
+
+            monsters.Add(mc);
+        }
+    }
+
+    public void PlayMonsters() { 
+        // 몬스터가 게임 중간에 추가될 때도 있기 때문에 전체 범위가 아닌 제한된 범위에서만 for문 실행
+        for(int i = monsters.Count - 1; i >= 0; i--) {
+            if(monsters[i].IsPlaying) break;
+
+            monsters[i].Play();
+        }
+    }
+
+    public void StopMonsters() {
+        foreach(MonsterController mc in monsters) {
+            mc.Stop();
+        }
     }
     #endregion
 

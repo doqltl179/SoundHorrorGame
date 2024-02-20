@@ -77,7 +77,6 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
 
         while(true) {
             textChangeTimer += Time.deltaTime;
-            Debug.Log(textChangeTimer);
             if(textChangeTimer > textChangeTime) {
                 loadingTextBuilder.Append(addChar);
                 UtilObjects.Instance.LoadingText = loadingTextBuilder.ToString();

@@ -3,16 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Bunny : MonsterController, IMove {
+    private const float restTime = 5.0f;
+    private float restTimeChecker = 0.0f;
+
+
+
     protected override void Awake() {
-        SoundManager.Instance.OnWorldSoundAdded += OnWorldSoundAdded;
-        SoundManager.Instance.OnWorldSoundRemoved += OnWorldSoundRemoved;
+        SoundManager.Instance.OnWorldSoundAdded += WorldSoundAdded;
+        SoundManager.Instance.OnWorldSoundRemoved += WorldSoundRemoved;
+
+        OnCurrentStateChanged += CurrentStateChanged;
+        OnPathEnd += PathEnd;
 
         base.Awake();
     }
 
     private void OnDestroy() {
-        SoundManager.Instance.OnWorldSoundAdded -= OnWorldSoundAdded;
-        SoundManager.Instance.OnWorldSoundRemoved -= OnWorldSoundRemoved;
+        SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
+        SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
+
+        OnCurrentStateChanged -= CurrentStateChanged;
+        OnPathEnd -= PathEnd;
     }
 
     private void Start() {
@@ -25,6 +36,15 @@ public class Bunny : MonsterController, IMove {
     }
 
     private void FixedUpdate() {
+        if(!IsPlaying) return;
+
+        if(CurrentState == MonsterState.Rest) {
+            restTimeChecker += Time.deltaTime;
+            if(restTimeChecker >= restTime) {
+                CurrentState = MonsterState.Move;
+            }
+        }
+
         Move(Time.deltaTime);
 
         // 모션 애니메이션은 Idle -> Walk -> Run 형태의 BlendTree를 가지고 있음
@@ -35,8 +55,7 @@ public class Bunny : MonsterController, IMove {
                 int normalizedTimeInteger = (int)Mathf.Floor((normalizedTime + moveSoundOffset) / 0.5f);
                 if(animatorStateInfo[AnimatorLayerName_Motion].CompareInteger < normalizedTimeInteger) {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
-                    List<Vector3> pathToPlayer = LevelLoader.Instance.GetPath(transform.position, UtilObjects.Instance.CamPos, Radius);
-                    float dist = LevelLoader.Instance.GetPathDistance(pathToPlayer);
+                    float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     if(dist < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
                         SoundManager.Instance.PlayOnWorld(transform.position, SoundManager.SoundType.MouseClick);
                     }
@@ -85,8 +104,17 @@ public class Bunny : MonsterController, IMove {
     #endregion
 
     #region Override
+    public override void Play() { 
+        CurrentState = MonsterState.Move;
+    }
+
+    public override void Stop() {
+        CurrentState = MonsterState.None;
+    }
+    #endregion
+
     #region Action
-    protected override void OnWorldSoundAdded(SoundObject so) {
+    private void WorldSoundAdded(SoundObject so) {
         switch(so.Type) {
             case SoundManager.SoundType.MouseClick: {
 
@@ -95,9 +123,33 @@ public class Bunny : MonsterController, IMove {
         }
     }
 
-    protected override void OnWorldSoundRemoved() {
+    private void WorldSoundRemoved() {
 
     }
-    #endregion
+
+    private void CurrentStateChanged(MonsterState state) {
+        switch(state) {
+            case MonsterState.None: {
+                    movePath = null;
+                }
+                break;
+            case MonsterState.Move: {
+                    if(movePath == null || movePath.Count <= 0) {
+                        movePath = LevelLoader.Instance.GetRandomPointPath(Pos, Radius);
+                    }
+                }
+                break;
+            case MonsterState.Rest: {
+                    restTimeChecker = 0.0f;
+
+                    movePath = null;
+                }
+                break;
+        }
+    }
+
+    private void PathEnd() {
+        CurrentState = MonsterState.Rest;
+    }
     #endregion
 }

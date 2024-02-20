@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -8,6 +9,23 @@ using static SoundManager;
 public class MonsterController : MonoBehaviour {
     public static readonly string TagName = "Monster";
     public static readonly string LayerName = "Monster";
+
+    public bool IsPlaying { get { return CurrentState != MonsterState.None; } }
+
+    public enum MonsterState {
+        None, // ==> IsPlaying to false
+        Move, 
+        Wait, //IMove가 상속되지 않은 몬스터는 Move 대신 Wait를 설정
+        Rest,
+    }
+    private MonsterState currentState = MonsterState.None;
+    public MonsterState CurrentState {
+        get => currentState;
+        set {
+            currentState = value;
+            OnCurrentStateChanged(value);
+        }
+    }
 
     [Header("Components")]
     [SerializeField] protected Animator animator;
@@ -30,6 +48,14 @@ public class MonsterController : MonoBehaviour {
     public float Height { get { return collider.height * scaleScalar; } }
     public Vector3 HeadPos { get { return headPos.position; } }
     public Vector3 HeadForward { get { return headPos.forward; } }
+    public Vector3 Pos { 
+        get { 
+            return transform.position; 
+        } 
+        set {
+            transform.position = value;
+        }
+    }
 
     protected const string AnimatorLayerName_Motion = "Motion";
     protected const string AnimatorPropertyName_MoveBlend = "MoveBlend";
@@ -47,6 +73,9 @@ public class MonsterController : MonoBehaviour {
     protected List<Vector3> movePath = null;
     protected StuckHelper stuckHelper = null;
 
+    public Action<MonsterState> OnCurrentStateChanged;
+    public Action OnPathEnd;
+
 
 
     protected virtual void Awake() {
@@ -57,22 +86,10 @@ public class MonsterController : MonoBehaviour {
         gameObject.layer = LayerMask.NameToLayer(LayerName);
     }
 
-    #region Utility
-    public void StartMove() {
-        if(movePath == null || movePath.Count <= 0) {
-            movePath = LevelLoader.Instance.GetRandomPointPath(transform.position, Radius);
-        }
-    }
-    #endregion
+    #region Virtual
+    public virtual void Play() { }
 
-    #region Action
-    protected virtual void OnWorldSoundAdded(SoundObject so) {
-
-    }
-
-    protected virtual void OnWorldSoundRemoved() {
-
-    }
+    public virtual void Stop() { }
     #endregion
 
     /// <summary>

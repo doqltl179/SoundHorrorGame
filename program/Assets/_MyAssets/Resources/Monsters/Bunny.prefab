@@ -95,7 +95,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1796070792098485330}
-  - component: {fileID: 4022068259433997900}
+  - component: {fileID: 3158475344317031430}
   - component: {fileID: 6204383258893231526}
   m_Layer: 0
   m_Name: Bunny
@@ -122,7 +122,7 @@ Transform:
   - {fileID: 878996460391872765}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4022068259433997900
+--- !u!114 &3158475344317031430
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -131,20 +131,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 2751830314638606818}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 12f88dc5d9cfcba49bea16ff4082a80b, type: 3}
+  m_Script: {fileID: 11500000, guid: c92253fc313b6b546947ad222b6143c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  animator: {fileID: 1918365431212954885}
   rigidbody: {fileID: 6204383258893231526}
   collider: {fileID: 5764638596849845893}
   material: {fileID: 2100000, guid: 0b92470419ec99d4dafe0ec06c3c67d1, type: 2}
   headPos: {fileID: 878996460391872765}
-  scaleScalar: 1
+  scaleScalar: 1.7
   moveSpeed: 1
-  moveAnimationSpeed: 1
+  moveAnimationSpeed: 0.5
   moveBoost: 0.4
-  rotateSpeed: 1
-  moveSoundOffset: 0
+  rotateSpeed: 3
+  moveSoundOffset: 0.25
 --- !u!54 &6204383258893231526
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -170,7 +170,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!1001 &1666795500492928564
 PrefabInstance:
@@ -258,7 +258,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 990442956841280305, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
       propertyPath: m_ApplyRootMotion
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1599487602480819172, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
       propertyPath: m_CastShadows
@@ -509,6 +509,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+--- !u!95 &1918365431212954885 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 990442956841280305, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
+  m_PrefabInstance: {fileID: 1666795500492928564}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5512207922717495167 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6583961713865013579, guid: 86f8f29b635d6fb47b44a4bd504ee614, type: 3}
