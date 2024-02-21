@@ -12,16 +12,26 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
     }
 
+    public enum SoundFrom {
+        None,
+        Player,
+        Monster,
+        Item
+    }
+
     private readonly string BASIC_PATH_OF_SFX = "Audios/SFX";
     private readonly string BASIC_PATH_OF_BGM = "Audios/BGM";
 
     private Dictionary<SoundType, AudioClip> clipResources = new Dictionary<SoundType, AudioClip>();
 
-    private List<SoundObject> soundObjectList = new List<SoundObject>();
-    private List<SoundObject> soundObjectPool = new List<SoundObject>();
+    private List<SoundObject> noneFromSoundObjectList = new List<SoundObject>();
+    private List<SoundObject> playerSoundObjectList = new List<SoundObject>();
+    private List<SoundObject> monsterSoundObjectList = new List<SoundObject>();
+    private List<SoundObject> itemSoundObjectList = new List<SoundObject>();
+    private List<SoundObject> soundObjectPool = new List<SoundObject>(); //Pool
 
-    public Action<SoundObject> OnWorldSoundAdded;
-    public Action OnWorldSoundRemoved;
+    public Action<SoundObject, SoundFrom> OnWorldSoundAdded;
+    public Action<SoundFrom> OnWorldSoundRemoved;
 
 
 
@@ -29,47 +39,99 @@ public class SoundManager : GenericSingleton<SoundManager> {
         base.Awake();
     }
 
-    bool soundObjectRemovedChecker;
     private void FixedUpdate() {
-        soundObjectRemovedChecker = false;
-        for(int i = 0; i < soundObjectList.Count; i++) {
-            if(!soundObjectList[i].Source.isPlaying) {
-                StartCoroutine(StopSoundObject(i)); 
-                i--;
+        if(noneFromSoundObjectList.Count > 0) {
+            bool listChanged = false;
+            for(int i = 0; i < noneFromSoundObjectList.Count; i++) {
+                if(!noneFromSoundObjectList[i].Source.isPlaying) {
+                    SoundObject so = noneFromSoundObjectList[i];
+                    noneFromSoundObjectList.RemoveAt(i);
 
-                soundObjectRemovedChecker = true;
+                    //so.Stop();
+                    //soundObjectPool.Add(so);
+                    StartCoroutine(StopAsync(so));
+
+                    i--;
+                    listChanged = true;
+                }
             }
+            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.None);
         }
+        if(playerSoundObjectList.Count > 0) {
+            bool listChanged = false;
+            for(int i = 0; i < playerSoundObjectList.Count; i++) {
+                if(!playerSoundObjectList[i].Source.isPlaying) {
+                    SoundObject so = playerSoundObjectList[i];
+                    playerSoundObjectList.RemoveAt(i);
 
-        if(soundObjectRemovedChecker) {
-            OnWorldSoundRemoved?.Invoke();
+                    //so.Stop();
+                    //soundObjectPool.Add(so);
+                    StartCoroutine(StopAsync(so));
+
+                    i--;
+                    listChanged = true;
+                }
+            }
+            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.Player);
+        }
+        if(monsterSoundObjectList.Count > 0) {
+            bool listChanged = false;
+            for(int i = 0; i < monsterSoundObjectList.Count; i++) {
+                if(!monsterSoundObjectList[i].Source.isPlaying) {
+                    SoundObject so = monsterSoundObjectList[i];
+                    monsterSoundObjectList.RemoveAt(i);
+
+                    //so.Stop();
+                    //soundObjectPool.Add(so);
+                    StartCoroutine(StopAsync(so));
+
+                    i--;
+                    listChanged = true;
+                }
+            }
+            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.Monster);
+        }
+        if(itemSoundObjectList.Count > 0) {
+            bool listChanged = false;
+            for(int i = 0; i < itemSoundObjectList.Count; i++) {
+                if(!itemSoundObjectList[i].Source.isPlaying) {
+                    SoundObject so = itemSoundObjectList[i];
+                    itemSoundObjectList.RemoveAt(i);
+
+                    //so.Stop();
+                    //soundObjectPool.Add(so);
+                    StartCoroutine(StopAsync(so));
+
+                    i--;
+                    listChanged = true;
+                }
+            }
+            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.Item);
         }
     }
 
-    /// <summary>
-    /// <br/> 사운드가 끝나자마자 Stop을 했을 때에 '지지직'하는 사운드가 끊기는 듯한 소리가 들리게 되므로
-    /// <br/> 한 프레임 텀을 줘서 Stop을 실행
-    /// </summary>
-    private IEnumerator StopSoundObject(int index) {
-        SoundObject so = soundObjectList[index];
-        soundObjectList.RemoveAt(index);
-
+    private IEnumerator StopAsync(SoundObject so) {
+        so.Stop();
         yield return null;
 
-        so.Stop();
         soundObjectPool.Add(so);
     }
 
     #region Utility
-    public void PlayOnWorld(Vector3 worldPos, SoundType type, float volumeOffset = 1.0f) {
+    public void PlayOnWorld(Vector3 worldPos, SoundType type, SoundFrom from, float volumeOffset = 1.0f) {
         SoundObject so = GetSoundObject(type);
         so.Position = worldPos;
         so.Volume = 1.0f * volumeOffset;
 
         so.Play();
-        soundObjectList.Add(so);
+        switch(from) {
+            case SoundFrom.None: noneFromSoundObjectList.Add(so); break;
+            case SoundFrom.Player: playerSoundObjectList.Add(so); break;
+            case SoundFrom.Monster: monsterSoundObjectList.Add(so); break;
+            case SoundFrom.Item: itemSoundObjectList.Add(so); break;
+        }
 
-        OnWorldSoundAdded?.Invoke(so);
+        OnWorldSoundAdded?.Invoke(so, from);
     }
 
     public AudioClip GetAudioClip(SoundType type) {
@@ -85,12 +147,18 @@ public class SoundManager : GenericSingleton<SoundManager> {
     }
 
     #region Material Property Util Func
-    public Vector4[] GetSoundObjectPosArray() {
+    public Vector4[] GetSoundObjectPosArray(SoundFrom from) {
         Vector4 vec3ToVec4(Vector3 v) => new Vector4(v.x, v.y, v.z);
-        return soundObjectList.Select(t => vec3ToVec4(t.Source.transform.position)).ToArray();
+        switch(from) {
+            case SoundFrom.None: return noneFromSoundObjectList.Select(t => vec3ToVec4(t.Position)).ToArray();
+            case SoundFrom.Player: return playerSoundObjectList.Select(t => vec3ToVec4(t.Position)).ToArray();
+            case SoundFrom.Monster: return monsterSoundObjectList.Select(t => vec3ToVec4(t.Position)).ToArray();
+            case SoundFrom.Item: return itemSoundObjectList.Select(t => vec3ToVec4(t.Position)).ToArray();
+            default: return new Vector4[0];
+        }
     }
 
-    public float[] GetSoundObjectRadiusArray(float spreadTime, float spreadLength) {
+    public float[] GetSoundObjectRadiusArray(SoundFrom from, float spreadTime, float spreadLength) {
         float calculateFunc(SoundObject so) {
             float radius = so.CurrentTime / spreadTime * spreadLength;
 
@@ -99,10 +167,16 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
             return radius * radiusOffset;
         }
-        return soundObjectList.Select(t => calculateFunc(t)).ToArray();
+        switch(from) {
+            case SoundFrom.None: return noneFromSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            case SoundFrom.Player: return playerSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            case SoundFrom.Monster: return monsterSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            case SoundFrom.Item: return itemSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            default: return new float[0];
+        }
     }
 
-    public float[] GetSoundObjectAlphaArray(float spreadTime, float spreadLength) {
+    public float[] GetSoundObjectAlphaArray(SoundFrom from, float spreadTime, float spreadLength) {
         const float minRatio = 0.3f;
         const float maxRatio = 1.0f;
         float calculateFunc(SoundObject so) {
@@ -119,8 +193,13 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
             return alpha * alphaOffset;
         }
-
-        return soundObjectList.Select(t => calculateFunc(t)).ToArray();
+        switch(from) {
+            case SoundFrom.None: return noneFromSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            case SoundFrom.Player: return playerSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            case SoundFrom.Monster: return monsterSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            case SoundFrom.Item: return itemSoundObjectList.Select(t => calculateFunc(t)).ToArray();
+            default: return new float[0];
+        }
     }
     #endregion
     #endregion
@@ -131,6 +210,14 @@ public class SoundManager : GenericSingleton<SoundManager> {
         if(soundObjectPool.Count > 0) {
             so = soundObjectPool[0];
             soundObjectPool.RemoveAt(0);
+
+            // Pool에 오브젝트가 하나도 없으면 임의로 하나를 생성해서 대기해 놓음
+            if(soundObjectPool.Count <= 0) {
+                SoundObject waitSO = new SoundObject();
+                waitSO.Source.gameObject.SetActive(false);
+
+                soundObjectPool.Add(waitSO);
+            }
         }
         else {
             so = new SoundObject();
@@ -159,23 +246,18 @@ public class SoundObject {
     public float Length { get { return Source.clip.length; } }
     public float NormalizedTime { get { return CurrentTime / Length; } }
 
-    private Vector3 position = Vector3.zero;
     public Vector3 Position {
-        get => position;
+        get => Source.transform.position;
         set {
             Source.transform.position = value;
-
-            position = value;
         }
     }
 
     private float volume = 1.0f;
     public float Volume {
-        get => volume;
+        get => Source.volume;
         set {
             Source.volume = value;
-
-            volume = value;
         }
     }
 

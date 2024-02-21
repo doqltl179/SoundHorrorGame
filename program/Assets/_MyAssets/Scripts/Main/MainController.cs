@@ -46,7 +46,8 @@ public class MainController : MonoBehaviour {
             if(Physics.Raycast(ray, out hit) && hit.transform.CompareTag(MazeBlock.TagName)) {
                 SoundManager.Instance.PlayOnWorld(
                     hit.point, 
-                    SoundManager.SoundType.MouseClick, 
+                    SoundManager.SoundType.MouseClick,
+                    SoundManager.SoundFrom.None,
                     Mathf.Clamp01(1.0f - hit.distance / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH));
             }
         }

@@ -70,7 +70,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:
-    - _RimArrayLength: 14
+    - _RimArrayLength: 4
+    - _RimArrayLength_Item: 0
+    - _RimArrayLength_Monster: 17
+    - _RimArrayLength_None: 0
+    - _RimArrayLength_Player: 2
     m_Floats:
     - _BumpScale: 1
     - _ColorStrengthMax: 1
@@ -99,4 +103,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_Item: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_Monster: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_None: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_Player: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

@@ -57,7 +57,17 @@ public class Honey : MonsterController, IMove {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     if(dist < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        SoundManager.Instance.PlayOnWorld(transform.position, SoundManager.SoundType.MouseClick);
+                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(
+                            Pos,
+                            UtilObjects.Instance.CamPos,
+                            Radius,
+                            1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+                        dist = LevelLoader.Instance.GetPathDistance(tempPath);
+                        SoundManager.Instance.PlayOnWorld(
+                            transform.position,
+                            SoundManager.SoundType.MouseClick,
+                            SoundManager.SoundFrom.Monster,
+                            1.0f - dist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
                     }
 
                     animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = normalizedTimeInteger;
@@ -117,7 +127,7 @@ public class Honey : MonsterController, IMove {
     #endregion
 
     #region Action
-    private void WorldSoundAdded(SoundObject so) {
+    private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
             case SoundManager.SoundType.MouseClick: {
 
@@ -126,7 +136,7 @@ public class Honey : MonsterController, IMove {
         }
     }
 
-    private void WorldSoundRemoved() {
+    private void WorldSoundRemoved(SoundManager.SoundFrom from) {
 
     }
 
@@ -140,7 +150,8 @@ public class Honey : MonsterController, IMove {
                     if(movePath == null || movePath.Count <= 0) {
                         movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
                             Pos, 
-                            Radius, 
+                            Radius,
+                            1 << LayerMask.NameToLayer(MazeBlock.WallLayerName), 
                             false, 
                             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
                     }

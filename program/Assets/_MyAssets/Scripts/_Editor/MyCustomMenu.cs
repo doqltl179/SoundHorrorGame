@@ -11,9 +11,12 @@ public class MyCustomMenu : MonoBehaviour
     private const string MenuName = "My Custom Menu";
 
     private const string SymbolsMenuName = MenuName + "/Symbols";
+    private const string FuncsMenuName = MenuName + "/Funcs";
 
     private const string SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock = SymbolsMenuName + "/Use Two Materials On MazeBlock";
     private const string SymbolsMenuItemName_PlayGameAutomatically = SymbolsMenuName + "/Play Game Automatically";
+    private const string FuncsMenuItemName_ResetAllSymbols = FuncsMenuName + "/Reset All Symbols";
+    private const string FuncsMenuItemName_ApplyAllSymbols = FuncsMenuName + "/Apply All Symbols";
 
     private static string def_UNITY_POST_PROCESSING_STACK_V2 = "UNITY_POST_PROCESSING_STACK_V2";
     private static string def_Use_Two_Materials_On_MazeBlock = "Use_Two_Materials_On_MazeBlock";
@@ -30,21 +33,50 @@ public class MyCustomMenu : MonoBehaviour
         if(defines != null) {
             foreach(string d in defines) {
                 if(d == def_Use_Two_Materials_On_MazeBlock) {
-                    SetDefine(
-                        def_Use_Two_Materials_On_MazeBlock,
-                        SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock,
-                        ref useTwoMaterialsOnMazeBlock,
-                        true);
+                    useTwoMaterialsOnMazeBlock = true;
                 }
                 else if(d == def_Play_Game_Automatically) {
-                    SetDefine(
-                        def_Play_Game_Automatically,
-                        SymbolsMenuItemName_PlayGameAutomatically,
-                        ref playGameAutomatically,
-                        true);
+                    playGameAutomatically = true;
                 }
             }
         }
+
+        Menu.SetChecked(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock, useTwoMaterialsOnMazeBlock);
+        Menu.SetChecked(SymbolsMenuItemName_PlayGameAutomatically, playGameAutomatically);
+    }
+
+    [MenuItem(FuncsMenuItemName_ApplyAllSymbols)]
+    private static void ApplyAllSymbols() {
+        string[] defines;
+        PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, out defines);
+
+        SetDefine(
+            def_Use_Two_Materials_On_MazeBlock,
+            SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock,
+            ref useTwoMaterialsOnMazeBlock,
+            true);
+        SetDefine(
+            def_Play_Game_Automatically,
+            SymbolsMenuItemName_PlayGameAutomatically,
+            ref playGameAutomatically,
+            true);
+    }
+
+    [MenuItem(FuncsMenuItemName_ResetAllSymbols)]
+    private static void ResetAllSymbols() {
+        string[] defines;
+        PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, out defines);
+
+        SetDefine(
+            def_Use_Two_Materials_On_MazeBlock,
+            SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock,
+            ref useTwoMaterialsOnMazeBlock,
+            false);
+        SetDefine(
+            def_Play_Game_Automatically,
+            SymbolsMenuItemName_PlayGameAutomatically,
+            ref playGameAutomatically,
+            false);
     }
 
     [MenuItem(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock)]
@@ -80,18 +112,16 @@ public class MyCustomMenu : MonoBehaviour
                 Array.Copy(defines, 0, newDefines, 0, defines.Length);
                 newDefines[newDefines.Length - 1] = def;
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, newDefines);
-
-                Menu.SetChecked(menuPath, property);
             }
         }
         else {
             if(isExist) {
                 string[] newDefines = defines.Where(t => t != def).ToArray();
                 PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, newDefines);
-
-                Menu.SetChecked(menuPath, property);
             }
         }
+
+        Menu.SetChecked(menuPath, property);
     }
 }
 #endif

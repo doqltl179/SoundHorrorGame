@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: 525a83a29f0d23f41b9df18948ebb4ad, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - USE_BASE_COLOR
   m_InvalidKeywords:
   - DrawOutline
   - USE_DrawOutline
@@ -46,7 +47,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 6bcf9f9a4e8582a4e87e75bfb17117b4, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -54,15 +55,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicMap:
-        m_Texture: {fileID: 2800000, guid: 9dd9646cfd1e1974cb24282fab2608be, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: c452b51d4deaa4c4bb2d378ef8f2a45a, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
-        m_Texture: {fileID: 2800000, guid: a319dc58e2580e14b960360559d82094, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
@@ -71,6 +72,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints:
     - _RimArrayLength: 50
+    - _RimArrayLength_Item: 0
+    - _RimArrayLength_Monster: 0
+    - _RimArrayLength_None: 0
+    - _RimArrayLength_Player: 0
     m_Floats:
     - _Amount: 0.5
     - _BumpScale: 1
@@ -84,6 +89,7 @@ Material:
     - _GlossyReflections: 1
     - _Highlight: 0
     - _Metallic: 0
+    - _MetallicStrength: 1
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Outline: 0.1
@@ -95,6 +101,7 @@ Material:
     - _SrcBlend: 1
     - _Thickness: 1
     - _UVSec: 0
+    - _UseBaseColor: 1
     - _ZTest: 1
     - _ZWrite: 1
     - _scale: 1
@@ -106,4 +113,8 @@ Material:
     - _MainColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_Item: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_Monster: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_None: {r: 1, g: 1, b: 1, a: 1}
+    - _RimColor_Player: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

@@ -20,6 +20,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private Dictionary<MonsterType, GameObject> monsterResources = new Dictionary<MonsterType, GameObject>();
 
     private List<MonsterController> monsters = new List<MonsterController>();
+    public List<MonsterController> Monsters { get { return monsters; } }
 
     public int MonsterCount { get { return monsters.Count; } }
     #endregion
@@ -36,20 +37,52 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 #if Use_Two_Materials_On_MazeBlock
     private Material blockWallMaterial = null;
 #endif
+
     private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
+    private const string MAT_RIM_COLOR_NAME = "_RimColor";
     private const string MAT_RIM_ARRAY_LENGTH_NAME = "_RimArrayLength";
     private const string MAT_RIM_POSITION_ARRAY_NAME = "_RimPosArray";
     private const string MAT_RIM_RADIUS_ARRAY_NAME = "_RimRadiusArray";
-    //private const string MAT_RIM_THICKNESS_ARRAY_NAME = "_RimThicknessArray";
     private const string MAT_RIM_ALPHA_ARRAY_NAME = "_RimAlphaArray";
 
     private static readonly int LIST_MAX_LENGTH = 256;
-    private Vector4[] rimPosArray = new Vector4[LIST_MAX_LENGTH];
-    private float[] rimRadiusArray = new float[LIST_MAX_LENGTH];
-    //private float[] rimThicknessArray = new float[LIST_MAX_LENGTH];
-    private float[] rimAlphaArray = new float[LIST_MAX_LENGTH];
 
-    public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 10.0f;
+    private MaterialPropertiesGroup[] materialPropertiesGroups = new MaterialPropertiesGroup[] {
+        new MaterialPropertiesGroup(
+            SoundManager.SoundFrom.None,
+            MAT_RIM_COLOR_NAME + "_None",
+            MAT_RIM_ARRAY_LENGTH_NAME + "_None",
+            MAT_RIM_POSITION_ARRAY_NAME + "_None",
+            MAT_RIM_RADIUS_ARRAY_NAME + "_None",
+            MAT_RIM_ALPHA_ARRAY_NAME + "_None",
+            Color.white),
+        new MaterialPropertiesGroup(
+            SoundManager.SoundFrom.Player,
+            MAT_RIM_COLOR_NAME + "_Player",
+            MAT_RIM_ARRAY_LENGTH_NAME + "_Player",
+            MAT_RIM_POSITION_ARRAY_NAME + "_Player",
+            MAT_RIM_RADIUS_ARRAY_NAME + "_Player",
+            MAT_RIM_ALPHA_ARRAY_NAME + "_Player",
+            Color.white),
+        new MaterialPropertiesGroup(
+            SoundManager.SoundFrom.Monster,
+            MAT_RIM_COLOR_NAME + "_Monster",
+            MAT_RIM_ARRAY_LENGTH_NAME + "_Monster",
+            MAT_RIM_POSITION_ARRAY_NAME + "_Monster",
+            MAT_RIM_RADIUS_ARRAY_NAME + "_Monster",
+            MAT_RIM_ALPHA_ARRAY_NAME + "_Monster",
+            Color.red),
+        new MaterialPropertiesGroup(
+            SoundManager.SoundFrom.Item,
+            MAT_RIM_COLOR_NAME + "_Item",
+            MAT_RIM_ARRAY_LENGTH_NAME + "_Item",
+            MAT_RIM_POSITION_ARRAY_NAME + "_Item",
+            MAT_RIM_RADIUS_ARRAY_NAME + "_Item",
+            MAT_RIM_ALPHA_ARRAY_NAME + "_Item",
+            Color.green)
+    };
+
+    public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 5.0f;
     // SpreadTime 동안 MazeBlock을 10칸 이동하기 위해 10을 곱함
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 10;
     #endregion
@@ -77,47 +110,17 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
 
-#if Play_Game_Automatically
-    int watchIndex = 0;
-#endif
     private void Update() {
-        float[] currentRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(STANDARD_RIM_RADIUS_SPREAD_TIME, STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-        float[] currentRimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(STANDARD_RIM_RADIUS_SPREAD_TIME, STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-
-        Array.Copy(currentRimRadiusArray, 0, rimRadiusArray, 0, currentRimRadiusArray.Length);
-        Array.Copy(currentRimAlphaArray, 0, rimAlphaArray, 0, currentRimAlphaArray.Length);
-
-        blockFloorMaterial.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
-        blockFloorMaterial.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
+        foreach(MaterialPropertiesGroup group in materialPropertiesGroups) { 
+            group.SetUpdateProperties(blockFloorMaterial);
 #if Use_Two_Materials_On_MazeBlock
-        blockWallMaterial.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
-        blockWallMaterial.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
+            group.SetUpdateProperties(blockWallMaterial);
 #endif
 
-        foreach(MonsterController mc in monsters) {
-            mc.Material.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, rimRadiusArray);
-            mc.Material.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, rimAlphaArray);
+            foreach(MonsterController mc in monsters) {
+                group.SetUpdateProperties(mc.Material);
+            }
         }
-
-#if Play_Game_Automatically
-        if(Input.GetKeyDown(KeyCode.Alpha1)) watchIndex = 1;
-        else if(Input.GetKeyDown(KeyCode.Alpha2)) watchIndex = 2;
-        else if(Input.GetKeyDown(KeyCode.Alpha3)) watchIndex = 3;
-        else if(Input.GetKeyDown(KeyCode.Alpha4)) watchIndex = 4;
-        else if(Input.GetKeyDown(KeyCode.Alpha5)) watchIndex = 5;
-        else if(Input.GetKeyDown(KeyCode.Alpha6)) watchIndex = 6;
-        else if(Input.GetKeyDown(KeyCode.Alpha7)) watchIndex = 7;
-        else if(Input.GetKeyDown(KeyCode.Alpha8)) watchIndex = 8;
-        else if(Input.GetKeyDown(KeyCode.Alpha9)) watchIndex = 9;
-        else if(Input.GetKeyDown(KeyCode.Alpha0)) watchIndex = 0;
-
-        if(watchIndex > 0) {
-            Vector3 camPos = monsters[watchIndex].HeadPos + monsters[watchIndex].HeadForward * MazeBlock.BlockSize;
-            Vector3 camForward = (monsters[watchIndex].HeadPos - camPos).normalized;
-            UtilObjects.Instance.CamPos = Vector3.Lerp(UtilObjects.Instance.CamPos, camPos, Time.deltaTime);
-            UtilObjects.Instance.CamForward = Vector3.Lerp(UtilObjects.Instance.CamForward, camForward, Time.deltaTime);
-        }
-#endif
     }
 
     #region Utility
@@ -153,15 +156,21 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         if(blockFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
-            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.25f);
+            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
+                mat.SetVector(group.MAT_RIM_COLOR_NAME, group.RimColor);
+            }
 
             blockFloorMaterial = mat;
         }
 #if Use_Two_Materials_On_MazeBlock
         if(blockWallMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
-            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.25f);
+            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mat.SetColor("_BaseColor", Color.red);
+            foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
+                mat.SetVector(group.MAT_RIM_COLOR_NAME, group.RimColor);
+            }
 
             blockWallMaterial = mat;
         }
@@ -216,28 +225,16 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     RaycastHit tempPathHit;
-    public List<Vector3> GetPath(Vector3 startPos, Vector3 endPos, float rayRadius) {
-        Vector3 p1 = startPos;
-        Vector3 p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //임의로 player의 높이를 적용
-        Vector3 direction = (endPos - startPos).normalized;
-        // 벽과 플레이어만 감지하도록 설정
-        int mask = (1 << LayerMask.NameToLayer(PlayerController.LayerName)) | 
-            (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
-        if(Physics.CapsuleCast(p1, p2, rayRadius, direction, out tempPathHit, float.MaxValue, mask) && 
-            tempPathHit.collider.CompareTag(PlayerController.TagName)) {
-            Debug.Log("Can move on straight line to player.");
-
-            return new List<Vector3>() {
-                startPos,
-                tempPathHit.collider.transform.position
-            };
-        }
-
-        /* --------------------------------------------------- */
-
+    public List<Vector3> GetPath(Vector3 startPos, Vector3 endPos, float rayRadius, int mask) {
         Vector2Int startCoord = GetMazeCoordinate(startPos);
         Vector2Int endCoord = GetMazeCoordinate(endPos);
         Debug.Log(string.Format("startPos: {0}, endPos: {1}, startCoord: {2}, endCoord: {3}", startPos, endPos, startCoord, endCoord));
+        if(IsSameVec2Int(startCoord, endCoord)) {
+            return new List<Vector3>() {
+                startPos,
+                endPos
+            };
+        }
 
         List<PathHelper> pastCoordList = new List<PathHelper>();
         List<PathHelper> checkCoordList = new List<PathHelper>();
@@ -367,6 +364,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         pathList.Add(endPos); //마지막 위치 설정
 
         // 심층 단순화
+        Vector3 p1;
+        Vector3 p2;
+        Vector3 direction;
         if(pathList.Count > 2) {
             Vector3 tempPast;
             Vector3 tempNext;
@@ -411,10 +411,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     /// <br/> overDistance == true : currentPos를 기준으로 distance 보다 먼 좌표의 경로 반환
     /// <br/> overDistance == false : currentPos를 기준으로 distance 보다 가까운 좌표의 경로 반환
     /// </summary>
-    public List<Vector3> GetRandomPointPathCompareDistance(Vector3 currentPos, float rayRadius, bool overDistance, float distance) {
+    public List<Vector3> GetRandomPointPathCompareDistance(Vector3 currentPos, float rayRadius, int mask, bool overDistance, float distance) {
         Vector2Int endpoint = overDistance ? GetRandomCoordOverDistance(currentPos, distance) : GetRandomCoordNearbyDistance(currentPos, distance);
 
-        return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
+        return GetPath(currentPos, GetBlockPos(endpoint), rayRadius, mask);
     }
 
     /// <summary>
@@ -474,37 +474,33 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     #endregion
 
     #region Action
-    private void OnWorldSoundAdded(SoundObject so) {
-        Vector4[] currentRimPosList = SoundManager.Instance.GetSoundObjectPosArray();
-        Array.Copy(currentRimPosList, 0, rimPosArray, 0, currentRimPosList.Length);
+    private void OnWorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
+        foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
+            group.UpdateArrayLength();
 
-        blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-        blockFloorMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+            group.SetPosArray(blockFloorMaterial);
 #if Use_Two_Materials_On_MazeBlock
-        blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-        blockWallMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+            group.SetPosArray(blockWallMaterial);
 #endif
 
-        foreach(MonsterController mc in monsters) {
-            mc.Material.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-            mc.Material.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+            foreach(MonsterController mc in monsters) {
+                group.SetPosArray(mc.Material);
+            }
         }
     }
 
-    private void OnWorldSoundRemoved() {
-        Vector4[] currentRimPosList = SoundManager.Instance.GetSoundObjectPosArray();
-        Array.Copy(currentRimPosList, 0, rimPosArray, 0, currentRimPosList.Length);
+    private void OnWorldSoundRemoved(SoundManager.SoundFrom from) {
+        foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
+            group.UpdateArrayLength();
 
-        blockFloorMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-        blockFloorMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+            group.SetPosArray(blockFloorMaterial);
 #if Use_Two_Materials_On_MazeBlock
-        blockWallMaterial.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-        blockWallMaterial.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+            group.SetPosArray(blockWallMaterial);
 #endif
 
-        foreach(MonsterController mc in monsters) {
-            mc.Material.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimPosList.Length);
-            mc.Material.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, rimPosArray);
+            foreach(MonsterController mc in monsters) {
+                group.SetPosArray(mc.Material);
+            }
         }
     }
     #endregion
@@ -606,6 +602,77 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return index;
     }
     #endregion
+
+    private class MaterialPropertiesGroup {
+        public SoundManager.SoundFrom From;
+
+        public string MAT_RIM_COLOR_NAME;
+        public string MAT_RIM_ARRAY_LENGTH_NAME;
+        public string MAT_RIM_POSITION_ARRAY_NAME;
+        public string MAT_RIM_RADIUS_ARRAY_NAME;
+        public string MAT_RIM_ALPHA_ARRAY_NAME;
+
+        public Vector4[] RimPosArray = new Vector4[LIST_MAX_LENGTH];
+        public float[] RimRadiusArray = new float[LIST_MAX_LENGTH];
+        public float[] RimAlphaArray = new float[LIST_MAX_LENGTH];
+
+        public Color RimColor;
+
+        private int currentRimArrayLength = LIST_MAX_LENGTH;
+
+        public MaterialPropertiesGroup(
+            SoundManager.SoundFrom from,
+            string rimColorName,
+            string rimArrayLengthName,
+            string rimPositionArrayName,
+            string rimRadiusArrayName,
+            string rimAlphaArrayName,
+            Color rimColor) {
+            From = from;
+            MAT_RIM_COLOR_NAME = rimColorName;
+            MAT_RIM_ARRAY_LENGTH_NAME = rimArrayLengthName;
+            MAT_RIM_POSITION_ARRAY_NAME = rimPositionArrayName;
+            MAT_RIM_RADIUS_ARRAY_NAME = rimRadiusArrayName;
+            MAT_RIM_ALPHA_ARRAY_NAME = rimAlphaArrayName;
+            RimColor = rimColor;
+        }
+
+        #region Utility
+        public bool UpdateArrayLength() {
+            Vector4[] rimPosArray = SoundManager.Instance.GetSoundObjectPosArray(From);
+            if(rimPosArray.Length != currentRimArrayLength) {
+                Array.Copy(rimPosArray, 0, RimPosArray, 0, rimPosArray.Length);
+                currentRimArrayLength = rimPosArray.Length;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void SetPosArray(Material mat) {
+            mat.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimArrayLength);
+            mat.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, RimPosArray);
+        }
+
+        // 매 프레임마다 업데이트 해야하는 properties
+        public void SetUpdateProperties(Material mat) {
+            float[] rimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
+                From,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+            Array.Copy(rimRadiusArray, 0, RimRadiusArray, 0, rimRadiusArray.Length);
+            mat.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, RimRadiusArray);
+
+            float[] rimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
+                From,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+            Array.Copy(rimAlphaArray, 0, RimAlphaArray, 0, rimAlphaArray.Length);
+            mat.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, RimAlphaArray);
+        }
+        #endregion
+    }
 
     private class PathHelper {
         public int ParentIndex { get; private set; }
