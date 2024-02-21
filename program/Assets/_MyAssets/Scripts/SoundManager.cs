@@ -8,7 +8,8 @@ using UnityEngine;
 public class SoundManager : GenericSingleton<SoundManager> {
     public enum SoundType {
         MouseClick, //'Main'에서만 사용됨
-
+        Walk01,
+        Walk02, 
 
     }
 
@@ -230,7 +231,9 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
     private string GetSoundPath(SoundType type) {
         switch(type) {
-            case SoundType.MouseClick: 
+            case SoundType.MouseClick:
+            case SoundType.Walk01:
+            case SoundType.Walk02:
                 return Path.Combine(BASIC_PATH_OF_SFX, type.ToString());
 
             default: 

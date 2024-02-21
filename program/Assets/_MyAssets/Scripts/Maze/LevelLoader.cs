@@ -37,17 +37,17 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 #if Use_Two_Materials_On_MazeBlock
     private Material blockWallMaterial = null;
 #endif
+    private static readonly int LIST_MAX_LENGTH = 256;
 
+    #region Material Rim Properties
+    // Rim property는 SoundObject를 활용하여 계산하고 있기 때문에 SoundManager에 의존하고 있음
     private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
     private const string MAT_RIM_COLOR_NAME = "_RimColor";
     private const string MAT_RIM_ARRAY_LENGTH_NAME = "_RimArrayLength";
     private const string MAT_RIM_POSITION_ARRAY_NAME = "_RimPosArray";
     private const string MAT_RIM_RADIUS_ARRAY_NAME = "_RimRadiusArray";
     private const string MAT_RIM_ALPHA_ARRAY_NAME = "_RimAlphaArray";
-
-    private static readonly int LIST_MAX_LENGTH = 256;
-
-    private MaterialPropertiesGroup[] materialPropertiesGroups = new MaterialPropertiesGroup[] {
+    private MaterialPropertiesGroup[] rimMaterialPropertiesGroups = new MaterialPropertiesGroup[] {
         new MaterialPropertiesGroup(
             SoundManager.SoundFrom.None,
             MAT_RIM_COLOR_NAME + "_None",
@@ -81,6 +81,26 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             MAT_RIM_ALPHA_ARRAY_NAME + "_Item",
             Color.green)
     };
+    #endregion
+
+    #region Material Player Properties
+    // Player past pos property는 SoundObject를 활용하지 않기 때문에 LevelLoader에서 직접 계산함
+    private const string MAT_PLAYER_PAST_POSITION_COLOR_NAME = "_PlayerPastPosColor";
+    private const string MAT_PLAYER_PAST_POSITION_ARRAY_LENGTH_NAME = "_PlayerPastPosArrayLength";
+    private const string MAT_PLAYER_PAST_POSITION_ARRAY_NAME = "_PlayerPastPosArray";
+    private const string MAT_PLAYER_PAST_POSITION_ALPHA_ARRAY_NAME = "_PlayerPastPosAlphaArray";
+    private MaterialPropertiesGroup playerMaterialPropertiesGroup = new MaterialPropertiesGroup(
+        SoundManager.SoundFrom.None, //None을 적용했지만 SoundObject를 사용하지는 않음
+        MAT_PLAYER_PAST_POSITION_COLOR_NAME, 
+        MAT_PLAYER_PAST_POSITION_ARRAY_LENGTH_NAME, 
+        MAT_PLAYER_PAST_POSITION_ARRAY_NAME, 
+        string.Empty, 
+        MAT_PLAYER_PAST_POSITION_ALPHA_ARRAY_NAME, 
+        Color.white
+    );
+
+    private const string MAT_PLAYER_PAST_POSITION_RADIUS_NAME = "_PlayerPastPosRadius";
+    #endregion
 
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 5.0f;
     // SpreadTime 동안 MazeBlock을 10칸 이동하기 위해 10을 곱함
@@ -111,15 +131,34 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     private void Update() {
-        foreach(MaterialPropertiesGroup group in materialPropertiesGroups) { 
-            group.SetUpdateProperties(blockFloorMaterial);
+        foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
+            if(group.CurrentArrayLength > 0) {
+                group.SetUpdateRadiusArray(blockFloorMaterial);
+                group.SetUpdateAlphaArray(blockFloorMaterial);
 #if Use_Two_Materials_On_MazeBlock
-            group.SetUpdateProperties(blockWallMaterial);
+                group.SetUpdateRadiusArray(blockWallMaterial);
+                group.SetUpdateAlphaArray(blockWallMaterial);
 #endif
 
-            foreach(MonsterController mc in monsters) {
-                group.SetUpdateProperties(mc.Material);
+                foreach(MonsterController mc in monsters) {
+                    group.SetUpdateRadiusArray(mc.Material);
+                    group.SetUpdateAlphaArray(mc.Material);
+                }
             }
+        }
+
+        if(playerMaterialPropertiesGroup.CurrentArrayLength > 0) {
+            // Material의 Player Property는 MazeBlock 오브젝트에만 추가함
+            playerMaterialPropertiesGroup.SetUpdateAlphaArray(
+                blockFloorMaterial,
+                Time.deltaTime,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH * 0.5f); //임의의 길이 설정
+#if Use_Two_Materials_On_MazeBlock
+            playerMaterialPropertiesGroup.SetUpdateAlphaArray(
+                blockWallMaterial,
+                Time.deltaTime,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //임의의 길이 설정
+#endif
         }
     }
 
@@ -156,21 +195,27 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         if(blockFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
+
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
-            foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
-                mat.SetVector(group.MAT_RIM_COLOR_NAME, group.RimColor);
+            foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
+                mat.SetVector(group.MAT_COLOR_NAME, group.Color);
             }
+
+            mat.SetFloat(MAT_PLAYER_PAST_POSITION_RADIUS_NAME, 0.15f);
 
             blockFloorMaterial = mat;
         }
 #if Use_Two_Materials_On_MazeBlock
         if(blockWallMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
+
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mat.SetColor("_BaseColor", Color.red);
-            foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
-                mat.SetVector(group.MAT_RIM_COLOR_NAME, group.RimColor);
+            foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
+                mat.SetVector(group.MAT_COLOR_NAME, group.Color);
             }
+
+            mat.SetFloat(MAT_PLAYER_PAST_POSITION_RADIUS_NAME, 0.15f);
 
             blockWallMaterial = mat;
         }
@@ -471,11 +516,19 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mc.Stop();
         }
     }
+
+    public void AddPlayerPosInMaterialProperty(Vector3 pos) {
+        playerMaterialPropertiesGroup.AddPos(new Vector4(pos.x, pos.y, pos.z));
+        playerMaterialPropertiesGroup.SetPosArray(blockFloorMaterial);
+#if Use_Two_Materials_On_MazeBlock
+        playerMaterialPropertiesGroup.SetPosArray(blockWallMaterial);
+#endif
+    }
     #endregion
 
     #region Action
     private void OnWorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
-        foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
+        foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
             group.UpdateArrayLength();
 
             group.SetPosArray(blockFloorMaterial);
@@ -490,7 +543,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     private void OnWorldSoundRemoved(SoundManager.SoundFrom from) {
-        foreach(MaterialPropertiesGroup group in materialPropertiesGroups) {
+        foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
             group.UpdateArrayLength();
 
             group.SetPosArray(blockFloorMaterial);
@@ -606,43 +659,111 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private class MaterialPropertiesGroup {
         public SoundManager.SoundFrom From;
 
-        public string MAT_RIM_COLOR_NAME;
-        public string MAT_RIM_ARRAY_LENGTH_NAME;
-        public string MAT_RIM_POSITION_ARRAY_NAME;
-        public string MAT_RIM_RADIUS_ARRAY_NAME;
-        public string MAT_RIM_ALPHA_ARRAY_NAME;
+        public string MAT_COLOR_NAME { get; private set; }
+        public string MAT_ARRAY_LENGTH_NAME { get; private set; }
+        public string MAT_POSITION_ARRAY_NAME { get; private set; }
+        public string MAT_RADIUS_ARRAY_NAME { get; private set; }
+        public string MAT_ALPHA_ARRAY_NAME { get; private set; }
 
-        public Vector4[] RimPosArray = new Vector4[LIST_MAX_LENGTH];
-        public float[] RimRadiusArray = new float[LIST_MAX_LENGTH];
-        public float[] RimAlphaArray = new float[LIST_MAX_LENGTH];
+        public Vector4[] PosArray { get; private set; } = new Vector4[LIST_MAX_LENGTH];
+        // Player Alpha를 계산하기 위해 tempArray로 사용됨
+        public float[] RadiusArray { get; private set; } = new float[LIST_MAX_LENGTH];
+        public float[] AlphaArray { get; private set; } = new float[LIST_MAX_LENGTH];
 
-        public Color RimColor;
+        public Color Color;
 
-        private int currentRimArrayLength = LIST_MAX_LENGTH;
+        public int CurrentArrayLength { get; private set; } = 0;
 
         public MaterialPropertiesGroup(
             SoundManager.SoundFrom from,
-            string rimColorName,
-            string rimArrayLengthName,
-            string rimPositionArrayName,
-            string rimRadiusArrayName,
-            string rimAlphaArrayName,
-            Color rimColor) {
+            string colorName,
+            string arrayLengthName,
+            string positionArrayName,
+            string radiusArrayName,
+            string alphaArrayName,
+            Color color) {
             From = from;
-            MAT_RIM_COLOR_NAME = rimColorName;
-            MAT_RIM_ARRAY_LENGTH_NAME = rimArrayLengthName;
-            MAT_RIM_POSITION_ARRAY_NAME = rimPositionArrayName;
-            MAT_RIM_RADIUS_ARRAY_NAME = rimRadiusArrayName;
-            MAT_RIM_ALPHA_ARRAY_NAME = rimAlphaArrayName;
-            RimColor = rimColor;
+            MAT_COLOR_NAME = colorName;
+            MAT_ARRAY_LENGTH_NAME = arrayLengthName;
+            MAT_POSITION_ARRAY_NAME = positionArrayName;
+            MAT_RADIUS_ARRAY_NAME = radiusArrayName;
+            MAT_ALPHA_ARRAY_NAME = alphaArrayName;
+            Color = color;
         }
 
         #region Utility
+        #region Player Property Update Func
+        /// <summary>
+        /// Array의 마지막 index에 추가됨
+        /// </summary>
+        public void AddPos(Vector4 pos) {
+            if(CurrentArrayLength >= PosArray.Length) {
+                int removeCount = PosArray.Length - CurrentArrayLength + 1;
+                RemovePos(removeCount);
+            }
+
+            PosArray[CurrentArrayLength] = pos;
+            CurrentArrayLength++;
+        }
+
+        /// <summary>
+        /// Array의 첫 index(0)이 제거됨
+        /// </summary>
+        public void RemovePos(int removeCount = 1) {
+            if(removeCount < 1) {
+                Debug.LogWarning($"removeCount not enough. removeCount: {removeCount}");
+
+                return;
+            }
+
+            Vector4[] newPosArray = new Vector4[PosArray.Length];
+            Array.Copy(PosArray, removeCount, newPosArray, 0, PosArray.Length - removeCount);
+            PosArray = newPosArray;
+
+            // tempArray로 사용하기 위해 같이 update
+            float[] newRadiusArray = new float[RadiusArray.Length];
+            Array.Copy(RadiusArray, removeCount, newRadiusArray, 0, RadiusArray.Length - removeCount);
+            RadiusArray = newRadiusArray;
+
+            float[] newAlphaArray = new float[AlphaArray.Length];
+            Array.Copy(AlphaArray, removeCount, newAlphaArray, 0, AlphaArray.Length - removeCount);
+            AlphaArray = newAlphaArray;
+
+            CurrentArrayLength -= removeCount;
+        }
+
+        public void SetUpdateAlphaArray(Material mat, float addValue, float max) {
+            // Array는 새로운 값이 추가될 때에 맨 뒤 쪽에 추가되기 때문에 상시 내림차순 정렬이 된 것과 같음
+            // tempRadius > max 조건이 확인되는 인덱스(i)를 확인하고 i 보다 작거나 같은 index를 모두 제거
+            int i = CurrentArrayLength - 1;
+            for(; i >= 0; i--) {
+                float newRadius = RadiusArray[i] + addValue;
+                if(newRadius > max) {
+                    break;
+                }
+
+                AlphaArray[i] = 1.0f - Mathf.InverseLerp(0.9f, 1.0f, Mathf.Abs(newRadius / max - 0.5f) * 2.0f);
+
+                RadiusArray[i] = newRadius;
+            }
+
+            // for문이 break 없이 끝났다면 i는 -1이 되어 있음
+            if(i >= 0) {
+                RemovePos(i + 1);
+
+                SetPosArray(mat);
+            }
+
+            mat.SetFloatArray(MAT_ALPHA_ARRAY_NAME, AlphaArray);
+        }
+        #endregion
+
+        #region Rim Property Update Func
         public bool UpdateArrayLength() {
             Vector4[] rimPosArray = SoundManager.Instance.GetSoundObjectPosArray(From);
-            if(rimPosArray.Length != currentRimArrayLength) {
-                Array.Copy(rimPosArray, 0, RimPosArray, 0, rimPosArray.Length);
-                currentRimArrayLength = rimPosArray.Length;
+            if(rimPosArray.Length != CurrentArrayLength) {
+                Array.Copy(rimPosArray, 0, PosArray, 0, rimPosArray.Length);
+                CurrentArrayLength = rimPosArray.Length;
 
                 return true;
             }
@@ -650,26 +771,31 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             return false;
         }
 
-        public void SetPosArray(Material mat) {
-            mat.SetInteger(MAT_RIM_ARRAY_LENGTH_NAME, currentRimArrayLength);
-            mat.SetVectorArray(MAT_RIM_POSITION_ARRAY_NAME, RimPosArray);
-        }
-
         // 매 프레임마다 업데이트 해야하는 properties
-        public void SetUpdateProperties(Material mat) {
+        public void SetUpdateRadiusArray(Material mat) {
             float[] rimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
                 From,
                 STANDARD_RIM_RADIUS_SPREAD_TIME,
                 STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-            Array.Copy(rimRadiusArray, 0, RimRadiusArray, 0, rimRadiusArray.Length);
-            mat.SetFloatArray(MAT_RIM_RADIUS_ARRAY_NAME, RimRadiusArray);
+            Array.Copy(rimRadiusArray, 0, RadiusArray, 0, rimRadiusArray.Length);
+            mat.SetFloatArray(MAT_RADIUS_ARRAY_NAME, RadiusArray);
+        }
 
+        // 매 프레임마다 업데이트 해야하는 properties
+        public void SetUpdateAlphaArray(Material mat) {
             float[] rimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
                 From,
                 STANDARD_RIM_RADIUS_SPREAD_TIME,
                 STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-            Array.Copy(rimAlphaArray, 0, RimAlphaArray, 0, rimAlphaArray.Length);
-            mat.SetFloatArray(MAT_RIM_ALPHA_ARRAY_NAME, RimAlphaArray);
+            Array.Copy(rimAlphaArray, 0, AlphaArray, 0, rimAlphaArray.Length);
+            mat.SetFloatArray(MAT_ALPHA_ARRAY_NAME, AlphaArray);
+        }
+        #endregion
+
+        // Rim과 Player에 모두 사용됨
+        public void SetPosArray(Material mat) {
+            mat.SetInteger(MAT_ARRAY_LENGTH_NAME, CurrentArrayLength);
+            mat.SetVectorArray(MAT_POSITION_ARRAY_NAME, PosArray);
         }
         #endregion
     }

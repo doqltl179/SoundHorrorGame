@@ -40,8 +40,13 @@ public class PlayerController : MonoBehaviour {
 
     public Vector3 HeadForward { get { return transform.forward; } }
 
-    public bool IsDash { get; private set; }
-    public bool IsCrouch { get; private set; }
+    public enum PlayerState {
+        None, 
+        Walk, 
+        Run, 
+        Crouch, 
+    }
+    public PlayerState CurrentState { get; private set; }
 
     private KeyCode key_moveF = KeyCode.W;
     private KeyCode key_moveB = KeyCode.S;
@@ -98,6 +103,8 @@ public class PlayerController : MonoBehaviour {
                 1 << LayerMask.NameToLayer(MazeBlock.WallLayerName), 
                 false,
                 LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
+
+            CurrentState = PlayerState.Walk;
         }
 
         stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f); 
@@ -132,13 +139,32 @@ public class PlayerController : MonoBehaviour {
 
         transform.Translate(moveDirection * Time.deltaTime * moveSpeed, Space.Self);
 #endif
-        if(IsCrouch) walkSoundIntervalChecker += Time.deltaTime * (crouchSpeed / moveSpeed);
-        else if(IsDash) walkSoundIntervalChecker += Time.deltaTime * (dashSpeed / moveSpeed);
-        else walkSoundIntervalChecker += Time.deltaTime;
+    }
+
+    private void LateUpdate() {
+        switch(CurrentState) {
+            case PlayerState.None: {
+
+                }
+                break;
+            case PlayerState.Walk: {
+                    walkSoundIntervalChecker += Time.deltaTime;
+                }
+                break;
+            case PlayerState.Run: {
+                    walkSoundIntervalChecker += Time.deltaTime * (dashSpeed / moveSpeed);
+                }
+                break;
+            case PlayerState.Crouch: {
+                    walkSoundIntervalChecker += Time.deltaTime * (crouchSpeed / moveSpeed);
+                }
+                break;
+        }
         if(walkSoundIntervalChecker > walkSoundInterval) {
             SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.MouseClick, SoundManager.SoundFrom.Player);
+            LevelLoader.Instance.AddPlayerPosInMaterialProperty(Pos);
 
-            walkSoundIntervalChecker = 0.0f;
+            walkSoundIntervalChecker -= walkSoundInterval;
         }
     }
 }

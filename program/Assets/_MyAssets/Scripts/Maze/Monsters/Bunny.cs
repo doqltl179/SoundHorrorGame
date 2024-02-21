@@ -30,7 +30,9 @@ public class Bunny : MonsterController, IMove {
         transform.localScale = Vector3.one * scaleScalar;
         physicsMoveSpeed = 0.0f;
 
-        stuckHelper = new StuckHelper(Radius, 1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+        int mask =
+            (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+        stuckHelper = new StuckHelper(Radius, mask);
 
         animator.SetFloat(AnimatorPropertyName_MoveSpeed, moveSpeed * moveAnimationSpeed);
     }
@@ -65,7 +67,7 @@ public class Bunny : MonsterController, IMove {
                         dist = LevelLoader.Instance.GetPathDistance(tempPath);
                         SoundManager.Instance.PlayOnWorld(
                             transform.position, 
-                            SoundManager.SoundType.MouseClick,
+                            SoundManager.SoundType.Walk01,
                             SoundManager.SoundFrom.Monster, 
                             1.0f - dist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
                     }

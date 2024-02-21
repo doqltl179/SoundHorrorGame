@@ -19,13 +19,20 @@ Shader "MyCustomShader/Maze" {
         _RimColor_Item ("Rim Color (Item)", Color) = (1, 1, 1, 1)
         _RimThickness ("Rim Thickness", Float) = 0.2
 
+        [Header(Player)]
+        _PlayerPastPosColor ("Player Past Pos Color", Color) = (1, 1, 1, 1)
+        _PlayerPastPosRadius ("Player Past Pos Radius", float) = 0.3
+
         [Header(Util Properties)]
+        _ColorStrengthMax ("Color Strength Max", Float) = 1.5
+        [Toggle(USE_BASE_COLOR)] _UseBaseColor ("Use Base Color", float) = 1.0
+
         [HideInInspector] _RimArrayLength_None ("Rim Array (None) Length", Integer) = 0
         [HideInInspector] _RimArrayLength_Player ("Rim Array Length (Player)", Integer) = 0
         [HideInInspector] _RimArrayLength_Monster ("Rim Array Length (Monster)", Integer) = 0
         [HideInInspector] _RimArrayLength_Item ("Rim Array Length (Item)", Integer) = 0
-        _ColorStrengthMax ("Color Strength Max", Float) = 1.5
-        [Toggle(USE_BASE_COLOR)] _UseBaseColor ("Use Base Color", float) = 1.0
+
+        [HideInInspector] _PlayerPastPosArrayLength ("Player Past Pos Array Length (Item)", Integer) = 0
     }
     SubShader
     {
@@ -83,6 +90,9 @@ Shader "MyCustomShader/Maze" {
             fixed4 _RimColor_Item;
             float _RimThickness;
 
+            fixed4 _PlayerPastPosColor;
+            float _PlayerPastPosRadius;
+
             float _ColorStrengthMax;
 
             int _RimArrayLength_None;
@@ -102,11 +112,15 @@ Shader "MyCustomShader/Maze" {
             uniform float _RimAlphaArray_Monster[256];
             uniform float _RimAlphaArray_Item[256];
 
+            int _PlayerPastPosArrayLength;
+            uniform float4 _PlayerPastPosArray[256];
+            uniform float _PlayerPastPosAlphaArray[256];
+
             float getRimRatio(float min, float max, float d) {
                 return (d - min) / (max - min);
             }
 
-            float getColorRatio_none(float3 worldPos, float rimThicknessOffset = 1.0) {
+            float getRimColorRatio_none(float3 worldPos, float rimThicknessOffset = 1.0) {
                 if(_RimArrayLength_None <= 0) {
                     return 0.0;
                 }
@@ -132,7 +146,7 @@ Shader "MyCustomShader/Maze" {
                 return r;
             }
 
-            float getColorRatio_player(float3 worldPos, float rimThicknessOffset = 1.0) {
+            float getRimColorRatio_player(float3 worldPos, float rimThicknessOffset = 1.0) {
                 if(_RimArrayLength_Player <= 0) {
                     return 0.0;
                 }
@@ -158,7 +172,7 @@ Shader "MyCustomShader/Maze" {
                 return r;
             }
 
-            float getColorRatio_monster(float3 worldPos, float rimThicknessOffset = 1.0) {
+            float getRimColorRatio_monster(float3 worldPos, float rimThicknessOffset = 1.0) {
                 if(_RimArrayLength_Monster <= 0) {
                     return 0.0;
                 }
@@ -184,7 +198,7 @@ Shader "MyCustomShader/Maze" {
                 return r;
             }
 
-            float getColorRatio_item(float3 worldPos, float rimThicknessOffset = 1.0) {
+            float getRimColorRatio_item(float3 worldPos, float rimThicknessOffset = 1.0) {
                 if(_RimArrayLength_Item <= 0) {
                     return 0.0;
                 }
@@ -210,6 +224,29 @@ Shader "MyCustomShader/Maze" {
                 return r;
             }
 
+            float getPlayerPastPosColorRatio(float3 worldPos) {
+                if(_PlayerPastPosArrayLength <= 0) {
+                    return 0.0;
+                }
+
+                const float blurOffset = 0.3;
+                float distanceRatioMax = 1.0 + blurOffset;
+
+                float dist = 0.0;
+                float distanceRatio = 0.0;
+                float r = 0.0;
+                for(int j = 0; j < _PlayerPastPosArrayLength; j++) {
+                    dist = distance(worldPos, _PlayerPastPosArray[j].xyz);
+                    distanceRatio = dist / _PlayerPastPosRadius;
+                    if(distanceRatio < distanceRatioMax) {
+                        r += _PlayerPastPosAlphaArray[j] * smoothstep(distanceRatioMax, 1.0, distanceRatio);
+                    }
+                }
+                if(r > _ColorStrengthMax) r = _ColorStrengthMax;
+
+                return r;
+            }
+
             // RenderType을 Transparent로 설정하지 않았기 때문에 투명도가 적용되지 않음
             fixed4 frag (v2f i) : SV_Target
             {
@@ -217,14 +254,16 @@ Shader "MyCustomShader/Maze" {
 
                 #if USE_BASE_COLOR
 
-                float colorRatio_none = getColorRatio_none(i.worldPos);
-                float colorRatio_player = getColorRatio_player(i.worldPos);
-                float colorRatio_monster = getColorRatio_monster(i.worldPos);
-                float colorRatio_item = getColorRatio_item(i.worldPos);
-                c = lerp(_BaseColor, _RimColor_None, colorRatio_none) +
-                    lerp(_BaseColor, _RimColor_Player, colorRatio_player) +
-                    lerp(_BaseColor, _RimColor_Monster, colorRatio_monster) +
-                    lerp(_BaseColor, _RimColor_Item, colorRatio_item);
+                float rimColorRatio_none = getRimColorRatio_none(i.worldPos);
+                float rimColorRatio_player = getRimColorRatio_player(i.worldPos);
+                float rimColorRatio_monster = getRimColorRatio_monster(i.worldPos);
+                float rimColorRatio_item = getRimColorRatio_item(i.worldPos);
+                float playerPastPosColorRatio = getPlayerPastPosColorRatio(i.worldPos);
+                c = lerp(_BaseColor, _RimColor_None, rimColorRatio_none) +
+                    lerp(_BaseColor, _RimColor_Player, rimColorRatio_player) +
+                    lerp(_BaseColor, _RimColor_Monster, rimColorRatio_monster) +
+                    lerp(_BaseColor, _RimColor_Item, rimColorRatio_item) + 
+                    lerp(_BaseColor, _PlayerPastPosColor, playerPastPosColorRatio);
 
                 #else
 
@@ -244,13 +283,17 @@ Shader "MyCustomShader/Maze" {
                 float3 ambient = albedo * 0.05; // Ambient light contribution
                 float3 finalColor = ambient + (diffuse + specular) * occlusion;
 
-                float colorRatio_none = getColorRatio_none(i.worldPos, 20.0);
-                float colorRatio_player = getColorRatio_player(i.worldPos, 20.0);
-                float colorRatio_monster = getColorRatio_monster(i.worldPos, 20.0);
-                float colorRatio_item = getColorRatio_item(i.worldPos, 20.0);
-                float colorRatio = colorRatio_none + colorRatio_player + colorRatio_monster + colorRatio_item;
-                if(colorRatio > _ColorStrengthMax) colorRatio = _ColorStrengthMax;
-                c = fixed4(finalColor * colorRatio, 1.0);
+                float rimColorRatio_none = getRimColorRatio_none(i.worldPos, 20.0);
+                float rimColorRatio_player = getRimColorRatio_player(i.worldPos, 20.0);
+                float rimColorRatio_monster = getRimColorRatio_monster(i.worldPos, 20.0);
+                float rimColorRatio_item = getRimColorRatio_item(i.worldPos, 20.0);
+                float rimColorRatio = 
+                    rimColorRatio_none + 
+                    rimColorRatio_player + 
+                    rimColorRatio_monster + 
+                    rimColorRatio_item;
+                if(rimColorRatio > _ColorStrengthMax) rimColorRatio = _ColorStrengthMax;
+                c = fixed4(finalColor * rimColorRatio, 1.0);
 
                 #endif
 
