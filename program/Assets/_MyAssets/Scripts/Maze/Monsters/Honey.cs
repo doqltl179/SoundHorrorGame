@@ -67,7 +67,7 @@ public class Honey : MonsterController, IMove {
                         dist = LevelLoader.Instance.GetPathDistance(tempPath);
                         SoundManager.Instance.PlayOnWorld(
                             transform.position,
-                            SoundManager.SoundType.Walk02,
+                            SoundManager.SoundType.MonsterWalk02,
                             SoundManager.SoundFrom.Monster,
                             1.0f - dist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
                     }
@@ -85,11 +85,11 @@ public class Honey : MonsterController, IMove {
 
             stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f);
             if(stuckHelper.IsHit) {
-                Vector3 hitPosToCurrentPos = (transform.position - stuckHelper.HitPos).normalized;
-                bool isRightSide = Vector3.Cross(hitPosToCurrentPos, stuckHelper.HitNormal).y > 0;
-                Vector3 moveDirection = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
-
-                transform.forward = Vector3.Lerp(transform.forward, moveDirection, dt * rotateSpeed);
+                // 부딪힌 곳의 normal을 기준으로 가야하는 방향
+                Vector3 hitPosToPathPos = (movePath[0] - stuckHelper.HitPos).normalized;
+                bool isRightSide = Vector3.Cross(stuckHelper.HitNormal, hitPosToPathPos).y > 0;
+                Vector3 lookForward = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
+                transform.forward = Vector3.Lerp(transform.forward, lookForward, Time.deltaTime * rotateSpeed * 2.0f);
             }
             else {
                 Vector3 moveDirection = (movePath[0] - transform.position).normalized;

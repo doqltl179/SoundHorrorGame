@@ -14,6 +14,8 @@ public class MonsterController : MonoBehaviour {
         Move, 
         Wait, //IMove가 상속되지 않은 몬스터는 Move 대신 Wait를 설정
         Rest,
+        Search, //특정 몬스터만 사용
+        Scream, //특정 몬스터만 사용
     }
     private MonsterState currentState = MonsterState.None;
     public MonsterState CurrentState {
@@ -33,10 +35,10 @@ public class MonsterController : MonoBehaviour {
     [Header("Properties")]
     [SerializeField] private Transform headPos;
     [SerializeField, Range(0.1f, 5.0f)] protected float scaleScalar = 1.0f;
-    [SerializeField, Range(0.1f, 10.0f)] protected float moveSpeed = 1.0f;
-    [SerializeField, Range(0.1f, 10.0f)] protected float moveAnimationSpeed = 1.0f;
-    [SerializeField, Range(0.1f, 10.0f)] protected float moveBoost = 0.4f;
-    [SerializeField, Range(0.1f, 10.0f)] protected float rotateSpeed = 1.0f;
+    [SerializeField, Range(0.0f, 10.0f)] protected float moveSpeed = 1.0f;
+    [SerializeField, Range(0.0f, 10.0f)] protected float moveAnimationSpeed = 1.0f;
+    [SerializeField, Range(0.0f, 10.0f)] protected float moveBoost = 0.4f;
+    [SerializeField, Range(0.0f, 10.0f)] protected float rotateSpeed = 1.0f;
     [SerializeField, Range(-0.5f, 0.5f)] protected float moveSoundOffset = 0.0f;
 
     public Material Material { get { return material; } }

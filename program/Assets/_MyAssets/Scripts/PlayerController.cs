@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
@@ -21,8 +22,8 @@ public class PlayerController : MonoBehaviour {
 
     [Header("Properties")]
     [SerializeField, Range(0.1f, 10.0f)] private float moveSpeed = 2.0f;
-    [SerializeField, Range(0.1f, 10.0f)] private float dashSpeed = 3.0f;
-    [SerializeField, Range(0.1f, 10.0f)] private float crouchSpeed = 0.5f;
+    [SerializeField, Range(0.1f, 10.0f)] private float runSpeed = 3.0f;
+    [SerializeField, Range(0.1f, 10.0f)] private float crouchSpeed = 1.0f;
     [SerializeField, Range(0.1f, 10.0f)] private float rotateSpeed = 1.5f;
     [SerializeField, Range(0.1f, 10.0f)] private float walkSoundInterval = 0.5f;
     private float walkSoundIntervalChecker = 0.0f;
@@ -104,7 +105,7 @@ public class PlayerController : MonoBehaviour {
                 false,
                 LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
 
-            CurrentState = PlayerState.Walk;
+            CurrentState = PlayerState.Run;
         }
 
         stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f); 
@@ -118,7 +119,25 @@ public class PlayerController : MonoBehaviour {
             Vector3 moveDirection = (movePath[0] - transform.position).normalized;
             transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
         }
-        transform.position += transform.forward * Time.deltaTime * moveSpeed;
+
+        switch(CurrentState) {
+            case PlayerState.None: {
+
+                }
+                break;
+            case PlayerState.Walk: {
+                    transform.position += transform.forward * Time.deltaTime * moveSpeed;
+                }
+                break;
+            case PlayerState.Run: {
+                    transform.position += transform.forward * Time.deltaTime * runSpeed;
+                }
+                break;
+            case PlayerState.Crouch: {
+                    transform.position += transform.forward * Time.deltaTime * crouchSpeed;
+                }
+                break;
+        }
 
         if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
             movePath.RemoveAt(0);
@@ -152,7 +171,7 @@ public class PlayerController : MonoBehaviour {
                 }
                 break;
             case PlayerState.Run: {
-                    walkSoundIntervalChecker += Time.deltaTime * (dashSpeed / moveSpeed);
+                    walkSoundIntervalChecker += Time.deltaTime * (runSpeed / moveSpeed);
                 }
                 break;
             case PlayerState.Crouch: {
@@ -161,7 +180,7 @@ public class PlayerController : MonoBehaviour {
                 break;
         }
         if(walkSoundIntervalChecker > walkSoundInterval) {
-            SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.MouseClick, SoundManager.SoundFrom.Player);
+            SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.PlayerWalk, SoundManager.SoundFrom.Player);
             LevelLoader.Instance.AddPlayerPosInMaterialProperty(Pos);
 
             walkSoundIntervalChecker -= walkSoundInterval;

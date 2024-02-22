@@ -72,10 +72,10 @@ Material:
     m_Ints:
     - _PlayerPastPosArrayLength: 0
     - _RimArrayLength: 0
-    - _RimArrayLength_Item: 0
-    - _RimArrayLength_Monster: 2
+    - _RimArrayLength_Item: 3
+    - _RimArrayLength_Monster: 4
     - _RimArrayLength_None: 0
-    - _RimArrayLength_Player: 2
+    - _RimArrayLength_Player: 6
     m_Floats:
     - _BumpScale: 1
     - _ColorStrengthMax: 1

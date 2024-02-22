@@ -12,17 +12,30 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public enum MonsterType {
         Bunny,
         Honey,
+        Froggy, 
 
     }
 
-    private readonly string BASIC_PATH_OF_MONSTERS = "Monsters";
+    private const string ROOT_PATH_OF_MONSTERS = "Monsters";
 
     private Dictionary<MonsterType, GameObject> monsterResources = new Dictionary<MonsterType, GameObject>();
 
     private List<MonsterController> monsters = new List<MonsterController>();
     public List<MonsterController> Monsters { get { return monsters; } }
-
     public int MonsterCount { get { return monsters.Count; } }
+    #endregion
+
+    #region Item
+    public enum ItemType {
+        Crystal,
+
+    }
+
+    private const string ROOT_PATH_OF_ITEMS = "Items";
+
+    private List<ItemController> items = new List<ItemController>();
+    public List<ItemController> Items { get { return items; } }
+    public int ItemCount { get { return items.Count; } }
     #endregion
 
     #region Maze
@@ -79,7 +92,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             MAT_RIM_POSITION_ARRAY_NAME + "_Item",
             MAT_RIM_RADIUS_ARRAY_NAME + "_Item",
             MAT_RIM_ALPHA_ARRAY_NAME + "_Item",
-            Color.green)
+            new Color(0.35f, 1.0f, 0.25f))
     };
     #endregion
 
@@ -109,18 +122,24 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     private AudioReverbZone reverbZone = null;
 
+    public Action<ItemController> OnItemCollected;
+
 
 
     protected override void Awake() {
         base.Awake();
 
-        SoundManager.Instance.OnWorldSoundAdded += OnWorldSoundAdded;
-        SoundManager.Instance.OnWorldSoundRemoved += OnWorldSoundRemoved;
+        SoundManager.Instance.OnWorldSoundAdded += WorldSoundAdded;
+        SoundManager.Instance.OnWorldSoundRemoved += WorldSoundRemoved;
+
+        OnItemCollected += ItemCollected;
     }
 
     private void OnDestroy() {
-        SoundManager.Instance.OnWorldSoundAdded -= OnWorldSoundAdded;
-        SoundManager.Instance.OnWorldSoundRemoved -= OnWorldSoundRemoved;
+        SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
+        SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
+
+        OnItemCollected -= ItemCollected;
     }
 
     private void Start() {
@@ -152,7 +171,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             playerMaterialPropertiesGroup.SetUpdateAlphaArray(
                 blockFloorMaterial,
                 Time.deltaTime,
-                STANDARD_RIM_RADIUS_SPREAD_LENGTH * 0.5f); //임의의 길이 설정
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //임의의 길이 설정
 #if Use_Two_Materials_On_MazeBlock
             playerMaterialPropertiesGroup.SetUpdateAlphaArray(
                 blockWallMaterial,
@@ -190,9 +209,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(createEmpty) MazeCreator.CreateEmptyMaze(width, height);
         else MazeCreator.CreateMaze(width, height);
 
-        string componentName = typeof(MazeBlock).Name;
-        GameObject resourceObj = ResourceLoader.GetResource<GameObject>(componentName);
-
         if(blockFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
@@ -221,6 +237,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
 #endif
 
+        string componentName = typeof(MazeBlock).Name;
+        GameObject resourceObj = ResourceLoader.GetResource<GameObject>(componentName);
 
         mazeBlocks = new MazeBlock[width, height];
         for(int x = 0; x < width; x++) {
@@ -466,14 +484,14 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     /// <br/>현재 생성된 몬스터의 위치와 겹치지 않게 생성.
     /// <br/>플레이어와의 거리가 일정 이상 떨어진 위치에 생성
     /// </summary>
-    public void AddMonsterOnLevelRandomly(MonsterType type, int count) {
+    public void AddMonsterOnLevelRandomly(MonsterType type, int count, float compareDistance, bool overDistance) {
         if(count <= 0) {
             Debug.LogWarning($"Count not enough. Count: {count}");
 
             return;
         }
 
-        GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(BASIC_PATH_OF_MONSTERS, type.ToString()));
+        GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_MONSTERS, type.ToString()));
         if(resource == null) {
             Debug.LogError($"Monster Resource not found. type: {type}");
 
@@ -484,7 +502,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         List<Vector2Int> usingCoordList = new List<Vector2Int>();
         while(usingCoordList.Count < count) {
             // 플레이어와의 거리가 일정 거리 이상 떨어져 있는 coord 생성
-            Vector2Int randomCoord = GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
+            Vector2Int randomCoord = overDistance ?
+                GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, compareDistance) :
+                GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
             // 현재 몬스터들과 겹치지 않는 위치 확인
             if(Array.FindIndex(currentMonstersCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
                 usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0) {
@@ -499,6 +519,44 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             MonsterController mc = go.GetComponent<MonsterController>();
 
             monsters.Add(mc);
+        }
+    }
+
+    public void AddItemOnLevelRandomly(ItemType type, int count, float compareDistance, bool overDistance) {
+        if(count <= 0) {
+            Debug.LogWarning($"Count not enough. Count: {count}");
+
+            return;
+        }
+
+        GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
+        if(resource == null) {
+            Debug.LogError($"Item Resource not found. type: {type}");
+
+            return;
+        }
+
+        Vector2Int[] currentItemsCoordArray = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+        List<Vector2Int> usingCoordList = new List<Vector2Int>();
+        while(usingCoordList.Count < count) {
+            // 플레이어와의 거리가 일정 거리 이상 떨어져 있는 coord 생성
+            Vector2Int randomCoord = overDistance ? 
+                GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, compareDistance) : 
+                GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
+            // 현재 아이템과 겹치지 않는 위치 확인
+            if(Array.FindIndex(currentItemsCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
+                usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0) {
+                usingCoordList.Add(randomCoord);
+            }
+        }
+
+        foreach(Vector2Int coord in usingCoordList) {
+            GameObject go = Instantiate(resource, transform);
+            go.transform.position = GetBlockPos(coord);
+
+            ItemController ic = go.GetComponent<ItemController>();
+
+            items.Add(ic);
         }
     }
 
@@ -527,7 +585,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     #endregion
 
     #region Action
-    private void OnWorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
+    private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
             group.UpdateArrayLength();
 
@@ -542,7 +600,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
 
-    private void OnWorldSoundRemoved(SoundManager.SoundFrom from) {
+    private void WorldSoundRemoved(SoundManager.SoundFrom from) {
         foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
             group.UpdateArrayLength();
 
@@ -555,6 +613,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 group.SetPosArray(mc.Material);
             }
         }
+    }
+
+    private void ItemCollected(ItemController item) {
+
     }
     #endregion
 
@@ -615,28 +677,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     private bool IsSameVec2Int(Vector2Int v1, Vector2Int v2) => v1.x == v2.x && v1.y == v2.y;
-
-    private GameObject GetMonsterObject(MonsterType type) {
-        GameObject obj = null;
-        if(!monsterResources.TryGetValue(type, out obj)) {
-            string path = GetMonsterObjectPath(type);
-            obj = ResourceLoader.GetResource<GameObject>(path);
-
-            monsterResources.Add(type, obj);
-        }
-
-        return obj;
-    }
-
-    private string GetMonsterObjectPath(MonsterType type) {
-        switch(type) {
-            case MonsterType.Bunny:
-                return Path.Combine(BASIC_PATH_OF_MONSTERS, type.ToString());
-
-            default:
-                return string.Empty;
-        }
-    }
 
     #region 길찾기 Util Func
     private Vector2Int GetMoveToCoordRight(Vector2Int coord) => new Vector2Int(coord.x + 1, coord.y);

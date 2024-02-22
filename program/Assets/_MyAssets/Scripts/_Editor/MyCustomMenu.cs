@@ -27,7 +27,7 @@ public class MyCustomMenu : MonoBehaviour
 
 
 
-    private void Awake() {
+    private void Start() {
         string[] defines;
         PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, out defines);
         if(defines != null) {

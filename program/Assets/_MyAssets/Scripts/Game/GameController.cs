@@ -17,10 +17,31 @@ public class GameController : MonoBehaviour {
             Random.Range(0, LevelLoader.Instance.LevelWidth),
             Random.Range(0, LevelLoader.Instance.LevelHeight));
         playerController.Pos = LevelLoader.Instance.GetBlockPos(playerStartCoord);
+        UtilObjects.Instance.CamPos = playerController.HeadPos;
+        UtilObjects.Instance.CamForward = playerController.HeadForward;
 
 #if Play_Game_Automatically
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(LevelLoader.MonsterType.Honey, 20);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(LevelLoader.MonsterType.Bunny, 20);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Froggy, 
+            20, 
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH, 
+            true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Honey, 
+            20,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Bunny, 
+            20,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
+
+        LevelLoader.Instance.AddItemOnLevelRandomly(
+            LevelLoader.ItemType.Crystal, 
+            20, 
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            false);
 #else
 #endif
 

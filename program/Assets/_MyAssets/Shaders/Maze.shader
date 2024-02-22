@@ -58,19 +58,32 @@ Shader "MyCustomShader/Maze" {
             
             struct v2f
             {
-                float2 uv : TEXCOORD0;
-                float3 worldPos : TEXCOORD1;
-                float3 worldNormal : TEXCOORD2;
                 float4 vertex : SV_POSITION;
+                float2 uv : TEXCOORD0;
+                float3 worldNormal : TEXCOORD1;
+                float3 worldPos : TEXCOORD2;
+                // float4 vertex : SV_POSITION;
+                // float2 uv : TEXCOORD0;
+                // float3 localPos : TEXCOORD1;
+                // float3 worldNormal : TEXCOORD2;
+                // float4 worldPos : TEXCOORD3;
             };
 
             v2f vert (appdata v)
             {
                 v2f o;
+
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
-                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                // o.uv = v.uv;
+                // o.localPos = UnityObjectToClipPos(v.vertex).xyz;
+                // o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                // o.worldPos = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1.0));
+                // o.worldPos.xyz += o.worldNormal * 0.05;
+                // o.vertex = UnityWorldToClipPos(o.worldPos);
+
                 return o;
             }
 

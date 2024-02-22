@@ -7,10 +7,26 @@ using UnityEngine;
 
 public class SoundManager : GenericSingleton<SoundManager> {
     public enum SoundType {
-        MouseClick, //'Main'에서만 사용됨
-        Walk01,
-        Walk02, 
+        // Fake Sound
+        Empty00_5s, 
+        Empty01s, 
+        Empty02s, 
+        Empty03s, 
+        Empty04s, 
+        Empty05s, 
 
+        // Monster
+        MonsterWalk01,
+        MonsterWalk02,
+
+        // Item
+        Crystal, 
+
+        // Player
+        PlayerWalk,
+
+        // Etc
+        MouseClick, //'Main'에서만 사용됨
     }
 
     public enum SoundFrom {
@@ -229,17 +245,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         return so;
     }
 
-    private string GetSoundPath(SoundType type) {
-        switch(type) {
-            case SoundType.MouseClick:
-            case SoundType.Walk01:
-            case SoundType.Walk02:
-                return Path.Combine(BASIC_PATH_OF_SFX, type.ToString());
-
-            default: 
-                return string.Empty;
-        }
-    }
+    private string GetSoundPath(SoundType type) => Path.Combine(BASIC_PATH_OF_SFX, type.ToString());
 }
 
 public class SoundObject {

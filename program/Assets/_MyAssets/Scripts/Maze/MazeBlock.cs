@@ -61,6 +61,8 @@ public class MazeBlock : MonoBehaviour {
     private void Start() {
         WallLayerIndex = LayerMask.NameToLayer(WallLayerName);
 
+        // 천장과 바닥은 layer를 설정하지 않음
+        // 벽을 대상으로 ray를 사용하는 경우가 많은데, 이 경우에 천장이나 바닥에 ray가 닿는 것을 배제하기 위함
         floor.tag = TagName;
         ceiling.tag = TagName;
         foreach(GameObject edge in edges) {
