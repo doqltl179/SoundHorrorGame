@@ -18,6 +18,7 @@ Shader "MyCustomShader/Maze" {
         _RimColor_Monster ("Rim Color (Monster)", Color) = (1, 1, 1, 1)
         _RimColor_Item ("Rim Color (Item)", Color) = (1, 1, 1, 1)
         _RimThickness ("Rim Thickness", Float) = 0.2
+        _RimThicknessOffset ("Rim Thickness Offset", Float) = 1.0
 
         [Header(Player)]
         _PlayerPastPosColor ("Player Past Pos Color", Color) = (1, 1, 1, 1)
@@ -26,6 +27,8 @@ Shader "MyCustomShader/Maze" {
         [Header(Util Properties)]
         _ColorStrengthMax ("Color Strength Max", Float) = 1.5
         [Toggle(USE_BASE_COLOR)] _UseBaseColor ("Use Base Color", float) = 1.0
+        [Toggle(DRAW_RIM)] _DrawRim ("Draw Rim", float) = 1.0
+        [Toggle(DRAW_PLAYER_PAST_POS)] _DrawPlayerPastPos ("Draw Player Past Pos", float) = 0.0
 
         [HideInInspector] _RimArrayLength_None ("Rim Array (None) Length", Integer) = 0
         [HideInInspector] _RimArrayLength_Player ("Rim Array Length (Player)", Integer) = 0
@@ -46,6 +49,8 @@ Shader "MyCustomShader/Maze" {
             #pragma fragment frag
 
             #pragma shader_feature USE_BASE_COLOR
+            #pragma shader_feature DRAW_RIM
+            #pragma shader_feature DRAW_PLAYER_PAST_POS
 
             #include "UnityCG.cginc"
 
@@ -102,6 +107,7 @@ Shader "MyCustomShader/Maze" {
             fixed4 _RimColor_Monster;
             fixed4 _RimColor_Item;
             float _RimThickness;
+            float _RimThicknessOffset;
 
             fixed4 _PlayerPastPosColor;
             float _PlayerPastPosRadius;
@@ -260,26 +266,7 @@ Shader "MyCustomShader/Maze" {
                 return r;
             }
 
-            // RenderType을 Transparent로 설정하지 않았기 때문에 투명도가 적용되지 않음
-            fixed4 frag (v2f i) : SV_Target
-            {
-                fixed4 c;
-
-                #if USE_BASE_COLOR
-
-                float rimColorRatio_none = getRimColorRatio_none(i.worldPos);
-                float rimColorRatio_player = getRimColorRatio_player(i.worldPos);
-                float rimColorRatio_monster = getRimColorRatio_monster(i.worldPos);
-                float rimColorRatio_item = getRimColorRatio_item(i.worldPos);
-                float playerPastPosColorRatio = getPlayerPastPosColorRatio(i.worldPos);
-                c = lerp(_BaseColor, _RimColor_None, rimColorRatio_none) +
-                    lerp(_BaseColor, _RimColor_Player, rimColorRatio_player) +
-                    lerp(_BaseColor, _RimColor_Monster, rimColorRatio_monster) +
-                    lerp(_BaseColor, _RimColor_Item, rimColorRatio_item) + 
-                    lerp(_BaseColor, _PlayerPastPosColor, playerPastPosColorRatio);
-
-                #else
-
+            float3 getTexColor(v2f i) {
                 fixed3 albedo = tex2D(_MainTex, i.uv).rgb;
                 float3 normal = normalize(UnpackNormal(tex2D(_NormalMap, i.uv))); // 정확한 방향을 유지
                 float metallic = tex2D(_MetallicMap, i.uv).a * _MetallicStrength; // 금속성 값을 조절
@@ -294,19 +281,60 @@ Shader "MyCustomShader/Maze" {
                 float3 diffuse = albedo * (1.0 - metallic) * diff;
                 
                 float3 ambient = albedo * 0.05; // Ambient light contribution
-                float3 finalColor = ambient + (diffuse + specular) * occlusion;
+                return float3(ambient + (diffuse + specular) * occlusion);
+            }
 
-                float rimColorRatio_none = getRimColorRatio_none(i.worldPos, 20.0);
-                float rimColorRatio_player = getRimColorRatio_player(i.worldPos, 20.0);
-                float rimColorRatio_monster = getRimColorRatio_monster(i.worldPos, 20.0);
-                float rimColorRatio_item = getRimColorRatio_item(i.worldPos, 20.0);
-                float rimColorRatio = 
-                    rimColorRatio_none + 
-                    rimColorRatio_player + 
-                    rimColorRatio_monster + 
-                    rimColorRatio_item;
-                if(rimColorRatio > _ColorStrengthMax) rimColorRatio = _ColorStrengthMax;
-                c = fixed4(finalColor * rimColorRatio, 1.0);
+            // RenderType을 Transparent로 설정하지 않았기 때문에 투명도가 적용되지 않음
+            fixed4 frag (v2f i) : SV_Target
+            {
+                fixed4 c = fixed4(0.0, 0.0, 0.0, 0.0);
+
+                #if DRAW_RIM
+
+                    float rimColorRatio_none = getRimColorRatio_none(i.worldPos, _RimThicknessOffset);
+                    float rimColorRatio_player = getRimColorRatio_player(i.worldPos, _RimThicknessOffset);
+                    float rimColorRatio_monster = getRimColorRatio_monster(i.worldPos, _RimThicknessOffset);
+                    float rimColorRatio_item = getRimColorRatio_item(i.worldPos, _RimThicknessOffset);
+
+                    #if USE_BASE_COLOR
+
+                        c += lerp(_BaseColor, _RimColor_None, rimColorRatio_none);
+                        c += lerp(_BaseColor, _RimColor_Player, rimColorRatio_player);
+                        c += lerp(_BaseColor, _RimColor_Monster, rimColorRatio_monster);
+                        c += lerp(_BaseColor, _RimColor_Item, rimColorRatio_item);
+
+                    #else
+
+                        fixed4 texColor = fixed4(getTexColor(i), 1.0);
+
+                        float rimColorRatio = 
+                            rimColorRatio_none + 
+                            rimColorRatio_player + 
+                            rimColorRatio_monster + 
+                            rimColorRatio_item;
+                        if(rimColorRatio > _ColorStrengthMax) rimColorRatio = _ColorStrengthMax;
+                        c = lerp(c, texColor, rimColorRatio);
+
+                    #endif
+
+                #else
+
+                    #if USE_BASE_COLOR
+
+                        c = _BaseColor
+
+                    #else
+
+                        c = fixed4(getTexColor(i), 1.0);
+
+                    #endif
+
+                #endif
+
+                #if DRAW_PLAYER_PAST_POS
+
+                    float playerPastPosColorRatio = getPlayerPastPosColorRatio(i.worldPos);
+                    c += _PlayerPastPosColor * playerPastPosColorRatio;
 
                 #endif
 

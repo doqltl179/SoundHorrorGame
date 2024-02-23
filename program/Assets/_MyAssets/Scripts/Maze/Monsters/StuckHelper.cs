@@ -7,6 +7,7 @@ public class StuckHelper {
     private RaycastHit hit;
 
     public bool IsHit { get; private set; }
+    public string HitTag { get { return hit.transform.tag; } }
     public Vector3 HitNormal { get { return hit.normal; } }
     public Vector3 HitPos { get { return hit.point; } }
     public float HitDistance { get { return hit.distance; } }

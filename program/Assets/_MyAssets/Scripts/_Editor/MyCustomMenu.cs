@@ -27,7 +27,9 @@ public class MyCustomMenu : MonoBehaviour
 
 
 
-    private void Start() {
+
+    [InitializeOnLoadMethod]
+    private static void OnEditorLoaded() {
         string[] defines;
         PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, out defines);
         if(defines != null) {

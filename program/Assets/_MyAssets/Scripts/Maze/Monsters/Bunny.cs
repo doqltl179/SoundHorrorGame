@@ -60,15 +60,15 @@ public class Bunny : MonsterController, IMove {
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     if(dist < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
                         List<Vector3> tempPath = LevelLoader.Instance.GetPath(
-                            Pos, 
-                            UtilObjects.Instance.CamPos, 
-                            Radius, 
+                            Pos,
+                            UtilObjects.Instance.CamPos,
+                            Radius,
                             1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
                         dist = LevelLoader.Instance.GetPathDistance(tempPath);
                         SoundManager.Instance.PlayOnWorld(
-                            transform.position, 
-                            SoundManager.SoundType.MonsterWalk01,
-                            SoundManager.SoundFrom.Monster, 
+                            transform.position,
+                            SoundManager.SoundType.MonsterWalk02,
+                            SoundManager.SoundFrom.Monster,
                             1.0f - dist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
                     }
 
@@ -131,7 +131,7 @@ public class Bunny : MonsterController, IMove {
     #region Action
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
-            case SoundManager.SoundType.MouseClick: {
+            case SoundManager.SoundType.PlayerWalk: {
 
                 }
                 break;

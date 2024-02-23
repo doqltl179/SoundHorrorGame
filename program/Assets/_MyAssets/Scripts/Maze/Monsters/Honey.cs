@@ -131,7 +131,7 @@ public class Honey : MonsterController, IMove {
     #region Action
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
-            case SoundManager.SoundType.MouseClick: {
+            case SoundManager.SoundType.PlayerWalk: {
 
                 }
                 break;

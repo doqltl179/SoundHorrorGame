@@ -22,18 +22,33 @@ public class GameController : MonoBehaviour {
 
 #if Play_Game_Automatically
         LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Kitty,
+            1,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Starry,
+            1,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Cloudy,
+            1,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
             LevelLoader.MonsterType.Froggy, 
-            20, 
+            1, 
             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH, 
             true);
         LevelLoader.Instance.AddMonsterOnLevelRandomly(
             LevelLoader.MonsterType.Honey, 
-            20,
+            1,
             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
             true);
         LevelLoader.Instance.AddMonsterOnLevelRandomly(
             LevelLoader.MonsterType.Bunny, 
-            20,
+            1,
             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
             true);
 
@@ -61,7 +76,7 @@ public class GameController : MonoBehaviour {
 
 #if Play_Game_Automatically
     int watchIndex = 0;
-    private void FixedUpdate() {
+    private void Update() {
         if(Input.GetKeyDown(KeyCode.Alpha1)) watchIndex = 1;
         else if(Input.GetKeyDown(KeyCode.Alpha2)) watchIndex = 2;
         else if(Input.GetKeyDown(KeyCode.Alpha3)) watchIndex = 3;
@@ -72,8 +87,9 @@ public class GameController : MonoBehaviour {
         else if(Input.GetKeyDown(KeyCode.Alpha8)) watchIndex = 8;
         else if(Input.GetKeyDown(KeyCode.Alpha9)) watchIndex = 9;
         else if(Input.GetKeyDown(KeyCode.Alpha0)) watchIndex = 0;
+        else if(Input.GetKeyDown(KeyCode.Backspace)) watchIndex = -1;
 
-        if(watchIndex > 0) {
+        if(watchIndex >= 0) {
             Vector3 camPos = 
                 LevelLoader.Instance.Monsters[watchIndex].HeadPos +
                 LevelLoader.Instance.Monsters[watchIndex].HeadForward * MazeBlock.BlockSize;

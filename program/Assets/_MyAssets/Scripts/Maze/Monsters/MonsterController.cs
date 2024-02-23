@@ -41,7 +41,21 @@ public class MonsterController : MonoBehaviour {
     [SerializeField, Range(0.0f, 10.0f)] protected float rotateSpeed = 1.0f;
     [SerializeField, Range(-0.5f, 0.5f)] protected float moveSoundOffset = 0.0f;
 
-    public Material Material { get { return material; } }
+    private Material copyMaterial = null;
+    public Material Material { 
+        get { 
+            if(copyMaterial == null) {
+                copyMaterial = new Material(material.shader);
+                copyMaterial.CopyPropertiesFromMaterial(material);
+
+                SkinnedMeshRenderer[] renderers = transform.GetComponentsInChildren<SkinnedMeshRenderer>();
+                foreach(SkinnedMeshRenderer r in renderers) {
+                    r.material = copyMaterial;
+                }
+            }
+            return copyMaterial; 
+        } 
+    }
 
     public float Radius { get { return collider.radius * scaleScalar; } }
     public float Height { get { return collider.height * scaleScalar; } }
@@ -61,9 +75,6 @@ public class MonsterController : MonoBehaviour {
     protected const string AnimatorPropertyName_MoveSpeed = "MoveSpeed";
     
     protected float physicsMoveSpeed = 0.0f;
-    /// <summary>
-    /// FollowingSound != null ? 1.0f : 0.5f
-    /// </summary>
     protected float physicsMoveSpeedMax = 0.5f;
     public SoundObject FollowingSound { get; protected set; }
 

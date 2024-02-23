@@ -13,6 +13,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         Bunny,
         Honey,
         Froggy, 
+        Cloudy, 
+        Starry, 
+        Kitty, 
 
     }
 
@@ -54,7 +57,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     #region Material Rim Properties
     // Rim property는 SoundObject를 활용하여 계산하고 있기 때문에 SoundManager에 의존하고 있음
-    private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
     private const string MAT_RIM_COLOR_NAME = "_RimColor";
     private const string MAT_RIM_ARRAY_LENGTH_NAME = "_RimArrayLength";
     private const string MAT_RIM_POSITION_ARRAY_NAME = "_RimPosArray";
@@ -94,6 +96,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             MAT_RIM_ALPHA_ARRAY_NAME + "_Item",
             new Color(0.35f, 1.0f, 0.25f))
     };
+
     #endregion
 
     #region Material Player Properties
@@ -112,6 +115,15 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         Color.white
     );
 
+    #region Material Draw Properties
+    private const string MAT_USE_BASE_COLOR_NAME = "_UseBaseColor";
+    private const string MAT_DRAW_RIM_NAME = "_DrawRim";
+    private const string MAT_DRAW_PLAYER_PAST_POSITION_NAME = "_DrawPlayerPastPos";
+    #endregion
+
+    private const string MAT_COLOR_STRENGTH_MAX_NAME = "_ColorStrengthMax";
+    private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
+    private const string MAT_RIM_THICKNESS_OFFSET_NAME = "_RimThicknessOffset";
     private const string MAT_PLAYER_PAST_POSITION_RADIUS_NAME = "_PlayerPastPosRadius";
     #endregion
 
@@ -212,10 +224,16 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
+            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 2.0f);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
             }
+
+            mat.SetFloat(MAT_USE_BASE_COLOR_NAME, 1.0f);
+            mat.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
+            mat.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 1.0f);
 
             mat.SetFloat(MAT_PLAYER_PAST_POSITION_RADIUS_NAME, 0.15f);
 
@@ -225,13 +243,17 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockWallMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
+            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 2.0f);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             mat.SetColor("_BaseColor", Color.red);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
             }
 
-            mat.SetFloat(MAT_PLAYER_PAST_POSITION_RADIUS_NAME, 0.15f);
+            mat.SetFloat(MAT_USE_BASE_COLOR_NAME, 1.0f);
+            mat.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
+            mat.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 0.0f);
 
             blockWallMaterial = mat;
         }
@@ -517,6 +539,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             go.transform.position = GetBlockPos(coord);
 
             MonsterController mc = go.GetComponent<MonsterController>();
+            mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 2.0f);
+            mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
+            mc.Material.SetFloat(MAT_USE_BASE_COLOR_NAME, 0.0f);
+            mc.Material.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
+            mc.Material.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 0.0f);
 
             monsters.Add(mc);
         }
