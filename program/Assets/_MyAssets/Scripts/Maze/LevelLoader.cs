@@ -265,7 +265,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 go.transform.localScale = MazeBlock.StandardBlockScale;
 
                 MazeBlock mb = go.GetComponent<MazeBlock>();
-                mb.WallInfo = MazeCreator.Maze[x, z];
+                mb.WallInfo = MazeCreator.Maze[x, z].WallInfo;
 #if Use_Two_Materials_On_MazeBlock
                 mb.SetMaterial(blockFloorMaterial, blockWallMaterial);
 #else
@@ -316,12 +316,46 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         List<PathHelper> pastCoordList = new List<PathHelper>();
         List<PathHelper> checkCoordList = new List<PathHelper>();
-        checkCoordList.Add(new PathHelper(-1, startCoord, MazeCreator.ActiveWall.None, 0, GetStraightDistance(startCoord, endCoord)));
+        checkCoordList.Add(
+            new PathHelper(
+                -1,
+                MazeCreator.Maze[startCoord.x, startCoord.y], 
+                0, 
+                GetStraightDistance(startCoord, endCoord)
+            )
+        );
 
+        #region 단순 경로 탐색
         int mostCloseHelperIndex;
         PathHelper mostCloseHelper;
-        MazeCreator.ActiveWall tempWallInfo;
+        MazeInfo tempInfo;
         Vector2Int tempMoveCoord;
+        bool IsExistEndCoordOnCoordX(Vector2Int start, Vector2Int end) {
+            return (start.y == endCoord.y && endCoord.y == end.y) && (start.x <= endCoord.x && endCoord.x <= end.x);
+        }
+        bool IsExistEndCoordOnCoordY(Vector2Int start, Vector2Int end) {
+            return (start.x == endCoord.x && endCoord.x == end.x) && (start.y <= endCoord.y && endCoord.y <= end.y);
+        }
+        bool CanAddInCheckList(Vector2Int coord) {
+            return pastCoordList.FindIndex(t => IsSameVec2Int(t.Coord, coord)) < 0 &&
+                checkCoordList.FindIndex(t => IsSameVec2Int(t.Coord, coord)) < 0;
+        }
+        void AddInfoToCheckList(Vector2Int checkCoord, Vector2Int movedCoord) {
+            PathHelper helper = new PathHelper(
+                        pastCoordList.Count - 1,
+                        MazeCreator.Maze[movedCoord.x, movedCoord.y],
+                        mostCloseHelper.DistanceBetweenStartPointAndCurrentPoint + GetStraightDistance(checkCoord, movedCoord),
+                        GetStraightDistance(movedCoord, endCoord));
+            checkCoordList.Add(helper);
+        }
+        void AddInfoToPastList(Vector2Int checkCoord, Vector2Int movedCoord) {
+            PathHelper helper = new PathHelper(
+                        pastCoordList.Count - 1,
+                        MazeCreator.Maze[movedCoord.x, movedCoord.y],
+                        mostCloseHelper.DistanceBetweenStartPointAndCurrentPoint + GetStraightDistance(checkCoord, movedCoord),
+                        GetStraightDistance(movedCoord, endCoord));
+            pastCoordList.Add(helper);
+        }
         while(true) {
             // CheckList에서 endCoord에 가장 가까운 경로를 가진 Helper를 찾는다
             mostCloseHelperIndex = GetMostCloseHelperIndex(checkCoordList);
@@ -331,61 +365,46 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             pastCoordList.Add(mostCloseHelper);
             checkCoordList.RemoveAt(mostCloseHelperIndex);
 
-            // 만약 PastList에 추가된 Helper의 Point가 endCoord와 같다면 루프 종료
-            if(IsSameVec2Int(mostCloseHelper.Coord, endCoord)) {
-                Debug.Log("Successed find path!");
-
-                break;
-            }
-
             // 위에서 찾은 Helper를 기준으로 갈 수 있는 곳을 CheckList에 추가한다
-            tempWallInfo = mazeBlocks[mostCloseHelper.Coord.x, mostCloseHelper.Coord.y].WallInfo;
-            if(!tempWallInfo.HasFlag(MazeCreator.ActiveWall.R)) {
-                tempMoveCoord = GetMoveToCoordRight(mostCloseHelper.Coord);
-                if(pastCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0 && checkCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0) {
-                    PathHelper helper = new PathHelper(
-                        pastCoordList.Count - 1,
-                        tempMoveCoord,
-                        MazeCreator.ActiveWall.R,
-                        mostCloseHelper.DistanceBetweenStartPointAndCurrentPoint + 1, 
-                        GetStraightDistance(tempMoveCoord, endCoord));
-                    checkCoordList.Add(helper);
+            tempInfo = MazeCreator.Maze[mostCloseHelper.Coord.x, mostCloseHelper.Coord.y];
+            if(!tempInfo.WallInfo.HasFlag(MazeCreator.ActiveWall.R)) {
+                tempMoveCoord = tempInfo.NextCrossLoadCoord_R;
+                if(IsExistEndCoordOnCoordX(tempInfo.CurrentCoord, tempMoveCoord)) {
+                    AddInfoToPastList(tempInfo.CurrentCoord, endCoord); 
+                    break;
+                }
+                else if(CanAddInCheckList(tempMoveCoord)) {
+                    AddInfoToCheckList(tempInfo.CurrentCoord, tempMoveCoord);
                 }
             }
-            if(!tempWallInfo.HasFlag(MazeCreator.ActiveWall.F)) {
-                tempMoveCoord = GetMoveToCoordForward(mostCloseHelper.Coord);
-                if(pastCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0 && checkCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0) {
-                    PathHelper helper = new PathHelper(
-                        pastCoordList.Count - 1,
-                        tempMoveCoord,
-                        MazeCreator.ActiveWall.F,
-                        mostCloseHelper.DistanceBetweenStartPointAndCurrentPoint + 1,
-                        GetStraightDistance(tempMoveCoord, endCoord));
-                    checkCoordList.Add(helper);
+            if(!tempInfo.WallInfo.HasFlag(MazeCreator.ActiveWall.F)) {
+                tempMoveCoord = tempInfo.NextCrossLoadCoord_F;
+                if(IsExistEndCoordOnCoordY(tempInfo.CurrentCoord, tempMoveCoord)) {
+                    AddInfoToPastList(tempInfo.CurrentCoord, endCoord); 
+                    break;
+                }
+                else if(CanAddInCheckList(tempMoveCoord)) {
+                    AddInfoToCheckList(tempInfo.CurrentCoord, tempMoveCoord);
                 }
             }
-            if(!tempWallInfo.HasFlag(MazeCreator.ActiveWall.L)) {
-                tempMoveCoord = GetMoveToCoordLeft(mostCloseHelper.Coord);
-                if(pastCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0 && checkCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0) {
-                    PathHelper helper = new PathHelper(
-                        pastCoordList.Count - 1,
-                        tempMoveCoord,
-                        MazeCreator.ActiveWall.L,
-                        mostCloseHelper.DistanceBetweenStartPointAndCurrentPoint + 1,
-                        GetStraightDistance(tempMoveCoord, endCoord));
-                    checkCoordList.Add(helper);
+            if(!tempInfo.WallInfo.HasFlag(MazeCreator.ActiveWall.L)) {
+                tempMoveCoord = tempInfo.NextCrossLoadCoord_L;
+                if(IsExistEndCoordOnCoordX(tempMoveCoord, tempInfo.CurrentCoord)) {
+                    AddInfoToPastList(tempInfo.CurrentCoord, endCoord); 
+                    break;
+                }
+                else if(CanAddInCheckList(tempMoveCoord)) {
+                    AddInfoToCheckList(tempInfo.CurrentCoord, tempMoveCoord);
                 }
             }
-            if(!tempWallInfo.HasFlag(MazeCreator.ActiveWall.B)) {
-                tempMoveCoord = GetMoveToCoordBack(mostCloseHelper.Coord);
-                if(pastCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0 && checkCoordList.FindIndex(t => IsSameVec2Int(t.Coord, tempMoveCoord)) < 0) {
-                    PathHelper helper = new PathHelper(
-                        pastCoordList.Count - 1,
-                        tempMoveCoord,
-                        MazeCreator.ActiveWall.B, 
-                        mostCloseHelper.DistanceBetweenStartPointAndCurrentPoint + 1,
-                        GetStraightDistance(tempMoveCoord, endCoord));
-                    checkCoordList.Add(helper);
+            if(!tempInfo.WallInfo.HasFlag(MazeCreator.ActiveWall.B)) {
+                tempMoveCoord = tempInfo.NextCrossLoadCoord_B;
+                if(IsExistEndCoordOnCoordY(tempMoveCoord, tempInfo.CurrentCoord)) {
+                    AddInfoToPastList(tempInfo.CurrentCoord, endCoord); 
+                    break;
+                }
+                else if(CanAddInCheckList(tempMoveCoord)) {
+                    AddInfoToCheckList(tempInfo.CurrentCoord, tempMoveCoord);
                 }
             }
 
@@ -396,8 +415,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 return null;
             }
         }
+        #endregion
 
-        // 탐색을 통해 나온 coord 정리
+        #region 경로 정리
         List<PathHelper> pathHelperList = new List<PathHelper>();
         int searchIndex = pastCoordList.Count - 1;
         while(true) {
@@ -413,33 +433,46 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             return null;
         }
         pathHelperList.Reverse();
+        #endregion
 
-        // 경로 단순화
-        List<PathHelper> simplePathHelperList = new List<PathHelper>();
-        simplePathHelperList.Add(pathHelperList[0]); //처음 좌표 추가
-        PathHelper moveDirectionChecker = pathHelperList[1];
-        for(int i = 2; i < pathHelperList.Count; i++) {
-            if(moveDirectionChecker.MovedDirection != pathHelperList[i].MovedDirection) {
-                simplePathHelperList.Add(pathHelperList[i - 1]);
-                moveDirectionChecker = pathHelperList[i];
+        #region Coord to Vector3
+        MazeCreator.ActiveWall GetMovedDirection(Vector2Int startCoord, Vector2Int endCoord) {
+            if(startCoord.x == endCoord.x) {
+                return startCoord.y < endCoord.y ? MazeCreator.ActiveWall.F : MazeCreator.ActiveWall.B;
+            }
+            else {
+                return startCoord.x < endCoord.x ? MazeCreator.ActiveWall.R : MazeCreator.ActiveWall.L;
             }
         }
-        simplePathHelperList.Add(pathHelperList[pathHelperList.Count - 1]); //마지막 좌표 추가
+        void CalculateCornerDirection(Vector2Int pastCoord, Vector2Int currentCoord, Vector2Int nextCoord, 
+            out MazeCreator.ActiveWall d1, out MazeCreator.ActiveWall d2) {
+            d1 = GetMovedDirection(pastCoord, currentCoord);
+            d2 = GetMovedDirection(currentCoord, nextCoord);
+        }
 
         // coord List를 Vector3 List로 변환
         // rayRadius를 사용하여 CornerPoint를 적용
         List<Vector3> pathList = new List<Vector3>();
         pathList.Add(startPos); //처음 위치 설정
-        PathHelper currentHelper;
-        PathHelper nextHelper;
+
         MazeBlock tempBlock;
-        for(int i = 1; i < simplePathHelperList.Count - 1; i++) {
-            currentHelper = simplePathHelperList[i];
-            nextHelper = simplePathHelperList[i + 1];
-            tempBlock = mazeBlocks[currentHelper.Coord.x, currentHelper.Coord.y];
-            pathList.Add(tempBlock.GetCornerPoint(currentHelper.MovedDirection, nextHelper.MovedDirection, rayRadius));
+        Vector2Int pastCoord;
+        Vector2Int currentCoord;
+        Vector2Int nextCoord;
+        MazeCreator.ActiveWall d1;
+        MazeCreator.ActiveWall d2;
+        for(int i = 1; i < pathHelperList.Count - 1; i++) {
+            pastCoord = pathHelperList[i - 1].Coord;
+            currentCoord = pathHelperList[i].Coord;
+            nextCoord = pathHelperList[i + 1].Coord;
+            CalculateCornerDirection(pastCoord, currentCoord, nextCoord,out d1, out d2);
+            tempBlock = mazeBlocks[currentCoord.x, currentCoord.y];
+
+            pathList.Add(tempBlock.GetCornerPoint(d1, d2, rayRadius));
         }
+
         pathList.Add(endPos); //마지막 위치 설정
+        #endregion
 
         // 심층 단순화
         Vector3 p1;
@@ -700,10 +733,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private bool IsSameVec2Int(Vector2Int v1, Vector2Int v2) => v1.x == v2.x && v1.y == v2.y;
 
     #region 길찾기 Util Func
-    private Vector2Int GetMoveToCoordRight(Vector2Int coord) => new Vector2Int(coord.x + 1, coord.y);
-    private Vector2Int GetMoveToCoordForward(Vector2Int coord) => new Vector2Int(coord.x, coord.y + 1);
-    private Vector2Int GetMoveToCoordLeft(Vector2Int coord) => new Vector2Int(coord.x - 1, coord.y);
-    private Vector2Int GetMoveToCoordBack(Vector2Int coord) => new Vector2Int(coord.x, coord.y - 1);
     private int GetStraightDistance(Vector2Int c1, Vector2Int c2) => Mathf.Abs(c2.x - c1.x) + Mathf.Abs(c2.y - c1.y);
     private int GetMostCloseHelperIndex(List<PathHelper> helperList) {
         int index = 0;
@@ -863,11 +892,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     private class PathHelper {
         public int ParentIndex { get; private set; }
-        public Vector2Int Coord { get; private set; }
         /// <summary>
         /// Direction of Parent to CurrentPoint
         /// </summary>
-        public MazeCreator.ActiveWall MovedDirection { get; private set; }
+        public MazeInfo Info { get; private set; }
+        public Vector2Int Coord { get { return Info.CurrentCoord; } }
+        public MazeCreator.ActiveWall ActiveWall { get { return Info.WallInfo; } }
 
         public int DistanceBetweenStartPointAndCurrentPoint { get; private set; }
         public int DistanceBetweenCurrentPointAndEndPoint { get; private set; }
@@ -880,14 +910,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         /// </summary>
         /// <param name="accumulatedDistance">누적된 거리</param>
         public PathHelper(
-            int parentIndex, 
-            Vector2Int coord, 
-            MazeCreator.ActiveWall movedDirection, 
+            int parentIndex,
+            MazeInfo info, 
             int accumulatedDistance, 
             int distanceBetweenCurrentPointAndEndPoint) {
             ParentIndex = parentIndex;
-            Coord = coord;
-            MovedDirection = movedDirection;
+            Info = info;
 
             DistanceBetweenStartPointAndCurrentPoint = accumulatedDistance;
             DistanceBetweenCurrentPointAndEndPoint = distanceBetweenCurrentPointAndEndPoint;
