@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 다른 몬스터들과 다르게 소리를 쫒는게 아닌 플레이어의 위치를 직접 쫒음
+/// 다른 몬스터들과 다르게 소리를 쫒는게 아닌 플레이어가 일정 범위 안에 있을 때에 플레이어의 위치를 직접 쫒음
 /// </summary>
 public class Starry : MonsterController, IMove {
     private const float restTime = 5.0f;

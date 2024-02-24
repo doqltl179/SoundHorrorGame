@@ -154,13 +154,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         OnItemCollected -= ItemCollected;
     }
 
-    private void Start() {
-        MonsterController testMonster = FindObjectOfType<MonsterController>();
-        if(testMonster != null) {
-            monsters.Add(testMonster);
-        }
-    }
-
     private void Update() {
         foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
             if(group.CurrentArrayLength > 0) {

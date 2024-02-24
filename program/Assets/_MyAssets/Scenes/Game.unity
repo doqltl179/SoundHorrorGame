@@ -133,9 +133,9 @@ GameObject:
   m_Component:
   - component: {fileID: 119277961}
   - component: {fileID: 119277960}
-  m_Layer: 0
+  m_Layer: 25
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -189,9 +189,9 @@ GameObject:
   - component: {fileID: 501637380}
   - component: {fileID: 501637379}
   - component: {fileID: 501637378}
-  m_Layer: 0
+  m_Layer: 25
   m_Name: PlayerController
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -238,11 +238,10 @@ MonoBehaviour:
   collider: {fileID: 119277960}
   rigidbody: {fileID: 501637378}
   moveSpeed: 1
-  dashSpeed: 3
+  runSpeed: 3
   crouchSpeed: 0.5
   rotateSpeed: 3
   walkSoundInterval: 1
-  playAutomatically: 0
 --- !u!4 &501637380
 Transform:
   m_ObjectHideFlags: 0
@@ -288,7 +287,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e97e6286c74df8e4499bda60548828ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerController: {fileID: 501637379}
 --- !u!4 &579073130
 Transform:
   m_ObjectHideFlags: 0

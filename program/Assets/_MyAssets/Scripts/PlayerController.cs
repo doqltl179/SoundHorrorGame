@@ -1,12 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : Singleton<PlayerController> {
     public static readonly string TagName = "Player";
     public static readonly string LayerName = "Player";
 
@@ -49,12 +48,26 @@ public class PlayerController : MonoBehaviour {
     }
     public PlayerState CurrentState { get; private set; }
 
+    private Vector2Int currentCoord;
+    public Vector2Int CurrentCoord {
+        get => currentCoord;
+        private set {
+            if(currentCoord.x != value.x || currentCoord.y != value.y) {
+                OnCoordChanged?.Invoke(value);
+
+                currentCoord = value;
+            }
+        }
+    }
+
     private KeyCode key_moveF = KeyCode.W;
     private KeyCode key_moveB = KeyCode.S;
     private KeyCode key_moveR = KeyCode.A;
     private KeyCode key_moveL = KeyCode.D;
     private KeyCode key_dash = KeyCode.LeftShift;
     private KeyCode key_crouch = KeyCode.LeftControl;
+
+    public Action<Vector2Int> OnCoordChanged;
 
 
 
@@ -70,7 +83,7 @@ public class PlayerController : MonoBehaviour {
     List<Vector3> movePath = null;
     StuckHelper stuckHelper = null;
 
-    public bool playAutomatically = false;
+    bool autoMove = false;
 
     private void Start() {
         stuckHelper = new StuckHelper(Radius, 1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
@@ -93,9 +106,7 @@ public class PlayerController : MonoBehaviour {
 
     private void FixedUpdate() {
 #if Play_Game_Automatically
-        if(!playAutomatically) {
-            return;
-        }
+        if(!autoMove) return;
 
         if(movePath == null || movePath.Count <= 0) {
             movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
@@ -158,6 +169,18 @@ public class PlayerController : MonoBehaviour {
 
         transform.Translate(moveDirection * Time.deltaTime * moveSpeed, Space.Self);
 #endif
+    }
+
+    private void Update() {
+#if Play_Game_Automatically
+        if(Input.GetKeyDown(KeyCode.Space)) {
+            autoMove = !autoMove;
+            CurrentState = autoMove ? PlayerState.Run : PlayerState.None;
+        }
+        if(!autoMove) return;
+#endif
+
+        CurrentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
     }
 
     private void LateUpdate() {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
-    [SerializeField] private PlayerController playerController;
 
 
 
@@ -16,41 +15,41 @@ public class GameController : MonoBehaviour {
         Vector2Int playerStartCoord = new Vector2Int(
             Random.Range(0, LevelLoader.Instance.LevelWidth),
             Random.Range(0, LevelLoader.Instance.LevelHeight));
-        playerController.Pos = LevelLoader.Instance.GetBlockPos(playerStartCoord);
-        UtilObjects.Instance.CamPos = playerController.HeadPos;
-        UtilObjects.Instance.CamForward = playerController.HeadForward;
+        PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(playerStartCoord);
+        UtilObjects.Instance.CamPos = PlayerController.Instance.HeadPos;
+        UtilObjects.Instance.CamForward = PlayerController.Instance.HeadForward;
 
 #if Play_Game_Automatically
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Kitty,
-            1,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Starry,
-            1,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Cloudy,
-            1,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Kitty,
+        //    1,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Starry,
+        //    1,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Cloudy,
+        //    1,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
         LevelLoader.Instance.AddMonsterOnLevelRandomly(
             LevelLoader.MonsterType.Froggy, 
-            1, 
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH, 
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Honey, 
-            1,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Bunny, 
-            1,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
+            40, 
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2, 
+            false);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Honey, 
+        //    1,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Bunny, 
+        //    1,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
 
         LevelLoader.Instance.AddItemOnLevelRandomly(
             LevelLoader.ItemType.Crystal, 
@@ -69,7 +68,6 @@ public class GameController : MonoBehaviour {
 
 #if Play_Game_Automatically
         LevelLoader.Instance.PlayMonsters();
-        playerController.playAutomatically = true;
 #else
 #endif
     }
@@ -98,8 +96,8 @@ public class GameController : MonoBehaviour {
             UtilObjects.Instance.CamForward = Vector3.Lerp(UtilObjects.Instance.CamForward, camForward, Time.deltaTime);
         }
         else {
-            UtilObjects.Instance.CamPos = playerController.HeadPos;
-            UtilObjects.Instance.CamForward = playerController.HeadForward;
+            UtilObjects.Instance.CamPos = PlayerController.Instance.HeadPos;
+            UtilObjects.Instance.CamForward = PlayerController.Instance.HeadForward;
         }
     }
 #endif
