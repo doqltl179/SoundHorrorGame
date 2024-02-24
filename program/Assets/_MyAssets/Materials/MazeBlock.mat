@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - DRAW_RIM
   - USE_BASE_COLOR
   m_InvalidKeywords:
   - DrawOutline
@@ -71,6 +72,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints:
+    - _PlayerPastPosArrayLength: 0
     - _RimArrayLength: 50
     - _RimArrayLength_Item: 0
     - _RimArrayLength_Monster: 0
@@ -83,6 +85,8 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DrawOutline: 1
+    - _DrawPlayerPastPos: 0
+    - _DrawRim: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -94,8 +98,10 @@ Material:
     - _OcclusionStrength: 1
     - _Outline: 0.1
     - _Parallax: 0.02
+    - _PlayerPastPosRadius: 0.3
     - _Rim: 0
     - _RimThickness: 0.2
+    - _RimThicknessOffset: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -112,6 +118,7 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MainColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _PlayerPastPosColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor_Item: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor_Monster: {r: 1, g: 1, b: 1, a: 1}

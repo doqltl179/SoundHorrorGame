@@ -21,11 +21,7 @@ public class ItemController : MonoBehaviour {
         itemSoundPlayTimeChecker += Time.deltaTime;
         if(itemSoundPlayTimeChecker >= ItemSoundPlayTimeInterval) {
             if(Vector3.Distance(Pos, UtilObjects.Instance.CamPos) < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                List<Vector3> tempPath = LevelLoader.Instance.GetPath(
-                    Pos,
-                    UtilObjects.Instance.CamPos,
-                    Radius,
-                    1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+                List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
                 float dist = LevelLoader.Instance.GetPathDistance(tempPath);
                 SoundManager.Instance.PlayOnWorld(
                     Pos,

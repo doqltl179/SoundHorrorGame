@@ -112,7 +112,6 @@ public class PlayerController : Singleton<PlayerController> {
             movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
                 Pos,
                 Radius,
-                1 << LayerMask.NameToLayer(MazeBlock.WallLayerName), 
                 false,
                 LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
 
@@ -124,7 +123,7 @@ public class PlayerController : Singleton<PlayerController> {
             Vector3 hitPosToCurrentPos = (transform.position - stuckHelper.HitPos).normalized;
             bool isRightSide = Vector3.Cross(hitPosToCurrentPos, stuckHelper.HitNormal).y > 0;
             Vector3 moveDirection = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
-            transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
+            transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed * 2);
         }
         else {
             Vector3 moveDirection = (movePath[0] - transform.position).normalized;
@@ -169,6 +168,9 @@ public class PlayerController : Singleton<PlayerController> {
 
         transform.Translate(moveDirection * Time.deltaTime * moveSpeed, Space.Self);
 #endif
+
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.angularVelocity = Vector3.zero;
     }
 
     private void Update() {

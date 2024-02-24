@@ -37,8 +37,7 @@ public class Cloudy : MonsterController, IMove {
         transform.localScale = Vector3.one * scaleScalar;
         physicsMoveSpeed = 0.0f;
 
-        int mask =
-            (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+        int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
 
         audioSource.minDistance = 0.0f;
@@ -107,6 +106,9 @@ public class Cloudy : MonsterController, IMove {
         // 애니메이션의 속도 조정
         // physicsMoveSpeed가 0에 가까울수록 Idle로 전환
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
+
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.angularVelocity = Vector3.zero;
     }
     #endregion
 
@@ -150,8 +152,7 @@ public class Cloudy : MonsterController, IMove {
                     if(movePath == null || movePath.Count <= 0) {
                         movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
                             Pos,
-                            Radius,
-                            1 << LayerMask.NameToLayer(MazeBlock.WallLayerName),
+                            Radius, 
                             false,
                             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
                     }

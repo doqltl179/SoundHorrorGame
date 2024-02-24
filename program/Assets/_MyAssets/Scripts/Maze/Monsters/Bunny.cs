@@ -30,8 +30,7 @@ public class Bunny : MonsterController, IMove {
         transform.localScale = Vector3.one * scaleScalar;
         physicsMoveSpeed = 0.0f;
 
-        int mask =
-            (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+        int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
 
         animator.SetFloat(AnimatorPropertyName_MoveSpeed, moveSpeed * moveAnimationSpeed);
@@ -59,11 +58,7 @@ public class Bunny : MonsterController, IMove {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     if(dist < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(
-                            Pos,
-                            UtilObjects.Instance.CamPos,
-                            Radius,
-                            1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
                         dist = LevelLoader.Instance.GetPathDistance(tempPath);
                         SoundManager.Instance.PlayOnWorld(
                             transform.position,
@@ -115,6 +110,9 @@ public class Bunny : MonsterController, IMove {
         // 애니메이션의 속도 조정
         // physicsMoveSpeed가 0에 가까울수록 Idle로 전환
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
+
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.angularVelocity = Vector3.zero;
     }
     #endregion
 
@@ -132,7 +130,14 @@ public class Bunny : MonsterController, IMove {
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
             case SoundManager.SoundType.PlayerWalk: {
+                    if(Vector3.Distance(so.Position, Pos) < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 0.5f) {
+                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
 
+                        physicsMoveSpeedMax = 1.0f;
+                        FollowingSound = so;
+
+                        CurrentState = MonsterState.Move;
+                    }
                 }
                 break;
         }
@@ -153,7 +158,6 @@ public class Bunny : MonsterController, IMove {
                         movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
                             Pos,
                             Radius,
-                            1 << LayerMask.NameToLayer(MazeBlock.WallLayerName),
                             false,
                             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
                     }
@@ -163,6 +167,8 @@ public class Bunny : MonsterController, IMove {
                     restTimeChecker = 0.0f;
 
                     movePath = null;
+                    FollowingSound = null;
+                    physicsMoveSpeedMax = 0.5f;
                 }
                 break;
         }

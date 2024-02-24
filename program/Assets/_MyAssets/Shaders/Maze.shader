@@ -82,12 +82,6 @@ Shader "MyCustomShader/Maze" {
                 o.uv = v.uv;
                 o.worldNormal = UnityObjectToWorldNormal(v.normal);
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-                // o.uv = v.uv;
-                // o.localPos = UnityObjectToClipPos(v.vertex).xyz;
-                // o.worldNormal = UnityObjectToWorldNormal(v.normal);
-                // o.worldPos = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1.0));
-                // o.worldPos.xyz += o.worldNormal * 0.05;
-                // o.vertex = UnityWorldToClipPos(o.worldPos);
 
                 return o;
             }
@@ -289,14 +283,14 @@ Shader "MyCustomShader/Maze" {
             {
                 fixed4 c = fixed4(0.0, 0.0, 0.0, 0.0);
 
-                #if DRAW_RIM
+                #ifdef DRAW_RIM
 
                     float rimColorRatio_none = getRimColorRatio_none(i.worldPos, _RimThicknessOffset);
                     float rimColorRatio_player = getRimColorRatio_player(i.worldPos, _RimThicknessOffset);
                     float rimColorRatio_monster = getRimColorRatio_monster(i.worldPos, _RimThicknessOffset);
                     float rimColorRatio_item = getRimColorRatio_item(i.worldPos, _RimThicknessOffset);
 
-                    #if USE_BASE_COLOR
+                    #ifdef USE_BASE_COLOR
 
                         c += lerp(_BaseColor, _RimColor_None, rimColorRatio_none);
                         c += lerp(_BaseColor, _RimColor_Player, rimColorRatio_player);
@@ -319,9 +313,9 @@ Shader "MyCustomShader/Maze" {
 
                 #else
 
-                    #if USE_BASE_COLOR
+                    #ifdef USE_BASE_COLOR
 
-                        c = _BaseColor
+                        c = _BaseColor;
 
                     #else
 
@@ -331,7 +325,7 @@ Shader "MyCustomShader/Maze" {
 
                 #endif
 
-                #if DRAW_PLAYER_PAST_POS
+                #ifdef DRAW_PLAYER_PAST_POS
 
                     float playerPastPosColorRatio = getPlayerPastPosColorRatio(i.worldPos);
                     c += _PlayerPastPosColor * playerPastPosColorRatio;

@@ -33,8 +33,7 @@ public class Starry : MonsterController, IMove {
         transform.localScale = Vector3.one * scaleScalar;
         physicsMoveSpeed = 0.0f;
 
-        int mask =
-            (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+        int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
 
         animator.SetFloat(AnimatorPropertyName_MoveSpeed, moveSpeed * moveAnimationSpeed);
@@ -62,11 +61,7 @@ public class Starry : MonsterController, IMove {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     if(dist < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(
-                            Pos,
-                            UtilObjects.Instance.CamPos,
-                            Radius,
-                            1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
+                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
                         dist = LevelLoader.Instance.GetPathDistance(tempPath);
                         SoundManager.Instance.PlayOnWorld(
                             transform.position,
@@ -118,6 +113,9 @@ public class Starry : MonsterController, IMove {
         // 애니메이션의 속도 조정
         // physicsMoveSpeed가 0에 가까울수록 Idle로 전환
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
+
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.angularVelocity = Vector3.zero;
     }
     #endregion
 
@@ -156,7 +154,6 @@ public class Starry : MonsterController, IMove {
                         movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
                             Pos,
                             Radius,
-                            1 << LayerMask.NameToLayer(MazeBlock.WallLayerName),
                             false,
                             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
                     }

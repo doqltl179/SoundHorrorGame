@@ -217,7 +217,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 2.0f);
+            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 1.5f);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
@@ -236,7 +236,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockWallMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 2.0f);
+            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 1.5f);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             mat.SetColor("_BaseColor", Color.red);
@@ -303,7 +303,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     RaycastHit tempPathHit;
-    public List<Vector3> GetPath(Vector3 startPos, Vector3 endPos, float rayRadius, int mask) {
+    public List<Vector3> GetPath(Vector3 startPos, Vector3 endPos, float rayRadius) {
         Vector2Int startCoord = GetMazeCoordinate(startPos);
         Vector2Int endCoord = GetMazeCoordinate(endPos);
         Debug.Log(string.Format("startPos: {0}, endPos: {1}, startCoord: {2}, endCoord: {3}", startPos, endPos, startCoord, endCoord));
@@ -444,11 +444,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 return startCoord.x < endCoord.x ? MazeCreator.ActiveWall.R : MazeCreator.ActiveWall.L;
             }
         }
-        void CalculateCornerDirection(Vector2Int pastCoord, Vector2Int currentCoord, Vector2Int nextCoord, 
-            out MazeCreator.ActiveWall d1, out MazeCreator.ActiveWall d2) {
-            d1 = GetMovedDirection(pastCoord, currentCoord);
-            d2 = GetMovedDirection(currentCoord, nextCoord);
-        }
 
         // coord List를 Vector3 List로 변환
         // rayRadius를 사용하여 CornerPoint를 적용
@@ -465,37 +460,45 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             pastCoord = pathHelperList[i - 1].Coord;
             currentCoord = pathHelperList[i].Coord;
             nextCoord = pathHelperList[i + 1].Coord;
-            CalculateCornerDirection(pastCoord, currentCoord, nextCoord,out d1, out d2);
-            tempBlock = mazeBlocks[currentCoord.x, currentCoord.y];
+            d1 = GetMovedDirection(pastCoord, currentCoord);
+            d2 = GetMovedDirection(currentCoord, nextCoord);
+            // 직선 경로 제거
+            if(d1 == d2) {
+                pathHelperList.RemoveAt(i);
+                i--;
+            }
+            else {
+                tempBlock = mazeBlocks[currentCoord.x, currentCoord.y];
 
-            pathList.Add(tempBlock.GetCornerPoint(d1, d2, rayRadius));
+                pathList.Add(tempBlock.GetCornerPoint(d1, d2, rayRadius));
+            }
         }
 
         pathList.Add(endPos); //마지막 위치 설정
         #endregion
 
         // 심층 단순화
-        Vector3 p1;
-        Vector3 p2;
-        Vector3 direction;
-        if(pathList.Count > 2) {
-            Vector3 tempPast;
-            Vector3 tempNext;
-            float distance;
-            for(int i = 1; i < pathList.Count - 1; i++) {
-                tempPast = pathList[i - 1];
-                tempNext = pathList[i + 1];
+        //Vector3 p1;
+        //Vector3 p2;
+        //Vector3 direction;
+        //if(pathList.Count > 2) {
+        //    Vector3 tempPast;
+        //    Vector3 tempNext;
+        //    float distance;
+        //    for(int i = 1; i < pathList.Count - 1; i++) {
+        //        tempPast = pathList[i - 1];
+        //        tempNext = pathList[i + 1];
 
-                p1 = tempPast;
-                p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //임의로 player의 높이를 적용
-                direction = (tempNext - tempPast).normalized;
-                distance = Vector3.Distance(tempPast, tempNext);
-                if(!Physics.CapsuleCast(p1, p2, rayRadius, direction, out tempPathHit, distance, mask)) {
-                    pathList.RemoveAt(i);
-                    i--;
-                }
-            }
-        }
+        //        p1 = tempPast;
+        //        p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //임의로 player의 높이를 적용
+        //        direction = (tempNext - tempPast).normalized;
+        //        distance = Vector3.Distance(tempPast, tempNext);
+        //        if(!Physics.CapsuleCast(p1, p2, rayRadius, direction, out tempPathHit, distance, mask)) {
+        //            pathList.RemoveAt(i);
+        //            i--;
+        //        }
+        //    }
+        //}
 
         return pathList;
     }
@@ -522,10 +525,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     /// <br/> overDistance == true : currentPos를 기준으로 distance 보다 먼 좌표의 경로 반환
     /// <br/> overDistance == false : currentPos를 기준으로 distance 보다 가까운 좌표의 경로 반환
     /// </summary>
-    public List<Vector3> GetRandomPointPathCompareDistance(Vector3 currentPos, float rayRadius, int mask, bool overDistance, float distance) {
+    public List<Vector3> GetRandomPointPathCompareDistance(Vector3 currentPos, float rayRadius, bool overDistance, float distance) {
         Vector2Int endpoint = overDistance ? GetRandomCoordOverDistance(currentPos, distance) : GetRandomCoordNearbyDistance(currentPos, distance);
 
-        return GetPath(currentPos, GetBlockPos(endpoint), rayRadius, mask);
+        return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
     }
 
     /// <summary>
@@ -565,11 +568,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             go.transform.position = GetBlockPos(coord);
 
             MonsterController mc = go.GetComponent<MonsterController>();
-            mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 2.0f);
+            mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 1.5f);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
             mc.Material.SetFloat(MAT_USE_BASE_COLOR_NAME, 0.0f);
-            mc.Material.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
+            //mc.Material.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
+            mc.Material.SetFloat(MAT_DRAW_RIM_NAME, 0.0f);
             mc.Material.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 0.0f);
 
             monsters.Add(mc);

@@ -35,21 +35,21 @@ public class GameController : MonoBehaviour {
         //    1,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Froggy, 
-            40, 
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2, 
-            false);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Froggy, 
+        //    1, 
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2, 
+        //    false);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Honey, 
         //    1,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
-        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
-        //    LevelLoader.MonsterType.Bunny, 
-        //    1,
-        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-        //    true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Bunny,
+            80,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
 
         LevelLoader.Instance.AddItemOnLevelRandomly(
             LevelLoader.ItemType.Crystal, 
@@ -73,7 +73,7 @@ public class GameController : MonoBehaviour {
     }
 
 #if Play_Game_Automatically
-    int watchIndex = 0;
+    int watchIndex = -1;
     private void Update() {
         if(Input.GetKeyDown(KeyCode.Alpha1)) watchIndex = 1;
         else if(Input.GetKeyDown(KeyCode.Alpha2)) watchIndex = 2;

@@ -38,6 +38,7 @@ public class MazeBlock : MonoBehaviour {
 
     public static readonly string TagName = "MazeBlock";
     public static readonly string WallLayerName = "Wall";
+    public static readonly string EdgeLayerName = "Edge";
 
     public static readonly Vector3 StandardBlockAnchor = new Vector3(0.5f, 0.0f, 0.5f);
 
@@ -55,19 +56,22 @@ public class MazeBlock : MonoBehaviour {
     public static readonly float EdgeSize = BlockSize * 0.1f;
 
     public int WallLayerIndex { get; private set; }
+    public int EdgeLayerIndex { get; private set; }
 
 
 
     private void Start() {
         WallLayerIndex = LayerMask.NameToLayer(WallLayerName);
+        EdgeLayerIndex = LayerMask.NameToLayer(EdgeLayerName);
 
         // 천장과 바닥은 layer를 설정하지 않음
         // 벽을 대상으로 ray를 사용하는 경우가 많은데, 이 경우에 천장이나 바닥에 ray가 닿는 것을 배제하기 위함
         floor.tag = TagName;
         ceiling.tag = TagName;
+        // 자동 이동을 할 때에 ray가 Edge에 걸려 Wall과 Edge 사이에 몬스터가 끼는 문제가 생겨서 Edge의 Layer를 따로 부여
         foreach(GameObject edge in edges) {
             edge.tag = TagName;
-            edge.layer = WallLayerIndex;
+            edge.layer = EdgeLayerIndex;
         }
         foreach(GameObject wall in walls) {
             wall.tag = TagName;
