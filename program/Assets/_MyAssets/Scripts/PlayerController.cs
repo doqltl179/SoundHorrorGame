@@ -46,7 +46,7 @@ public class PlayerController : Singleton<PlayerController> {
         Run, 
         Crouch, 
     }
-    public PlayerState CurrentState { get; private set; }
+    public PlayerState CurrentState { get; private set; } = PlayerState.None;
 
     private Vector2Int currentCoord;
     public Vector2Int CurrentCoord {

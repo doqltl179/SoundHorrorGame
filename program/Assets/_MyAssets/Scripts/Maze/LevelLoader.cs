@@ -558,7 +558,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
             // 현재 몬스터들과 겹치지 않는 위치 확인
             if(Array.FindIndex(currentMonstersCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
-                usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0) {
+                usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0 &&
+                monsters.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0 &&
+                items.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0) {
                 usingCoordList.Add(randomCoord);
             }
         }
@@ -603,7 +605,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
             // 현재 아이템과 겹치지 않는 위치 확인
             if(Array.FindIndex(currentItemsCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
-                usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0) {
+                usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0 && 
+                monsters.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0 &&
+                items.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0) {
                 usingCoordList.Add(randomCoord);
             }
         }

@@ -18,6 +18,11 @@ public class SoundManager : GenericSingleton<SoundManager> {
         // Monster
         MonsterWalk01,
         MonsterWalk02,
+        MonsterWalk05,
+        MonsterWalk06,
+
+        Scream, 
+        Whisper, 
 
         // Item
         Crystal, 
@@ -135,6 +140,10 @@ public class SoundManager : GenericSingleton<SoundManager> {
     }
 
     #region Utility
+    public void Play(SoundType type, float volumeOffset = 1.0f) {
+
+    }
+
     public void PlayOnWorld(Vector3 worldPos, SoundType type, SoundFrom from, float volumeOffset = 1.0f) {
         SoundObject so = GetSoundObject(type);
         so.Position = worldPos;

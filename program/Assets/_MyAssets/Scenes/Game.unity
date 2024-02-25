@@ -238,7 +238,7 @@ MonoBehaviour:
   collider: {fileID: 119277960}
   rigidbody: {fileID: 501637378}
   moveSpeed: 1
-  runSpeed: 2
+  runSpeed: 3
   crouchSpeed: 0.5
   rotateSpeed: 3
   walkSoundInterval: 1

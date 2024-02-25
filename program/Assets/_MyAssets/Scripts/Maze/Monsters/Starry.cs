@@ -9,11 +9,15 @@ public class Starry : MonsterController, IMove {
     private const float restTime = 5.0f;
     private float restTimeChecker = 0.0f;
 
+    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 5.0f;
+
 
 
     protected override void Awake() {
         SoundManager.Instance.OnWorldSoundAdded += WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved += WorldSoundRemoved;
+
+        PlayerController.Instance.OnCoordChanged += PlayerCoordChanged;
 
         OnCurrentStateChanged += CurrentStateChanged;
         OnPathEnd += PathEnd;
@@ -24,6 +28,8 @@ public class Starry : MonsterController, IMove {
     private void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
+
+        PlayerController.Instance.OnCoordChanged -= PlayerCoordChanged;
 
         OnCurrentStateChanged -= CurrentStateChanged;
         OnPathEnd -= PathEnd;
@@ -60,14 +66,14 @@ public class Starry : MonsterController, IMove {
                 if(animatorStateInfo[AnimatorLayerName_Motion].CompareInteger < normalizedTimeInteger) {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
-                    if(dist < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+                    if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
                         List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
                         dist = LevelLoader.Instance.GetPathDistance(tempPath);
                         SoundManager.Instance.PlayOnWorld(
                             transform.position,
-                            SoundManager.SoundType.MonsterWalk02,
+                            SoundManager.SoundType.MonsterWalk05,
                             SoundManager.SoundFrom.Monster,
-                            1.0f - dist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+                            1.0f - dist / STANDARD_RIM_RADIUS_SPREAD_LENGTH);
                     }
 
                     animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = normalizedTimeInteger;
@@ -130,6 +136,15 @@ public class Starry : MonsterController, IMove {
     #endregion
 
     #region Action
+    private void PlayerCoordChanged(Vector2Int coord) {
+        Vector3 coordPos = LevelLoader.Instance.GetBlockPos(coord);
+        if(Vector3.Distance(coordPos, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+            movePath = LevelLoader.Instance.GetPath(Pos, coordPos, Radius);
+
+            CurrentState = MonsterState.Move;
+        }
+    }
+
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
             case SoundManager.SoundType.PlayerWalk: {
@@ -155,7 +170,7 @@ public class Starry : MonsterController, IMove {
                             Pos,
                             Radius,
                             false,
-                            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
+                            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
                     }
                 }
                 break;

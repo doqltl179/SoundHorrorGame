@@ -61,6 +61,7 @@ MonoBehaviour:
   rotateSpeed: 2
   moveSoundOffset: 0
   audioSource: {fileID: 349105038731470927}
+  audioVolumeMax: 0.85
 --- !u!54 &3626469552773225716
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -216,9 +217,9 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: fc89909a8f452a949a0caed0c8ae1dd7, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.85
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -262,7 +263,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

@@ -7,13 +7,24 @@ using UnityEngine;
 /// <br/>플레이어가 찾아야하는 아이템의 소리를 내어 플레이어를 자신의 위치로 유도
 /// </summary>
 public class Froggy : MonsterController {
-    private const int checkRange = 1;
-    private bool isPlayerInsideCheckRange;
+    private const int checkCoordRange = 1;
+    private bool isPlayerInsideCheckCoordRange;
+
+    private const float fakeItemSoundPlayTimeInterval = 10.0f;
+    private float fakeItemSoundPlayTimeChecker = 0.0f;
+
+    [Header("Sound")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField, Range(0.0f, 1.0f)] private float audioVolumeMax = 0.85f;
 
     private RaycastHit screamCheckHit;
     private int screamCheckRayMask;
 
     private const string AnimationTriggerName_Scream = "Scream";
+
+    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 10.0f;
+
+    private IEnumerator screamActionCoroutine = null;
 
 
 
@@ -37,22 +48,47 @@ public class Froggy : MonsterController {
 
         screamCheckRayMask =
             (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName)) |
+            (1 << LayerMask.NameToLayer(MazeBlock.EdgeLayerName)) | 
             (1 << LayerMask.NameToLayer(PlayerController.LayerName));
+
+        audioSource.clip = SoundManager.Instance.GetAudioClip(SoundManager.SoundType.Scream);
+        audioSource.minDistance = 0.0f;
+        audioSource.maxDistance = STANDARD_RIM_RADIUS_SPREAD_LENGTH;
     }
 
     private void Update() {
         if(!IsPlaying) return;
 
-        if(isPlayerInsideCheckRange && CurrentState != MonsterState.Scream) {
-            if(Physics.Raycast(
+        if(screamActionCoroutine == null && CurrentState != MonsterState.Scream) {
+            if(isPlayerInsideCheckCoordRange) {
+                if(Physics.Raycast(
                 Pos,
-                (PlayerController.Instance.Pos - Pos).normalized, 
+                (PlayerController.Instance.Pos - Pos).normalized,
                 out screamCheckHit,
-                float.MaxValue, 
+                float.MaxValue,
                 screamCheckRayMask)) {
-                if(screamCheckHit.collider.CompareTag(PlayerController.TagName) && 
-                    PlayerController.Instance.CurrentState != PlayerController.PlayerState.Crouch) {
-                    CurrentState = MonsterState.Scream;
+                    if(screamCheckHit.collider.CompareTag(PlayerController.TagName) &&
+                        PlayerController.Instance.CurrentState != PlayerController.PlayerState.None &&
+                        PlayerController.Instance.CurrentState != PlayerController.PlayerState.Crouch) {
+                        CurrentState = MonsterState.Scream;
+                    }
+                }
+            }
+            else {
+                // Fake Item Sound
+                fakeItemSoundPlayTimeChecker += Time.deltaTime;
+                if(fakeItemSoundPlayTimeChecker >= fakeItemSoundPlayTimeInterval) {
+                    if(Vector3.Distance(Pos, UtilObjects.Instance.CamPos) < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
+                        float dist = LevelLoader.Instance.GetPathDistance(tempPath);
+                        SoundManager.Instance.PlayOnWorld(
+                            Pos,
+                            SoundManager.SoundType.Crystal,
+                            SoundManager.SoundFrom.Item,
+                            1.0f - dist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+                    }
+
+                    fakeItemSoundPlayTimeChecker -= fakeItemSoundPlayTimeInterval;
                 }
             }
         }
@@ -75,9 +111,9 @@ public class Froggy : MonsterController {
         }
 
         Vector2Int currentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
-        Vector2Int lb = new Vector2Int(currentCoord.x - checkRange, currentCoord.y - checkRange);
-        Vector2Int rt = new Vector2Int(currentCoord.x + checkRange, currentCoord.y + checkRange);
-        isPlayerInsideCheckRange = (lb.x <= coord.x && coord.x <= rt.x) && (lb.y <= coord.y && coord.y <= rt.y);
+        Vector2Int lb = new Vector2Int(currentCoord.x - checkCoordRange, currentCoord.y - checkCoordRange);
+        Vector2Int rt = new Vector2Int(currentCoord.x + checkCoordRange, currentCoord.y + checkCoordRange);
+        isPlayerInsideCheckCoordRange = (lb.x <= coord.x && coord.x <= rt.x) && (lb.y <= coord.y && coord.y <= rt.y);
     }
 
     private void CurrentStateChanged(MonsterState state) {
@@ -87,13 +123,18 @@ public class Froggy : MonsterController {
                 }
                 break;
             case MonsterState.Search: {
-
+                    fakeItemSoundPlayTimeChecker = 0.0f;
                 }
                 break;
             case MonsterState.Scream: {
                     transform.forward = (PlayerController.Instance.Pos - Pos).normalized;
 
-                    StartCoroutine(ScreamActionCoroutine());
+                    if(screamActionCoroutine != null) {
+                        StopCoroutine(screamActionCoroutine);
+                        audioSource.Stop();
+                    }
+                    screamActionCoroutine = ScreamActionCoroutine();
+                    StartCoroutine(screamActionCoroutine);
                 }
                 break;
         }
@@ -102,20 +143,14 @@ public class Froggy : MonsterController {
 
     private IEnumerator ScreamActionCoroutine() {
         Debug.Log("Start screaming!");
-        const string animationName_Scream = "Scream";
 
-        while(true) {
-            animator.SetTrigger(AnimationTriggerName_Scream);
-            yield return null;
-
-            if(TryGetAnimatorStateInfo(AnimatorLayerName_Motion)) {
-                if(animatorStateInfo[AnimatorLayerName_Motion].Info.IsName(animationName_Scream)) {
-                    break;
-                }
-            }
-        }
+        audioSource.Play();
+        animator.SetTrigger(AnimationTriggerName_Scream);
         yield return null;
 
+        const string animationName_Scream = "Scream";
+        const float screamFakeSoundTimeInterval = 0.5f;
+        float screamSoundTimeChecker = 0.0f;
         while(true) {
             if(TryGetAnimatorStateInfo(AnimatorLayerName_Motion)) {
                 if(!animatorStateInfo[AnimatorLayerName_Motion].Info.IsName(animationName_Scream)) {
@@ -123,9 +158,18 @@ public class Froggy : MonsterController {
                 }
             }
 
+            screamSoundTimeChecker += Time.deltaTime;
+            if(screamSoundTimeChecker >= screamFakeSoundTimeInterval) {
+                SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.Empty00_5s, SoundManager.SoundFrom.Monster, 0.0f);
+
+                screamSoundTimeChecker -= screamFakeSoundTimeInterval;
+            }
+
             yield return null;
         }
 
         CurrentState = MonsterState.Search;
+
+        screamActionCoroutine = null;
     }
 }

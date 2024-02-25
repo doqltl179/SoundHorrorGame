@@ -13,6 +13,8 @@ public class Cloudy : MonsterController, IMove {
     [SerializeField] private AudioSource audioSource;
     [SerializeField, Range(0.0f, 1.0f)] private float audioVolumeMax = 0.85f;
 
+    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 5.0f;
+
 
 
     protected override void Awake() {
@@ -40,8 +42,9 @@ public class Cloudy : MonsterController, IMove {
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
 
+        audioSource.clip = SoundManager.Instance.GetAudioClip(SoundManager.SoundType.Whisper);
         audioSource.minDistance = 0.0f;
-        audioSource.maxDistance = LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH;
+        audioSource.maxDistance = STANDARD_RIM_RADIUS_SPREAD_LENGTH;
 
         animator.SetFloat(AnimatorPropertyName_MoveSpeed, moveSpeed * moveAnimationSpeed);
     }
@@ -63,9 +66,9 @@ public class Cloudy : MonsterController, IMove {
         if(CurrentState != MonsterState.None) {
             // Idle Sound
             float cameraDist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
-            float normalizedDist = cameraDist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH;
+            float normalizedDist = cameraDist / STANDARD_RIM_RADIUS_SPREAD_LENGTH;
             float volume = Mathf.Clamp01(1.0f - normalizedDist) * audioVolumeMax;
-            audioSource.volume = Mathf.Lerp(audioSource.volume, volume, Time.deltaTime * 0.5f);
+            audioSource.volume = Mathf.Lerp(audioSource.volume, volume, Time.deltaTime * 0.4f);
         }
     }
 
@@ -130,7 +133,27 @@ public class Cloudy : MonsterController, IMove {
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
             case SoundManager.SoundType.PlayerWalk: {
+                    if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
 
+                        physicsMoveSpeedMax = 1.0f;
+                        FollowingSound = so;
+
+                        CurrentState = MonsterState.Move;
+                    }
+                }
+                break;
+            case SoundManager.SoundType.Empty00_5s: {
+                    if(FollowingSound == null &&
+                        from == SoundManager.SoundFrom.Monster &&
+                        Vector3.Distance(so.Position, Pos) < Froggy.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+
+                        physicsMoveSpeedMax = 1.0f;
+                        FollowingSound = so;
+
+                        CurrentState = MonsterState.Move;
+                    }
                 }
                 break;
         }
@@ -143,8 +166,6 @@ public class Cloudy : MonsterController, IMove {
     private void CurrentStateChanged(MonsterState state) {
         switch(state) {
             case MonsterState.None: {
-                    audioSource.volume = 0.0f;
-
                     movePath = null;
                 }
                 break;
@@ -154,15 +175,16 @@ public class Cloudy : MonsterController, IMove {
                             Pos,
                             Radius, 
                             false,
-                            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
+                            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
                     }
                 }
                 break;
             case MonsterState.Rest: {
                     restTimeChecker = 0.0f;
-                    audioSource.volume = 0.0f;
 
                     movePath = null;
+                    FollowingSound = null;
+                    physicsMoveSpeedMax = 0.5f;
                 }
                 break;
         }

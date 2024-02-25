@@ -25,31 +25,31 @@ public class GameController : MonoBehaviour {
         //    1,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
-        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
-        //    LevelLoader.MonsterType.Starry,
-        //    1,
-        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-        //    true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Starry,
+            1,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Cloudy,
         //    1,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
-        //    LevelLoader.MonsterType.Froggy, 
-        //    1, 
-        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2, 
+        //    LevelLoader.MonsterType.Froggy,
+        //    20,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2,
         //    false);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Honey, 
         //    1,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Bunny,
-            80,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Bunny,
+        //    80,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
 
         LevelLoader.Instance.AddItemOnLevelRandomly(
             LevelLoader.ItemType.Crystal, 
