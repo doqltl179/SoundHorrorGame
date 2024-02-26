@@ -35,9 +35,11 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #endregion
 
     #region UI
+    [Header("-------------------- UI --------------------")]
     [SerializeField] private Canvas canvas;
 
     #region Loading
+    [Header("Loading")]
     [SerializeField] private CanvasGroup loadingGroup;
     [SerializeField] private TextMeshProUGUI loadingText;
 
@@ -54,6 +56,13 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
             loadingGroup.alpha = value;
         }
     }
+    #endregion
+
+    #region Settings
+    [Header("Settings")]
+    [SerializeField] private SettingController settingController;
+
+    public Action<UserSettingsHelper> OnSettingChanged;
     #endregion
     #endregion
 

@@ -795,7 +795,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Exit \uB098\uAC00\uAE30 \u65E5\u672C\u8A9E\u306B\u307B\u3093"
+  m_text: Exit
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a54ae1a85bd157c4abf68eb73570d2bf, type: 2}
   m_sharedMaterial: {fileID: 2100000, guid: e9e86f2e7e42d174dadde92957afc696, type: 2}
@@ -822,7 +822,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 59.2
+  m_fontSize: 75.4
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
