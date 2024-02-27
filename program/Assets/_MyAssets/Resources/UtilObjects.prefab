@@ -9068,7 +9068,7 @@ MonoBehaviour:
   canvas: {fileID: 4747321301568559284}
   loadingGroup: {fileID: 818079969839486514}
   loadingText: {fileID: 3372696775813297585}
-  settingController: {fileID: 0}
+  settingController: {fileID: 6781572207428141963}
 --- !u!1 &5778854334119972113
 GameObject:
   m_ObjectHideFlags: 0
@@ -10202,7 +10202,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6124122986671979675}
   m_HandleRect: {fileID: 1846201690961969292}
   m_Direction: 2
-  m_Value: 0.27799976
+  m_Value: 0.225
   m_Size: 0.8170638
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -10942,7 +10942,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0, g: 0, b: 0, a: 1}
+    m_NormalColor: {r: 0, g: 0, b: 0, a: 0}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
@@ -10964,7 +10964,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2821545916389660969}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6781572207428141963}
+        m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
+        m_MethodName: OnClickedBack
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2821545916389660969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12918,7 +12930,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 171.83606}
+  m_AnchoredPosition: {x: 0, y: 184.44995}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2067247200397275616

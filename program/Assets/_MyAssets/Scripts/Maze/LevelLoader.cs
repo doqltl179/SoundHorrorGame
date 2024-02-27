@@ -478,7 +478,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             }
         }
 
-        pathList.Add(endPos); //마지막 위치 설정
+        //pathList.Add(endPos); //마지막 위치 설정
+        pathList.Add(new Vector3(endPos.x, 0.0f, endPos.z));
         #endregion
 
         // 심층 단순화

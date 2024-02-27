@@ -5,6 +5,9 @@ using UnityEngine;
 public class MainController : MonoBehaviour {
     [SerializeField] private Canvas canvas = null;
 
+    [Header("Settings")]
+    [SerializeField] private SettingController settingController;
+
     [Header("Camera Animation Properties")]
     [SerializeField, Range(0.1f, 10.0f)] private float cameraRotateSpeed = 1.0f;
     [SerializeField, Range(0.0f, 180.0f)] private float cameraRotateAngle = 120.0f;
@@ -37,6 +40,9 @@ public class MainController : MonoBehaviour {
         if(mainCameraAnimationCoroutine != null) StopCoroutine(mainCameraAnimationCoroutine);
         mainCameraAnimationCoroutine = MainCameraAnimationCoroutine();
         StartCoroutine(mainCameraAnimationCoroutine);
+
+        // 음성 감지 시작
+        MicrophoneRecorder.Instance.gameObject.SetActive(UserSettings.UseMicBoolean);
     }
 
     private void Update() {
@@ -45,7 +51,7 @@ public class MainController : MonoBehaviour {
             RaycastHit hit;
             if(Physics.Raycast(ray, out hit) && hit.transform.CompareTag(MazeBlock.TagName)) {
                 SoundManager.Instance.PlayOnWorld(
-                    hit.point, 
+                    hit.point,
                     SoundManager.SoundType.MouseClick,
                     SoundManager.SoundFrom.None,
                     Mathf.Clamp01(1.0f - hit.distance / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH));
@@ -80,19 +86,24 @@ public class MainController : MonoBehaviour {
 
     #region OnClick
     public void OnContinueClicked() {
-
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
     }
 
     public void OnNewGameClicked() {
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.GameEnter);
+
         SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
     }
 
     public void OnSettingsClicked() {
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
 
+        UtilObjects.Instance.SetActiveSettingUI(true);
     }
 
     public void OnExitClicked() {
-
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
     }
     #endregion
 }

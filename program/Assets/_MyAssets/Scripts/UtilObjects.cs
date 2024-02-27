@@ -68,14 +68,20 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
 
     private void Awake() {
         DontDestroyOnLoad(gameObject);
+
+        UserSettings.OnDisplayFOVChanged += OnDisplayFOVChanged;
+    }
+
+    private void OnDestroy() {
+        UserSettings.OnDisplayFOVChanged -= OnDisplayFOVChanged;
     }
 
     private void Start() {
         loadingGroup.gameObject.SetActive(false);
+        settingController.gameObject.SetActive(false);
     }
 
     #region Utility
-
 
     #region Loading
     public void SetActiveLoadingUI(bool active) => loadingGroup.gameObject.SetActive(active);
@@ -100,5 +106,15 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         }
     }
     #endregion
+
+    #region Settings
+    public void SetActiveSettingUI(bool active) => settingController.gameObject.SetActive(active);
+    #endregion
+    #endregion
+
+    #region Action
+    private void OnDisplayFOVChanged(float fov) {
+        Cam.fieldOfView = fov;
+    }
     #endregion
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
 
 public class SoundManager : GenericSingleton<SoundManager> {
     public enum SoundType {
@@ -32,6 +33,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
         // Etc
         MouseClick, //'Main'에서만 사용됨
+        ButtonClick, 
+        GameEnter, 
     }
 
     public enum SoundFrom {
@@ -52,84 +55,85 @@ public class SoundManager : GenericSingleton<SoundManager> {
     private List<SoundObject> itemSoundObjectList = new List<SoundObject>();
     private List<SoundObject> soundObjectPool = new List<SoundObject>(); //Pool
 
+    private AudioSource oneShotSource = null;
+
     public Action<SoundObject, SoundFrom> OnWorldSoundAdded;
     public Action<SoundFrom> OnWorldSoundRemoved;
+
+    private IEnumerator micDecibelCheckCoroutine = null;
 
 
 
     protected override void Awake() {
         base.Awake();
+
+        UserSettings.OnMasterVolumeChanged += OnMasterVolumeChanged;
+        UserSettings.OnUseMicChanged += OnUseMicChanged;
+    }
+
+    private void OnDestroy() {
+        UserSettings.OnMasterVolumeChanged -= OnMasterVolumeChanged;
+        UserSettings.OnUseMicChanged -= OnUseMicChanged;
+    }
+
+    private void Start() {
+        if(UserSettings.UseMicBoolean) {
+            micDecibelCheckCoroutine = MicDecibelCheckCoroutine();
+            StartCoroutine(micDecibelCheckCoroutine);
+        }
+    }
+
+    private IEnumerator MicDecibelCheckCoroutine() {
+        const float timeInterval = 0.15f;
+        WaitForSeconds wait = new WaitForSeconds(timeInterval);
+
+        while(true) {
+            yield return wait;
+
+            if(MicrophoneRecorder.Instance.OverCritical) {
+                Debug.Log($"{MicrophoneRecorder.Instance.Decibel} | {MicrophoneRecorder.Instance.DecibelRatio}");
+
+                float overRatio = Mathf.InverseLerp(
+                    MicrophoneRecorder.Instance.DecibelCriticalRatio,
+                    1.0f,
+                    MicrophoneRecorder.Instance.DecibelRatio);
+                int soundValue = Mathf.FloorToInt(overRatio / 0.2f);
+                switch(soundValue) {
+                    case 0: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty01s, SoundFrom.Player, 1.0f); break;
+                    case 1: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty02s, SoundFrom.Player, 1.0f); break;
+                    case 2: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty03s, SoundFrom.Player, 1.0f); break;
+                    case 3: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty04s, SoundFrom.Player, 1.0f); break;
+                    case 4: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty05s, SoundFrom.Player, 1.0f); break;
+                }
+            }
+        }
+
+        micDecibelCheckCoroutine = null;
     }
 
     private void FixedUpdate() {
-        if(noneFromSoundObjectList.Count > 0) {
-            bool listChanged = false;
-            for(int i = 0; i < noneFromSoundObjectList.Count; i++) {
-                if(!noneFromSoundObjectList[i].Source.isPlaying) {
-                    SoundObject so = noneFromSoundObjectList[i];
-                    noneFromSoundObjectList.RemoveAt(i);
+        if(noneFromSoundObjectList.Count > 0) CheckSoundObjct(ref noneFromSoundObjectList, SoundFrom.None);
+        if(playerSoundObjectList.Count > 0) CheckSoundObjct(ref playerSoundObjectList, SoundFrom.Player);
+        if(monsterSoundObjectList.Count > 0) CheckSoundObjct(ref monsterSoundObjectList, SoundFrom.Monster);
+        if(itemSoundObjectList.Count > 0) CheckSoundObjct(ref itemSoundObjectList, SoundFrom.Item);
+    }
 
-                    //so.Stop();
-                    //soundObjectPool.Add(so);
-                    StartCoroutine(StopAsync(so));
+    private void CheckSoundObjct(ref List<SoundObject> list, SoundFrom from) {
+        bool listChanged = false;
+        for(int i = 0; i < list.Count; i++) {
+            if(!list[i].Source.isPlaying) {
+                SoundObject so = list[i];
+                list.RemoveAt(i);
 
-                    i--;
-                    listChanged = true;
-                }
+                //so.Stop();
+                //soundObjectPool.Add(so);
+                StartCoroutine(StopAsync(so));
+
+                i--;
+                listChanged = true;
             }
-            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.None);
         }
-        if(playerSoundObjectList.Count > 0) {
-            bool listChanged = false;
-            for(int i = 0; i < playerSoundObjectList.Count; i++) {
-                if(!playerSoundObjectList[i].Source.isPlaying) {
-                    SoundObject so = playerSoundObjectList[i];
-                    playerSoundObjectList.RemoveAt(i);
-
-                    //so.Stop();
-                    //soundObjectPool.Add(so);
-                    StartCoroutine(StopAsync(so));
-
-                    i--;
-                    listChanged = true;
-                }
-            }
-            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.Player);
-        }
-        if(monsterSoundObjectList.Count > 0) {
-            bool listChanged = false;
-            for(int i = 0; i < monsterSoundObjectList.Count; i++) {
-                if(!monsterSoundObjectList[i].Source.isPlaying) {
-                    SoundObject so = monsterSoundObjectList[i];
-                    monsterSoundObjectList.RemoveAt(i);
-
-                    //so.Stop();
-                    //soundObjectPool.Add(so);
-                    StartCoroutine(StopAsync(so));
-
-                    i--;
-                    listChanged = true;
-                }
-            }
-            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.Monster);
-        }
-        if(itemSoundObjectList.Count > 0) {
-            bool listChanged = false;
-            for(int i = 0; i < itemSoundObjectList.Count; i++) {
-                if(!itemSoundObjectList[i].Source.isPlaying) {
-                    SoundObject so = itemSoundObjectList[i];
-                    itemSoundObjectList.RemoveAt(i);
-
-                    //so.Stop();
-                    //soundObjectPool.Add(so);
-                    StartCoroutine(StopAsync(so));
-
-                    i--;
-                    listChanged = true;
-                }
-            }
-            if(listChanged) OnWorldSoundRemoved?.Invoke(SoundFrom.Item);
-        }
+        if(listChanged) OnWorldSoundRemoved?.Invoke(from);
     }
 
     private IEnumerator StopAsync(SoundObject so) {
@@ -139,15 +143,56 @@ public class SoundManager : GenericSingleton<SoundManager> {
         soundObjectPool.Add(so);
     }
 
-    #region Utility
-    public void Play(SoundType type, float volumeOffset = 1.0f) {
+    #region Action
+    private void OnMasterVolumeChanged(float value) {
+        float ratio = UserSettings.CalculateMasterVolumeRatio(value);
+        AudioListener.volume = ratio;
+    }
 
+    private void OnUseMicChanged(bool value) {
+        if(micDecibelCheckCoroutine != null) StopCoroutine(micDecibelCheckCoroutine);
+
+        if(value) {
+            micDecibelCheckCoroutine = MicDecibelCheckCoroutine();
+            StartCoroutine(micDecibelCheckCoroutine);
+        }
+    }
+    #endregion
+
+    #region Utility
+    public void PlayOneShot(SoundType type, float volumeOffset = 1.0f) {
+        if(oneShotSource == null) {
+            GameObject go = new GameObject("OneShotSource");
+            go.transform.SetParent(transform);
+
+            AudioSource source = go.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.reverbZoneMix = 0.0f;
+
+            oneShotSource = source;
+        }
+
+        oneShotSource.PlayOneShot(GetAudioClip(type), volumeOffset);
     }
 
     public void PlayOnWorld(Vector3 worldPos, SoundType type, SoundFrom from, float volumeOffset = 1.0f) {
         SoundObject so = GetSoundObject(type);
         so.Position = worldPos;
-        so.Volume = 1.0f * volumeOffset;
+
+        switch(type) {
+            case SoundType.Empty00_5s:
+            case SoundType.Empty01s:
+            case SoundType.Empty02s:
+            case SoundType.Empty03s:
+            case SoundType.Empty04s:
+            case SoundType.Empty05s:
+                so.Volume = 0.0f;
+                break;
+
+            default:
+                so.Volume = 1.0f * volumeOffset;
+                break;
+        }
 
         so.Play();
         switch(from) {

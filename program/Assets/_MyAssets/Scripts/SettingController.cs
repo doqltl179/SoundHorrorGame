@@ -55,6 +55,10 @@ public class SettingController : MonoBehaviour {
         set => scrollView.verticalScrollbar.value = 1.0f - value;
     }
 
+    private KeyCode closeCode = KeyCode.Escape;
+
+    private IEnumerator delayOpenCoroutine = null;
+
 
 
     private void OnEnable() {
@@ -70,13 +74,40 @@ public class SettingController : MonoBehaviour {
         InitDisplayBrightness();
         InitDisplaySensitive();
 
-        StartCoroutine(DelayOpen());
+        delayOpenCoroutine = DelayOpen();
+        StartCoroutine(delayOpenCoroutine);
     }
 
     private IEnumerator DelayOpen() {
-        yield return null;
+        canvasGroup.alpha = 0.0f;
 
+        yield return null;
         ScrollValue = 0.0f;
+
+        const float fadeTime = 0.1f;
+        float fadeTimeChecker = 0.0f;
+        while(fadeTimeChecker < fadeTime) {
+            fadeTimeChecker += Time.deltaTime;
+            canvasGroup.alpha = fadeTimeChecker / fadeTime;
+
+            yield return null;
+        }
+        canvasGroup.alpha = 1.0f;
+
+        delayOpenCoroutine = null;
+    }
+
+    private void OnDisable() {
+        if(delayOpenCoroutine != null) {
+            StopCoroutine(delayOpenCoroutine);
+            delayOpenCoroutine = null;
+        }
+    }
+
+    private void Update() {
+        if(Input.GetKeyUp(closeCode)) {
+            OnClickedBack();
+        }
     }
 
     #region Action
@@ -99,7 +130,7 @@ public class SettingController : MonoBehaviour {
 
     public void OnUseMicNoChanged(bool changedValue) {
         useMicToggleYes.SetIsOnWithoutNotify(!changedValue);
-        UserSettings.UseMic = changedValue ? 1 : 0;
+        UserSettings.UseMic = changedValue ? 0 : 1;
     }
 
     public void OnMicDeviceChanged(int index) {
@@ -172,6 +203,12 @@ public class SettingController : MonoBehaviour {
             UserSettings.DisplaySensitive = sensitive;
         }
     }
+
+    #region Button OnClicked
+    public void OnClickedBack() {
+        gameObject.SetActive(false);
+    }
+    #endregion
     #endregion
 
     private void InitMasterVolume() {
@@ -180,8 +217,10 @@ public class SettingController : MonoBehaviour {
     }
 
     private void InitUseMicToggles() {
-        useMicToggleYes.isOn = UserSettings.UseMic == 1 ? true : false;
-        useMicToggleNo.isOn = !useMicToggleYes.isOn;
+        useMicToggleYes.SetIsOnWithoutNotify(UserSettings.UseMic == 1 ? true : false);
+        useMicToggleNo.SetIsOnWithoutNotify(!useMicToggleYes.isOn);
+        //useMicToggleYes.isOn = UserSettings.UseMic == 1 ? true : false;
+        //useMicToggleNo.isOn = !useMicToggleYes.isOn;
     }
 
     private void InitMicDeviceOptions() {

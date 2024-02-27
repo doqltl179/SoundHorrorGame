@@ -24,7 +24,7 @@ public static class UserSettings {
     #endregion
 
     #region Microphone
-    private static Action<bool> OnUseMicChanged;
+    public static Action<bool> OnUseMicChanged;
     private static readonly string m_useMic_pref = "UseMic";
     private static readonly int m_standardUseMic = 1;
     public static int UseMic {
@@ -34,8 +34,12 @@ public static class UserSettings {
             OnUseMicChanged?.Invoke(value == 1);
         }
     }
+    public static bool UseMicBoolean {
+        get => UseMic == 1;
+        set => UseMic = value ? 1 : 0;
+    }
 
-    private static Action<string> OnMicDeviceChanged;
+    public static Action<string> OnMicDeviceChanged;
     private static readonly string m_micDevice_pref = "MicDevice";
     private static readonly string m_standardMicDevice = "";
     public static string MicDevice {
