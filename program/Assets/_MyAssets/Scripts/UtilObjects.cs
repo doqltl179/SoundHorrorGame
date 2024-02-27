@@ -61,8 +61,6 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #region Settings
     [Header("Settings")]
     [SerializeField] private SettingController settingController;
-
-    public Action<UserSettingsHelper> OnSettingChanged;
     #endregion
     #endregion
 

@@ -145,6 +145,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         SoundManager.Instance.OnWorldSoundRemoved += WorldSoundRemoved;
 
         OnItemCollected += ItemCollected;
+
+        UserSettings.OnDisplayBrightnessChanged += OnDisplayBrightnessChanged;
     }
 
     private void OnDestroy() {
@@ -152,6 +154,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
 
         OnItemCollected -= ItemCollected;
+
+        UserSettings.OnDisplayBrightnessChanged -= OnDisplayBrightnessChanged;
     }
 
     private void Update() {
@@ -217,7 +221,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 1.5f);
+            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
@@ -236,7 +240,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockWallMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 1.5f);
+            mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             mat.SetColor("_BaseColor", Color.red);
@@ -570,7 +574,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             go.transform.position = GetBlockPos(coord);
 
             MonsterController mc = go.GetComponent<MonsterController>();
-            mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, 1.5f);
+            mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
             mc.Material.SetFloat(MAT_USE_BASE_COLOR_NAME, 0.0f);
@@ -679,6 +683,19 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     private void ItemCollected(ItemController item) {
 
+    }
+
+    private void OnDisplayBrightnessChanged(float value) {
+        if(blockFloorMaterial != null) blockFloorMaterial.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, value);
+#if Use_Two_Materials_On_MazeBlock
+        if(blockWallMaterial != null) blockWallMaterial.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, value);
+#endif
+
+        if(monsters != null) {
+            foreach(MonsterController mc in monsters) {
+                mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, value);
+            }
+        }
     }
     #endregion
 

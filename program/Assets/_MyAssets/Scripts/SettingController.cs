@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class SettingController : MonoBehaviour {
@@ -15,6 +16,8 @@ public class SettingController : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI masterVolumeText;
 
     [Header("Microphone")]
+    [SerializeField] private Toggle useMicToggleYes;
+    [SerializeField] private Toggle useMicToggleNo;
     [SerializeField] private TMP_Dropdown micDeviceDropdown;
 
     [Header("Display")]
@@ -28,10 +31,20 @@ public class SettingController : MonoBehaviour {
     [SerializeField] private Slider displaySensitiveSlider;
     [SerializeField] private TextMeshProUGUI displaySensitiveText;
 
-    private readonly string[] DisplayModeOptions = new string[] { "FullScreen", "Borderless", "Window" };
+    struct DisplayModeKeyValue {
+        public string Key;
+        public FullScreenMode Value;
+    }
+    private readonly DisplayModeKeyValue[] DisplayModeOptions = new DisplayModeKeyValue[] {
+        new DisplayModeKeyValue() { Key = "FullScreen", Value = FullScreenMode.ExclusiveFullScreen },
+        new DisplayModeKeyValue() { Key = "Borderless", Value = FullScreenMode.FullScreenWindow },
+        new DisplayModeKeyValue() { Key = "Window", Value = FullScreenMode.Windowed },
+    };
     private readonly int[] FPSOptions = new int[] { 60, 75, 120, 144, 165, 240 };
 
     private string[] currentMicDeviceOptions = null;
+    private Resolution[] currentDisplayResolutionOptions = null;
+    private int[] currentDisplayFPSOptions = null;
 
     /// <summary>
     /// <br/>ScrollBar의 설정이 'Top to Bottom'으로 되어있지만 실제로는 위아래가 반전되어 동작하므로
@@ -44,56 +57,18 @@ public class SettingController : MonoBehaviour {
 
 
 
-    private void Awake() {
-        micDeviceDropdown.onValueChanged.AddListener(OnMicDeviceChanged);
-    }
-
-    private void OnDestroy() {
-        micDeviceDropdown.onValueChanged.RemoveListener(OnMicDeviceChanged);
-    }
-
     private void OnEnable() {
-        UserSettingsHelper currentSettings = new UserSettingsHelper();
+        InitMasterVolume();
 
-        masterVolumeSlider.value = currentSettings.MasterVolumeRatio;
-        masterVolumeText.text = string.Format("{0:0.0}", currentSettings.MasterVolume);
-
+        InitUseMicToggles();
         InitMicDeviceOptions();
 
-        displayModeDropdown.ClearOptions();
-        List<TMP_Dropdown.OptionData> displayModeList = new List<TMP_Dropdown.OptionData>();
-        foreach(string mode in DisplayModeOptions) {
-            displayModeList.Add(new TMP_Dropdown.OptionData(mode));
-        }
-        displayModeDropdown.AddOptions(displayModeList);
-
-        displayResolutionDropdown.ClearOptions();
-        List<TMP_Dropdown.OptionData> displayResolutionList = new List<TMP_Dropdown.OptionData>();
-        Resolution currentResolution = Screen.currentResolution;
-        Resolution[] availableResolutions = Screen.resolutions.Where(t =>
-            t.width <= currentResolution.width && t.height <= currentResolution.height).ToArray();
-        Array.Reverse(availableResolutions);
-        foreach(Resolution r in availableResolutions) {
-            displayResolutionList.Add(new TMP_Dropdown.OptionData($"{r.width}x{r.height}"));
-        }
-        displayResolutionDropdown.AddOptions(displayResolutionList);
-        displayResolutionDropdown.value = Array.FindIndex(availableResolutions, t =>
-            t.width == Screen.currentResolution.width && t.height == Screen.currentResolution.height);
-
-        displayFPSDropdown.ClearOptions();
-        List<TMP_Dropdown.OptionData> displayFPSList = new List<TMP_Dropdown.OptionData>();
-        int currentFPS = (int)Screen.currentResolution.refreshRateRatio.value;
-        int[] availableFPS = FPSOptions.Where(t => t <= currentFPS).ToArray();
-        Array.Reverse(availableFPS);
-        foreach(int fps in availableFPS) {
-            displayFPSList.Add(new TMP_Dropdown.OptionData($"{fps}"));
-        }
-        displayFPSDropdown.AddOptions(displayFPSList);
-        displayFPSDropdown.value = Array.FindIndex(availableFPS, t => t == currentFPS);
-
-        displayFOVSlider.value = currentSettings.FOVRatio;
-        displayBrightnessSlider.value = currentSettings.DisplayBrightnessRatio;
-        displaySensitiveSlider.value = currentSettings.DisplaySensitiveRatio;
+        InitDisplayModeOptions();
+        InitDisplayResolutionOptions();
+        InitDisplayFPSOptions();
+        InitDisplayFOV();
+        InitDisplayBrightness();
+        InitDisplaySensitive();
 
         StartCoroutine(DelayOpen());
     }
@@ -105,6 +80,28 @@ public class SettingController : MonoBehaviour {
     }
 
     #region Action
+    public void OnMasterVolumeDrag(BaseEventData data) {
+        float volume = UserSettings.CalculateMasterVolume(masterVolumeSlider.value);
+        masterVolumeText.text = string.Format("{0:0.0}", volume);
+    }
+
+    public void OnMasterVolumeDragEnd(BaseEventData data) {
+        float volume = UserSettings.CalculateMasterVolume(masterVolumeSlider.value);
+        if(volume != UserSettings.MasterVolume) {
+            UserSettings.MasterVolume = volume;
+        }
+    }
+
+    public void OnUseMicYesChanged(bool changedValue) {
+        useMicToggleNo.SetIsOnWithoutNotify(!changedValue);
+        UserSettings.UseMic = changedValue ? 1 : 0;
+    }
+
+    public void OnUseMicNoChanged(bool changedValue) {
+        useMicToggleYes.SetIsOnWithoutNotify(!changedValue);
+        UserSettings.UseMic = changedValue ? 1 : 0;
+    }
+
     public void OnMicDeviceChanged(int index) {
         string changeDevice = currentMicDeviceOptions[index];
         int deviceIndex = Array.FindIndex(Microphone.devices, t => t == changeDevice);
@@ -118,7 +115,74 @@ public class SettingController : MonoBehaviour {
             InitMicDeviceOptions();
         }
     }
+
+    public void OnDisplayModeChanged(int index) {
+        FullScreenMode changedMode = DisplayModeOptions[index].Value;
+        if(UserSettings.DisplayMode != changedMode) {
+            UserSettings.DisplayMode = changedMode;
+        }
+    }
+
+    public void OnDisplayResolutionChanged(int index) {
+        Resolution changedResolution = currentDisplayResolutionOptions[index];
+        if(UserSettings.DisplayResolution.width !=  changedResolution.width || UserSettings.DisplayResolution.height != changedResolution.height) {
+            Screen.SetResolution(changedResolution.width, changedResolution.height, UserSettings.DisplayMode);
+        }
+    }
+
+    public void OnDisplayFPSChanged(int index) {
+        int changedFPS = currentDisplayFPSOptions[index];
+        if(UserSettings.FPS != changedFPS) {
+            Application.targetFrameRate = changedFPS;
+            UserSettings.FPS = changedFPS;
+
+            //QualitySettings.vSyncCount = 0;
+        }
+    }
+
+    public void OnDisplayFOVDrag(BaseEventData data) {
+        displayFOVText.text = string.Format("{0:0.0}", UserSettings.CalculateFOV(displayFOVSlider.value));
+    }
+
+    public void OnDisplayFOVDragEnd(BaseEventData data) {
+        float fov = UserSettings.CalculateFOV(displayFOVSlider.value);
+        if(fov != UserSettings.FOV) {
+            UserSettings.FOV = fov;
+        }
+    }
+
+    public void OnDisplayBrightnessDrag(BaseEventData data) {
+        displayBrightnessText.text = string.Format("{0:0.0}", UserSettings.CalculateBrightness(displayBrightnessSlider.value));
+    }
+
+    public void OnDisplayBrightnessDragEnd(BaseEventData data) {
+        float brightness = UserSettings.CalculateBrightness(displayBrightnessSlider.value);
+        if(UserSettings.DisplayBrightness != brightness) {
+            UserSettings.DisplayBrightness = brightness;
+        }
+    }
+
+    public void OnDisplaySensitiveDrag(BaseEventData data) {
+        displaySensitiveText.text = string.Format("{0:0.0}", UserSettings.CalculateSensitive(displaySensitiveSlider.value));
+    }
+
+    public void OnDisplaySensitiveDragEnd(BaseEventData data) {
+        float sensitive = UserSettings.CalculateSensitive(displaySensitiveSlider.value);
+        if(UserSettings.DisplaySensitive != sensitive) {
+            UserSettings.DisplaySensitive = sensitive;
+        }
+    }
     #endregion
+
+    private void InitMasterVolume() {
+        masterVolumeSlider.value = UserSettings.MasterVolumeRatio;
+        masterVolumeText.text = string.Format("{0:0.0}", UserSettings.MasterVolume);
+    }
+
+    private void InitUseMicToggles() {
+        useMicToggleYes.isOn = UserSettings.UseMic == 1 ? true : false;
+        useMicToggleNo.isOn = !useMicToggleYes.isOn;
+    }
 
     private void InitMicDeviceOptions() {
         micDeviceDropdown.ClearOptions();
@@ -147,5 +211,86 @@ public class SettingController : MonoBehaviour {
         micDeviceDropdown.AddOptions(micList);
         // Dropdown의 value가 기본적으로 0이기 때문에 0은 제외
         if(currentIndex > 0) micDeviceDropdown.value = currentIndex;
+    }
+
+    private void InitDisplayModeOptions() {
+        displayModeDropdown.ClearOptions();
+        int currentIndex = Array.FindIndex(DisplayModeOptions, t => t.Value == UserSettings.DisplayMode);
+        if(currentIndex < 0) {
+            Screen.fullScreenMode = DisplayModeOptions[0].Value;
+            currentIndex = 0;
+        }
+
+        List<TMP_Dropdown.OptionData> displayModeList = new List<TMP_Dropdown.OptionData>();
+        foreach(DisplayModeKeyValue option in DisplayModeOptions) {
+            displayModeList.Add(new TMP_Dropdown.OptionData(option.Key));
+        }
+        displayModeDropdown.AddOptions(displayModeList);
+        // Dropdown의 value가 기본적으로 0이기 때문에 0은 제외
+        if(currentIndex > 0) displayModeDropdown.value = currentIndex;
+    }
+
+    private void InitDisplayResolutionOptions() {
+        displayResolutionDropdown.ClearOptions();
+
+        currentDisplayResolutionOptions = new Resolution[Screen.resolutions.Length];
+        Array.Copy(Screen.resolutions, 0, currentDisplayResolutionOptions, 0, currentDisplayResolutionOptions.Length);
+        // Screen.resolution은 화면이 작은 순으로 정렬되어 있으므로
+        // 옵션에서는 화면이 큰 순서대로 보이게 하기 위해 Reverse를 해준다.
+        Array.Reverse(currentDisplayResolutionOptions); 
+
+        Resolution currentResolution = UserSettings.DisplayResolution;
+        int currentResolutionIndex = Array.FindIndex(currentDisplayResolutionOptions,
+            t => t.width == currentResolution.width && t.height == currentResolution.height);
+        if(currentResolutionIndex < 0) {
+            Debug.LogWarning("Display Resolution Options are broken.");
+
+            return;
+        }
+
+        List<TMP_Dropdown.OptionData> displayResolutionList = new List<TMP_Dropdown.OptionData>();
+        foreach(Resolution r in currentDisplayResolutionOptions) {
+            displayResolutionList.Add(new TMP_Dropdown.OptionData($"{r.width}x{r.height}"));
+        }
+        displayResolutionDropdown.AddOptions(displayResolutionList);
+        if(currentResolutionIndex > 0) displayResolutionDropdown.value = currentResolutionIndex;
+    }
+
+    private void InitDisplayFPSOptions() {
+        displayFPSDropdown.ClearOptions();
+        int optionIndex = Array.FindIndex(FPSOptions, t => t == UserSettings.FPS);
+        if(optionIndex < 0) {
+            int maxFPS = FPSOptions.Where(t => t <= UserSettings.FPS).Max();
+            UserSettings.FPS = maxFPS;
+
+            optionIndex = Array.FindIndex(FPSOptions, t => t == maxFPS);
+        }
+        int currentFPS = FPSOptions[optionIndex];
+
+        List<TMP_Dropdown.OptionData> displayFPSList = new List<TMP_Dropdown.OptionData>();
+        currentDisplayFPSOptions = FPSOptions.Where(t => t <= UserSettings.DisplayResolution.refreshRateRatio.value).ToArray();
+        Array.Reverse(currentDisplayFPSOptions);
+        foreach(int fps in currentDisplayFPSOptions) {
+            displayFPSList.Add(new TMP_Dropdown.OptionData($"{fps}"));
+        }
+        displayFPSDropdown.AddOptions(displayFPSList);
+
+        int currentIndex = Array.FindIndex(currentDisplayFPSOptions, t => t == currentFPS);
+        if(currentIndex > 0) displayFPSDropdown.value = currentIndex;
+    }
+
+    private void InitDisplayFOV() {
+        displayFOVSlider.value = UserSettings.FOVRatio;
+        displayFOVText.text = string.Format("{0:0.0}", UserSettings.FOV);
+    }
+
+    private void InitDisplayBrightness() {
+        displayBrightnessSlider.value = UserSettings.DisplayBrightnessRatio;
+        displayBrightnessText.text = string.Format("{0:0.0}", UserSettings.DisplayBrightness);
+    }
+
+    private void InitDisplaySensitive() {
+        displaySensitiveSlider.value = UserSettings.DisplaySensitiveRatio;
+        displaySensitiveText.text = string.Format("{0:0.0}", UserSettings.DisplaySensitive);
     }
 }
