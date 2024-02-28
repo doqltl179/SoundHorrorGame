@@ -108,9 +108,9 @@ MonoBehaviour:
   collider: {fileID: 2325908105380829409}
   material: {fileID: 2100000, guid: a6d5be8b528948d42a1b6133d3dfcf13, type: 2}
   headPos: {fileID: 1495127717194787546}
-  scaleScalar: 0.8
+  scaleScalar: 1.3
   moveSpeed: 0.5
-  moveAnimationSpeed: 0.8
+  twoStepDistance: 0.8
   moveBoost: 0.4
   rotateSpeed: 1.5
   moveSoundOffset: 0.25
@@ -190,7 +190,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3578704253483780134, guid: ab04c7d7b0bb8fc419301d9c38d2f3fc, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.012
       objectReference: {fileID: 0}
     - target: {fileID: 3578704253483780134, guid: ab04c7d7b0bb8fc419301d9c38d2f3fc, type: 3}
       propertyPath: m_LocalPosition.z

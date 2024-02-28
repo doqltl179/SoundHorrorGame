@@ -215,7 +215,7 @@ MonoBehaviour:
   headPos: {fileID: 6346984247400820909}
   scaleScalar: 1
   moveSpeed: 0
-  moveAnimationSpeed: 0
+  twoStepDistance: 1
   moveBoost: 0
   rotateSpeed: 1
   moveSoundOffset: 0
@@ -299,7 +299,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.25
+  m_Radius: 0.3
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0.8, z: 0}

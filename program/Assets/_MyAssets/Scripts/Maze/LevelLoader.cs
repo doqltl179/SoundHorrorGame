@@ -225,7 +225,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
             mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
-            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
@@ -247,7 +247,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
             mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
-            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             mat.SetColor("_BaseColor", Color.red);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
@@ -585,7 +585,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             MonsterController mc = go.GetComponent<MonsterController>();
             mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
-            mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
             //mc.Material.SetFloat(MAT_USE_BASE_COLOR_NAME, 0.0f);
             //mc.Material.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);

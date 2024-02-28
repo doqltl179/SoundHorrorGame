@@ -111,12 +111,23 @@ public class Starry : MonsterController, IMove {
 
         // 위치 이동
         if(physicsMoveSpeed > 0) {
-            transform.position += transform.forward * physicsMoveSpeed * dt * moveSpeed * scaleScalar;
+            float moveDistanceOfOneSecond = physicsMoveSpeed * moveSpeed * scaleScalar;
+            transform.position += transform.forward * dt * moveDistanceOfOneSecond;
         }
 
-        // 애니메이션의 속도 조정
         // physicsMoveSpeed가 0에 가까울수록 Idle로 전환
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
+
+        // 애니메이션의 속도 조정
+        float animationSpeed;
+        if(physicsMoveSpeed >= 0.5f) {
+            float moveDistanceOfOneSecond = physicsMoveSpeed * moveSpeed * scaleScalar;
+            animationSpeed = moveDistanceOfOneSecond / twoStepDistance;
+        }
+        else {
+            animationSpeed = 1.0f - Mathf.InverseLerp(0.0f, 0.5f, physicsMoveSpeed);
+        }
+        animator.SetFloat(AnimatorPropertyName_MoveSpeed, animationSpeed);
 
         rigidbody.velocity = Vector3.zero;
         rigidbody.angularVelocity = Vector3.zero;

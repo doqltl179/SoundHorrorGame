@@ -36,7 +36,11 @@ public class MonsterController : MonoBehaviour {
     [SerializeField] private Transform headPos;
     [SerializeField, Range(0.1f, 5.0f)] protected float scaleScalar = 1.0f;
     [SerializeField, Range(0.0f, 10.0f)] protected float moveSpeed = 1.0f;
-    [SerializeField, Range(0.0f, 1.0f)] protected float moveAnimationSpeedOffset = 1.0f;
+    /// <summary>
+    /// <br/> 두 걸음 동안의 거리.
+    /// <br/> Move, Run 애니메이션이 모두 두 걸음을 걷기 때문에 이에 맞는 이동 거리를 입력.
+    /// </summary>
+    [SerializeField, Range(0.0f, 10.0f)] protected float twoStepDistance = 1.0f;
     [SerializeField, Range(0.0f, 10.0f)] protected float moveBoost = 0.4f;
     [SerializeField, Range(0.0f, 10.0f)] protected float rotateSpeed = 1.0f;
     [SerializeField, Range(-0.5f, 0.5f)] protected float moveSoundOffset = 0.0f;
