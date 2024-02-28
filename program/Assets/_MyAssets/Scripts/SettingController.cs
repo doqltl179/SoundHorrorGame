@@ -47,8 +47,8 @@ public class SettingController : MonoBehaviour {
     private int[] currentDisplayFPSOptions = null;
 
     /// <summary>
-    /// <br/>ScrollBarÀÇ ¼³Á¤ÀÌ 'Top to Bottom'À¸·Î µÇ¾îÀÖÁö¸¸ ½ÇÁ¦·Î´Â À§¾Æ·¡°¡ ¹İÀüµÇ¾î µ¿ÀÛÇÏ¹Ç·Î
-    /// <br/>¾Ë±â ½±°Ô º¸±â À§ÇÑ º¯¼ö¸¦ ¼±¾ğ
+    /// <br/>ScrollBarì˜ ì„¤ì •ì´ 'Top to Bottom'ìœ¼ë¡œ ë˜ì–´ìˆì§€ë§Œ ì‹¤ì œë¡œëŠ” ìœ„ì•„ë˜ê°€ ë°˜ì „ë˜ì–´ ë™ì‘í•˜ë¯€ë¡œ
+    /// <br/>ì•Œê¸° ì‰½ê²Œ ë³´ê¸° ìœ„í•œ ë³€ìˆ˜ë¥¼ ì„ ì–¸
     /// </summary>
     private float ScrollValue { 
         get => 1.0f - scrollView.verticalScrollbar.value;
@@ -231,7 +231,7 @@ public class SettingController : MonoBehaviour {
         List<TMP_Dropdown.OptionData> micList = new List<TMP_Dropdown.OptionData>();
         if(Microphone.devices.Length > 0) {
             currentMicDeviceOptions = new string[Microphone.devices.Length];
-            // Microphone.devices¸¦ ºÒ·¯¿À¸é ÇöÀç »ç¿ëÁßÀÎ ±âº»ÀåÄ¡°¡ index 0ÀÇ ÀÚ¸®·Î ¿Â´Ù.
+            // Microphone.devicesë¥¼ ë¶ˆëŸ¬ì˜¤ë©´ í˜„ì¬ ì‚¬ìš©ì¤‘ì¸ ê¸°ë³¸ì¥ì¹˜ê°€ index 0ì˜ ìë¦¬ë¡œ ì˜¨ë‹¤.
             Array.Copy(Microphone.devices, 0, currentMicDeviceOptions, 0, currentMicDeviceOptions.Length);
 
             currentIndex = Array.FindIndex(currentMicDeviceOptions, t => t == UserSettings.MicDevice);
@@ -248,7 +248,7 @@ public class SettingController : MonoBehaviour {
             }
         }
         micDeviceDropdown.AddOptions(micList);
-        // DropdownÀÇ value°¡ ±âº»ÀûÀ¸·Î 0ÀÌ±â ¶§¹®¿¡ 0Àº Á¦¿Ü
+        // Dropdownì˜ valueê°€ ê¸°ë³¸ì ìœ¼ë¡œ 0ì´ê¸° ë•Œë¬¸ì— 0ì€ ì œì™¸
         if(currentIndex > 0) micDeviceDropdown.value = currentIndex;
     }
 
@@ -265,7 +265,7 @@ public class SettingController : MonoBehaviour {
             displayModeList.Add(new TMP_Dropdown.OptionData(option.Key));
         }
         displayModeDropdown.AddOptions(displayModeList);
-        // DropdownÀÇ value°¡ ±âº»ÀûÀ¸·Î 0ÀÌ±â ¶§¹®¿¡ 0Àº Á¦¿Ü
+        // Dropdownì˜ valueê°€ ê¸°ë³¸ì ìœ¼ë¡œ 0ì´ê¸° ë•Œë¬¸ì— 0ì€ ì œì™¸
         if(currentIndex > 0) displayModeDropdown.value = currentIndex;
     }
 
@@ -274,8 +274,8 @@ public class SettingController : MonoBehaviour {
 
         currentDisplayResolutionOptions = new Resolution[Screen.resolutions.Length];
         Array.Copy(Screen.resolutions, 0, currentDisplayResolutionOptions, 0, currentDisplayResolutionOptions.Length);
-        // Screen.resolutionÀº È­¸éÀÌ ÀÛÀº ¼øÀ¸·Î Á¤·ÄµÇ¾î ÀÖÀ¸¹Ç·Î
-        // ¿É¼Ç¿¡¼­´Â È­¸éÀÌ Å« ¼ø¼­´ë·Î º¸ÀÌ°Ô ÇÏ±â À§ÇØ Reverse¸¦ ÇØÁØ´Ù.
+        // Screen.resolutionì€ í™”ë©´ì´ ì‘ì€ ìˆœìœ¼ë¡œ ì •ë ¬ë˜ì–´ ìˆìœ¼ë¯€ë¡œ
+        // ì˜µì…˜ì—ì„œëŠ” í™”ë©´ì´ í° ìˆœì„œëŒ€ë¡œ ë³´ì´ê²Œ í•˜ê¸° ìœ„í•´ Reverseë¥¼ í•´ì¤€ë‹¤.
         Array.Reverse(currentDisplayResolutionOptions); 
 
         Resolution currentResolution = UserSettings.DisplayResolution;

@@ -1,4 +1,4 @@
-﻿// HLSL에서는 함수에 배열 인자를 직접적으로 전달하는건 지원하지 않음
+// HLSL에서는 함수에 배열 인자를 직접적으로 전달하는건 지원하지 않음
 
 Shader "MyCustomShader/Maze" {
 	Properties

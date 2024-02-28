@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class ResourceLoader {
     /// <summary>
-    /// Resource¸¦ ¹İÈ¯ÇÏ´Â °ÍÀ¸·Î instantiate°¡ µÈ °ÔÀÓ ¿ÀºêÁ§Æ®¸¦ ¹İÈ¯ÇÏ´Â °ÍÀÌ ¾Æ´Ô.
+    /// Resourceë¥¼ ë°˜í™˜í•˜ëŠ” ê²ƒìœ¼ë¡œ instantiateê°€ ëœ ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¥¼ ë°˜í™˜í•˜ëŠ” ê²ƒì´ ì•„ë‹˜.
     /// </summary>
     public static T GetResource<T>(string path) where T : UnityEngine.Object {
         T obj = Resources.Load<T>(path);

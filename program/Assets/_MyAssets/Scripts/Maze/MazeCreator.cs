@@ -25,7 +25,7 @@ public static class MazeCreator {
 
     
     /// <summary>
-    /// ¿Üº®¸¸ ÀÖ´Â ¹Ì·Î¸¦ »ı¼º
+    /// ì™¸ë²½ë§Œ ìˆëŠ” ë¯¸ë¡œë¥¼ ìƒì„±
     /// </summary>
     public static void CreateEmptyMaze(int width, int height) {
         if(width * height < 2) {
@@ -34,13 +34,13 @@ public static class MazeCreator {
         }
 
         ActiveWall[,] wallInfos = new ActiveWall[width, height];
-        // Áß¾Ó¿¡ ÀÖ´Â ¸ğµç º® Á¦°Å
+        // ì¤‘ì•™ì— ìˆëŠ” ëª¨ë“  ë²½ ì œê±°
         for(int x = 1; x < width - 1; x++) {
             for(int y = 1; y < height - 1; y++) {
                 wallInfos[x, y] = ActiveWall.None;
             }
         }
-        // ¿Ü°û Edge ¼³Á¤
+        // ì™¸ê³½ Edge ì„¤ì •
         for(int x = 1; x < width - 1; x++) {
             wallInfos[x, 0] = ActiveWall.B;
         }
@@ -53,7 +53,7 @@ public static class MazeCreator {
         for(int y = 1; y < height - 1; y++) {
             wallInfos[width - 1, y] = ActiveWall.R;
         }
-        // ¿Ü°û ¸ğ¼­¸® ¼³Á¤
+        // ì™¸ê³½ ëª¨ì„œë¦¬ ì„¤ì •
         wallInfos[0, 0] = ActiveWall.L | ActiveWall.B;
         wallInfos[width - 1, 0] = ActiveWall.R | ActiveWall.B;
         wallInfos[0, height - 1] = ActiveWall.L | ActiveWall.F;
@@ -69,14 +69,14 @@ public static class MazeCreator {
         }
 
         ActiveWall[,] wallInfos = new ActiveWall[width, height];
-        // maze ¹è¿­ ÃÊ±âÈ­
+        // maze ë°°ì—´ ì´ˆê¸°í™”
         for(int x = 0; x < width; x++) {
             for(int y = 0; y < height; y++) {
                 wallInfos[x, y] = ActiveWall.All;
             }
         }
 
-        // currentPoint·Î ºÎÅÍ ÀÌµ¿ °¡´ÉÇÑ point¸¦ ¹İÈ¯
+        // currentPointë¡œ ë¶€í„° ì´ë™ ê°€ëŠ¥í•œ pointë¥¼ ë°˜í™˜
         List<ActiveWall> GetMoveDirectionList(Vector2Int currentPoint, int mazeWidth, int mazeHeight) {
             List<ActiveWall> moveDirectionList = new List<ActiveWall>();
 
@@ -159,8 +159,8 @@ public static class MazeCreator {
             }
         }
 
-        // ÀÌ¹Ì »ı¼ºµÈ ¹Ì·Î ¾È¿¡¼­ ·£´ıÇÏ°Ô º®À» Á¦°Å
-        // ÀÌµ¿ °¡´ÉÇÑ ¹æÇâÀ» ´Ã¸®±â À§ÇÔ
+        // ì´ë¯¸ ìƒì„±ëœ ë¯¸ë¡œ ì•ˆì—ì„œ ëœë¤í•˜ê²Œ ë²½ì„ ì œê±°
+        // ì´ë™ ê°€ëŠ¥í•œ ë°©í–¥ì„ ëŠ˜ë¦¬ê¸° ìœ„í•¨
         List<ActiveWall> activatedWallList = new List<ActiveWall>();
         ActiveWall tempWallInfo;
         ActiveWall removeWall;
@@ -194,7 +194,7 @@ public static class MazeCreator {
         int width = wallInfos.GetLength(0);
         int height = wallInfos.GetLength(1);
 
-        // °¢ ¹æÇâº°·Î Á÷¼± ÀÌµ¿ÀÌ °¡´ÉÇÑ ÁÂÇ¥ È®ÀÎ
+        // ê° ë°©í–¥ë³„ë¡œ ì§ì„  ì´ë™ì´ ê°€ëŠ¥í•œ ì¢Œí‘œ í™•ì¸
         Maze = new MazeInfo[width, height];
         ActiveWall currentInfo;
         ActiveWall tempInfo;

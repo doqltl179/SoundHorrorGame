@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ¿òÁ÷ÀÏ ¶§¿¡ ¹ß¼Ò¸®°¡ ³ªÁö ¾ÊÀ½. ´ë½Å Áö¼ÓÀûÀ¸·Î ¼Ò¸®¸¦ ³»¾î ÀÚ½ÅÀÇ À§Ä¡¸¦ ¾Ë·ÁÁÜ
+/// ì›€ì§ì¼ ë•Œì— ë°œì†Œë¦¬ê°€ ë‚˜ì§€ ì•ŠìŒ. ëŒ€ì‹  ì§€ì†ì ìœ¼ë¡œ ì†Œë¦¬ë¥¼ ë‚´ì–´ ìì‹ ì˜ ìœ„ì¹˜ë¥¼ ì•Œë ¤ì¤Œ
 /// </summary>
 public class Cloudy : MonsterController, IMove {
     private const float restTime = 5.0f;
@@ -45,8 +45,6 @@ public class Cloudy : MonsterController, IMove {
         audioSource.clip = SoundManager.Instance.GetAudioClip(SoundManager.SoundType.Whisper);
         audioSource.minDistance = 0.0f;
         audioSource.maxDistance = STANDARD_RIM_RADIUS_SPREAD_LENGTH;
-
-        animator.SetFloat(AnimatorPropertyName_MoveSpeed, moveSpeed * moveAnimationSpeed);
     }
 
     private void FixedUpdate() {
@@ -79,7 +77,7 @@ public class Cloudy : MonsterController, IMove {
 
             stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f);
             if(stuckHelper.IsHit) {
-                // ºÎµúÈù °÷ÀÇ normalÀ» ±âÁØÀ¸·Î °¡¾ßÇÏ´Â ¹æÇâ
+                // ë¶€ë”ªíŒ ê³³ì˜ normalì„ ê¸°ì¤€ìœ¼ë¡œ ê°€ì•¼í•˜ëŠ” ë°©í–¥
                 Vector3 hitPosToPathPos = (movePath[0] - stuckHelper.HitPos).normalized;
                 bool isRightSide = Vector3.Cross(stuckHelper.HitNormal, hitPosToPathPos).y > 0;
                 Vector3 lookForward = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
@@ -101,13 +99,13 @@ public class Cloudy : MonsterController, IMove {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - dt * moveBoost, 0.0f, physicsMoveSpeedMax);
         }
 
-        // À§Ä¡ ÀÌµ¿
+        // ìœ„ì¹˜ ì´ë™
         if(physicsMoveSpeed > 0) {
             transform.position += transform.forward * physicsMoveSpeed * dt * moveSpeed * scaleScalar;
         }
 
-        // ¾Ö´Ï¸ŞÀÌ¼ÇÀÇ ¼Óµµ Á¶Á¤
-        // physicsMoveSpeed°¡ 0¿¡ °¡±î¿ï¼ö·Ï Idle·Î ÀüÈ¯
+        // ì• ë‹ˆë©”ì´ì…˜ì˜ ì†ë„ ì¡°ì •
+        // physicsMoveSpeedê°€ 0ì— ê°€ê¹Œìš¸ìˆ˜ë¡ Idleë¡œ ì „í™˜
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
 
         rigidbody.velocity = Vector3.zero;

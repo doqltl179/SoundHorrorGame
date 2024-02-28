@@ -34,8 +34,6 @@ public class Bunny : MonsterController, IMove {
 
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
-
-        animator.SetFloat(AnimatorPropertyName_MoveSpeed, moveSpeed * moveAnimationSpeed);
     }
 
     private void FixedUpdate() {

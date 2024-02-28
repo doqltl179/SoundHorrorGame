@@ -55,7 +55,7 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: 033dfee25b43dc0438e5d9d1d8ce793a, type: 2}
   headPos: {fileID: 1480342638733977503}
   scaleScalar: 1.5
-  moveSpeed: 0.5
+  moveSpeed: 0.8
   moveAnimationSpeed: 0.5
   moveBoost: 0.8
   rotateSpeed: 2

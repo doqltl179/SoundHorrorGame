@@ -51,7 +51,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.25
+  m_Radius: 0.45
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
@@ -109,8 +109,8 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: a6d5be8b528948d42a1b6133d3dfcf13, type: 2}
   headPos: {fileID: 1495127717194787546}
   scaleScalar: 0.8
-  moveSpeed: 0.4
-  moveAnimationSpeed: 0.5
+  moveSpeed: 0.5
+  moveAnimationSpeed: 0.8
   moveBoost: 0.4
   rotateSpeed: 1.5
   moveSoundOffset: 0.25
@@ -180,6 +180,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4040691608765997785}
     m_Modifications:
+    - target: {fileID: 203269250595995176, guid: ab04c7d7b0bb8fc419301d9c38d2f3fc, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3578704253483780134, guid: ab04c7d7b0bb8fc419301d9c38d2f3fc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

@@ -32,7 +32,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         PlayerWalk,
 
         // Etc
-        MouseClick, //'Main'¿¡¼­¸¸ »ç¿ëµÊ
+        MouseClick, //'Main'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         ButtonClick, 
         GameEnter, 
     }
@@ -67,12 +67,10 @@ public class SoundManager : GenericSingleton<SoundManager> {
     protected override void Awake() {
         base.Awake();
 
-        UserSettings.OnMasterVolumeChanged += OnMasterVolumeChanged;
         UserSettings.OnUseMicChanged += OnUseMicChanged;
     }
 
     private void OnDestroy() {
-        UserSettings.OnMasterVolumeChanged -= OnMasterVolumeChanged;
         UserSettings.OnUseMicChanged -= OnUseMicChanged;
     }
 
@@ -144,11 +142,6 @@ public class SoundManager : GenericSingleton<SoundManager> {
     }
 
     #region Action
-    private void OnMasterVolumeChanged(float value) {
-        float ratio = UserSettings.CalculateMasterVolumeRatio(value);
-        AudioListener.volume = ratio;
-    }
-
     private void OnUseMicChanged(bool value) {
         if(micDecibelCheckCoroutine != null) StopCoroutine(micDecibelCheckCoroutine);
 
@@ -282,7 +275,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
             so = soundObjectPool[0];
             soundObjectPool.RemoveAt(0);
 
-            // Pool¿¡ ¿ÀºêÁ§Æ®°¡ ÇÏ³ªµµ ¾øÀ¸¸é ÀÓÀÇ·Î ÇÏ³ª¸¦ »ý¼ºÇØ¼­ ´ë±âÇØ ³õÀ½
+            // Poolï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             if(soundObjectPool.Count <= 0) {
                 SoundObject waitSO = new SoundObject();
                 waitSO.Source.gameObject.SetActive(false);

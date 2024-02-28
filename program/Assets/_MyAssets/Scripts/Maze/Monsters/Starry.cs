@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ´Ù¸¥ ¸ó½ºÅÍµé°ú ´Ù¸£°Ô ¼Ò¸®¸¦ ¦i´Â°Ô ¾Æ´Ñ ÇÃ·¹ÀÌ¾î°¡ ÀÏÁ¤ ¹üÀ§ ¾È¿¡ ÀÖÀ» ¶§¿¡ ÇÃ·¹ÀÌ¾îÀÇ À§Ä¡¸¦ Á÷Á¢ ¦iÀ½
+/// ë‹¤ë¥¸ ëª¬ìŠ¤í„°ë“¤ê³¼ ë‹¤ë¥´ê²Œ ì†Œë¦¬ë¥¼ ì«’ëŠ”ê²Œ ì•„ë‹Œ í”Œë ˆì´ì–´ê°€ ì¼ì • ë²”ìœ„ ì•ˆì— ìˆì„ ë•Œì— í”Œë ˆì´ì–´ì˜ ìœ„ì¹˜ë¥¼ ì§ì ‘ ì«’ìŒ
 /// </summary>
 public class Starry : MonsterController, IMove {
     private const float restTime = 5.0f;
@@ -41,8 +41,6 @@ public class Starry : MonsterController, IMove {
 
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
-
-        animator.SetFloat(AnimatorPropertyName_MoveSpeed, moveSpeed * moveAnimationSpeed);
     }
 
     private void FixedUpdate() {
@@ -57,14 +55,14 @@ public class Starry : MonsterController, IMove {
 
         Move(Time.deltaTime);
 
-        // ¸ğ¼Ç ¾Ö´Ï¸ŞÀÌ¼ÇÀº Idle -> Walk -> Run ÇüÅÂÀÇ BlendTree¸¦ °¡Áö°í ÀÖÀ½
-        // Walk, Run ¾Ö´Ï¸ŞÀÌ¼Ç¿¡¼­´Â ÀüÃ¼ ½Ã°£ µ¿¾È µÎ °ÉÀ½À» ¿òÁ÷ÀÌ¹Ç·Î normalizedTimeÀÌ 0º¸´Ù Å« 0.5ÀÇ ¹è¼öÀÏ ¶§ ¸¶´Ù ¹ß¼Ò¸®¸¦ Ãß°¡
+        // ëª¨ì…˜ ì• ë‹ˆë©”ì´ì…˜ì€ Idle -> Walk -> Run í˜•íƒœì˜ BlendTreeë¥¼ ê°€ì§€ê³  ìˆìŒ
+        // Walk, Run ì• ë‹ˆë©”ì´ì…˜ì—ì„œëŠ” ì „ì²´ ì‹œê°„ ë™ì•ˆ ë‘ ê±¸ìŒì„ ì›€ì§ì´ë¯€ë¡œ normalizedTimeì´ 0ë³´ë‹¤ í° 0.5ì˜ ë°°ìˆ˜ì¼ ë•Œ ë§ˆë‹¤ ë°œì†Œë¦¬ë¥¼ ì¶”ê°€
         if(TryGetAnimatorStateInfo(AnimatorLayerName_Motion)) {
             if(physicsMoveSpeed > 0) {
                 float normalizedTime = animatorStateInfo[AnimatorLayerName_Motion].Info.normalizedTime;
                 int normalizedTimeInteger = (int)Mathf.Floor((normalizedTime + moveSoundOffset) / 0.5f);
                 if(animatorStateInfo[AnimatorLayerName_Motion].CompareInteger < normalizedTimeInteger) {
-                    // ÇÃ·¹ÀÌ¾î±îÁöÀÇ °Å¸®°¡ ÀÏÁ¤ °Å¸® ÀÌ»óÀÌ¶ó¸é ±»ÀÌ SoundObject¸¦ »ı¼ºÇÏÁö ¾ÊÀ½
+                    // í”Œë ˆì´ì–´ê¹Œì§€ì˜ ê±°ë¦¬ê°€ ì¼ì • ê±°ë¦¬ ì´ìƒì´ë¼ë©´ êµ³ì´ SoundObjectë¥¼ ìƒì„±í•˜ì§€ ì•ŠìŒ
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
                         List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
@@ -89,7 +87,7 @@ public class Starry : MonsterController, IMove {
 
             stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f);
             if(stuckHelper.IsHit) {
-                // ºÎµúÈù °÷ÀÇ normalÀ» ±âÁØÀ¸·Î °¡¾ßÇÏ´Â ¹æÇâ
+                // ë¶€ë”ªíŒ ê³³ì˜ normalì„ ê¸°ì¤€ìœ¼ë¡œ ê°€ì•¼í•˜ëŠ” ë°©í–¥
                 Vector3 hitPosToPathPos = (movePath[0] - stuckHelper.HitPos).normalized;
                 bool isRightSide = Vector3.Cross(stuckHelper.HitNormal, hitPosToPathPos).y > 0;
                 Vector3 lookForward = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
@@ -111,13 +109,13 @@ public class Starry : MonsterController, IMove {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - dt * moveBoost, 0.0f, physicsMoveSpeedMax);
         }
 
-        // À§Ä¡ ÀÌµ¿
+        // ìœ„ì¹˜ ì´ë™
         if(physicsMoveSpeed > 0) {
             transform.position += transform.forward * physicsMoveSpeed * dt * moveSpeed * scaleScalar;
         }
 
-        // ¾Ö´Ï¸ŞÀÌ¼ÇÀÇ ¼Óµµ Á¶Á¤
-        // physicsMoveSpeed°¡ 0¿¡ °¡±î¿ï¼ö·Ï Idle·Î ÀüÈ¯
+        // ì• ë‹ˆë©”ì´ì…˜ì˜ ì†ë„ ì¡°ì •
+        // physicsMoveSpeedê°€ 0ì— ê°€ê¹Œìš¸ìˆ˜ë¡ Idleë¡œ ì „í™˜
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
 
         rigidbody.velocity = Vector3.zero;

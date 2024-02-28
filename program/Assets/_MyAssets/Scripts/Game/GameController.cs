@@ -22,32 +22,32 @@ public class GameController : MonoBehaviour {
 #if Play_Game_Automatically
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Kitty,
-        //    1,
+        //    20,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Starry,
-            1,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Starry,
+        //    20,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Cloudy,
-        //    1,
+        //    20,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Froggy,
         //    20,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2,
-        //    false);
-        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
-        //    LevelLoader.MonsterType.Honey, 
-        //    1,
-        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
+        LevelLoader.Instance.AddMonsterOnLevelRandomly(
+            LevelLoader.MonsterType.Honey,
+            20,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            true);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Bunny,
-        //    80,
+        //    20,
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
 
@@ -55,15 +55,15 @@ public class GameController : MonoBehaviour {
             LevelLoader.ItemType.Crystal, 
             20, 
             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            false);
+            true);
 #else
 #endif
 
         while(SceneLoader.Instance.IsLoading) {
             yield return null;
         }
-        // ·¹º§À» »ı¼ºÇÏ°í ¸ó½ºÅÍ°¡ °æ·Î¸¦ Ã£±â Àü¿¡ ÇÑ ÇÁ·¹ÀÓÀ» ½¬¾îÁÖ´Â °ÍÀ¸·Î
-        // »ı¼ºµÈ ·¹º§¿¡ Äİ¶óÀÌ´õ°¡ Á¦´ë·Î Àû¿ëµÇ´Â ½Ã°£À» ÁÜ
+        // ë ˆë²¨ì„ ìƒì„±í•˜ê³  ëª¬ìŠ¤í„°ê°€ ê²½ë¡œë¥¼ ì°¾ê¸° ì „ì— í•œ í”„ë ˆì„ì„ ì‰¬ì–´ì£¼ëŠ” ê²ƒìœ¼ë¡œ
+        // ìƒì„±ëœ ë ˆë²¨ì— ì½œë¼ì´ë”ê°€ ì œëŒ€ë¡œ ì ìš©ë˜ëŠ” ì‹œê°„ì„ ì¤Œ
         yield return null; 
 
 #if Play_Game_Automatically

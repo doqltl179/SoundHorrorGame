@@ -23,7 +23,7 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
     public float DecibelRatio { get { return Mathf.InverseLerp(DecibelMin, DecibelMax, decibel); } }
     public readonly float DecibelCriticalRatio = Mathf.InverseLerp(DecibelMin, DecibelMax, DecibelCritical);
     /// <summary>
-    /// Decibel °ªÀÌ ÀÓ°èÁ¡À» ³Ñ¾ú´ÂÁö È®ÀÎÇÏ´Â º¯¼ö
+    /// Decibel ê°’ì´ ì„ê³„ì ì„ ë„˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ëŠ” ë³€ìˆ˜
     /// </summary>
     public bool OverCritical { get { return decibel >= DecibelCritical; } }
 
@@ -89,7 +89,7 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
         samples = new float[currentFreq * input.channels];
         if(input.GetData(samples, 0)) {
             rmsValue = CalculateRMSValue(samples);
-            decibel = 20 * Mathf.Log10(rmsValue / 0.1f); // 0.1f´Â ÀÓÀÇÀÇ ÂüÁ¶ °ª
+            decibel = 20 * Mathf.Log10(rmsValue / 0.1f); // 0.1fëŠ” ì„ì˜ì˜ ì°¸ì¡° ê°’
             //Debug.Log(decibel);
         }
     }
@@ -99,13 +99,13 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
         float[] newSamples = new float[samples.Length - startIndex - (samples.Length / 2)];
         Array.Copy(samples, startIndex, newSamples, 0, newSamples.Length);
 
-        // 1´Ü°è: °¢ »ùÇÃ °ªÀ» Á¦°öÇÏ¿© ´õÇÔ
+        // 1ë‹¨ê³„: ê° ìƒ˜í”Œ ê°’ì„ ì œê³±í•˜ì—¬ ë”í•¨
         float sum = newSamples.Sum(t => Mathf.Pow(t, 2));
 
-        // 2´Ü°è: Æò±Õ ±¸ÇÏ±â
+        // 2ë‹¨ê³„: í‰ê·  êµ¬í•˜ê¸°
         float average = sum / newSamples.Length;
 
-        // 3´Ü°è: Á¦°ö±Ù ±¸ÇÏ±â
+        // 3ë‹¨ê³„: ì œê³±ê·¼ êµ¬í•˜ê¸°
         return Mathf.Sqrt(average);
     }
 

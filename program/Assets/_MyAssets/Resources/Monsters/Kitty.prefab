@@ -141,7 +141,7 @@ MonoBehaviour:
   headPos: {fileID: 8233475146895850427}
   scaleScalar: 0.6
   moveSpeed: 3
-  moveAnimationSpeed: 6
+  moveAnimationSpeed: 0.6
   moveBoost: 2
   rotateSpeed: 6
   moveSoundOffset: 0

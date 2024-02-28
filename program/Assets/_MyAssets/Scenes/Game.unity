@@ -240,7 +240,7 @@ MonoBehaviour:
   moveSpeed: 1
   runSpeed: 3
   crouchSpeed: 0.5
-  rotateSpeed: 3
+  rotateSpeed: 6
   walkSoundInterval: 1
 --- !u!4 &501637380
 Transform:

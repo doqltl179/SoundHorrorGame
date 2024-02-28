@@ -69,16 +69,21 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     private void Awake() {
         DontDestroyOnLoad(gameObject);
 
+        UserSettings.OnMasterVolumeChanged += OnMasterVolumeChanged;
         UserSettings.OnDisplayFOVChanged += OnDisplayFOVChanged;
     }
 
     private void OnDestroy() {
+        UserSettings.OnMasterVolumeChanged -= OnMasterVolumeChanged;
         UserSettings.OnDisplayFOVChanged -= OnDisplayFOVChanged;
     }
 
     private void Start() {
         loadingGroup.gameObject.SetActive(false);
         settingController.gameObject.SetActive(false);
+
+        AudioListener.volume = UserSettings.MasterVolumeRatio;
+        Cam.fieldOfView = UserSettings.FOV;
     }
 
     #region Utility
@@ -115,6 +120,11 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #region Action
     private void OnDisplayFOVChanged(float fov) {
         Cam.fieldOfView = fov;
+    }
+
+    private void OnMasterVolumeChanged(float value) {
+        float ratio = UserSettings.CalculateMasterVolumeRatio(value);
+        AudioListener.volume = ratio;
     }
     #endregion
 }

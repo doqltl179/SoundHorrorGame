@@ -22,7 +22,7 @@ public class StuckHelper {
     #region Utility
     public void Raycast(Vector3 rayPos, Vector3 direction, float distance) {
         Vector3 p1 = rayPos;
-        Vector3 p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //ÀÓÀÇ·Î playerÀÇ ³ôÀÌ¸¦ Àû¿ë
+        Vector3 p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //ì„ì˜ë¡œ playerì˜ ë†’ì´ë¥¼ ì ìš©
         IsHit = Physics.CapsuleCast(p1, p2, RayRadius, direction, out hit, distance, Mask);
     }
     #endregion

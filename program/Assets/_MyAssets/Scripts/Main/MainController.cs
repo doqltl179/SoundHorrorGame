@@ -29,19 +29,19 @@ public class MainController : MonoBehaviour {
         canvas.worldCamera = UtilObjects.Instance.Cam;
         canvas.planeDistance = 5.0f;
 
-        // UI ¼¼ÆÃ
+        // UI ì„¸íŒ…
         SetUIProperties();
 
-        // Lobby ·¹º§ »ı¼º
+        // Lobby ë ˆë²¨ ìƒì„±
         LevelLoader.Instance.ResetLevel();
         LevelLoader.Instance.LoadLevel(5, 5, true);
 
-        // Lobby Ä«¸Ş¶ó ¾Ö´Ï¸ŞÀÌ¼Ç
+        // Lobby ì¹´ë©”ë¼ ì• ë‹ˆë©”ì´ì…˜
         if(mainCameraAnimationCoroutine != null) StopCoroutine(mainCameraAnimationCoroutine);
         mainCameraAnimationCoroutine = MainCameraAnimationCoroutine();
         StartCoroutine(mainCameraAnimationCoroutine);
 
-        // À½¼º °¨Áö ½ÃÀÛ
+        // ìŒì„± ê°ì§€ ì‹œì‘
         MicrophoneRecorder.Instance.gameObject.SetActive(UserSettings.UseMicBoolean);
     }
 
@@ -73,7 +73,7 @@ public class MainController : MonoBehaviour {
 
         Vector3 forwardMin = Quaternion.AngleAxis(cameraRotateAngle * 0.5f, Vector3.up) * cameraForward;
         Vector3 forwardMax = Quaternion.AngleAxis(cameraRotateAngle * -0.5f, Vector3.up) * cameraForward;
-        float angleRatio = 0.5f; //cameraForward¸¦ angle ratio 0.5·Î ¼³Á¤
+        float angleRatio = 0.5f; //cameraForwardë¥¼ angle ratio 0.5ë¡œ ì„¤ì •
         while(true) {
             angleRatio += Time.deltaTime * cameraRotateSpeed;
             UtilObjects.Instance.CamForward = Vector3.Lerp(forwardMin, forwardMax, (Mathf.Sin(angleRatio) + 1) * 0.5f);

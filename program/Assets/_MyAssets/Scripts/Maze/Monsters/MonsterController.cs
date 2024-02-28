@@ -12,10 +12,10 @@ public class MonsterController : MonoBehaviour {
     public enum MonsterState {
         None, // ==> IsPlaying to false
         Move, 
-        Wait, //IMove°¡ »ó¼ÓµÇÁö ¾ÊÀº ¸ó½ºÅÍ´Â Move ´ë½Å Wait¸¦ ¼³Á¤
+        Wait, //IMoveê°€ ìƒì†ë˜ì§€ ì•Šì€ ëª¬ìŠ¤í„°ëŠ” Move ëŒ€ì‹  Waitë¥¼ ì„¤ì •
         Rest,
-        Search, //Æ¯Á¤ ¸ó½ºÅÍ¸¸ »ç¿ë
-        Scream, //Æ¯Á¤ ¸ó½ºÅÍ¸¸ »ç¿ë
+        Search, //íŠ¹ì • ëª¬ìŠ¤í„°ë§Œ ì‚¬ìš©
+        Scream, //íŠ¹ì • ëª¬ìŠ¤í„°ë§Œ ì‚¬ìš©
     }
     private MonsterState currentState = MonsterState.None;
     public MonsterState CurrentState {
@@ -36,13 +36,13 @@ public class MonsterController : MonoBehaviour {
     [SerializeField] private Transform headPos;
     [SerializeField, Range(0.1f, 5.0f)] protected float scaleScalar = 1.0f;
     [SerializeField, Range(0.0f, 10.0f)] protected float moveSpeed = 1.0f;
-    [SerializeField, Range(0.0f, 10.0f)] protected float moveAnimationSpeed = 1.0f;
+    [SerializeField, Range(0.0f, 1.0f)] protected float moveAnimationSpeedOffset = 1.0f;
     [SerializeField, Range(0.0f, 10.0f)] protected float moveBoost = 0.4f;
     [SerializeField, Range(0.0f, 10.0f)] protected float rotateSpeed = 1.0f;
     [SerializeField, Range(-0.5f, 0.5f)] protected float moveSoundOffset = 0.0f;
 
     private Material copyMaterial = null;
-    public Material Material { 
+    public Material Material {
         get { 
             if(copyMaterial == null) {
                 copyMaterial = new Material(material.shader);
@@ -89,10 +89,10 @@ public class MonsterController : MonoBehaviour {
 
 
     protected virtual void Awake() {
-        // Tag ¼³Á¤
+        // Tag ì„¤ì •
         gameObject.tag = TagName;
 
-        // Layer ¼³Á¤
+        // Layer ì„¤ì •
         gameObject.layer = LayerMask.NameToLayer(LayerName);
     }
 
@@ -103,7 +103,7 @@ public class MonsterController : MonoBehaviour {
     #endregion
 
     /// <summary>
-    /// ¾òÀº °ªÀº animatorStateInfo¿¡ ÀúÀå
+    /// ì–»ì€ ê°’ì€ animatorStateInfoì— ì €ì¥
     /// </summary>
     protected bool TryGetAnimatorStateInfo(string layerName) {
         int layerIndex = animator.GetLayerIndex(layerName);

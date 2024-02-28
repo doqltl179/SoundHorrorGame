@@ -56,7 +56,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private static readonly int LIST_MAX_LENGTH = 256;
 
     #region Material Rim Properties
-    // Rim property´Â SoundObject¸¦ È°¿ëÇÏ¿© °è»êÇÏ°í ÀÖ±â ¶§¹®¿¡ SoundManager¿¡ ÀÇÁ¸ÇÏ°í ÀÖÀ½
+    // Rim propertyëŠ” SoundObjectë¥¼ í™œìš©í•˜ì—¬ ê³„ì‚°í•˜ê³  ìˆê¸° ë•Œë¬¸ì— SoundManagerì— ì˜ì¡´í•˜ê³  ìˆìŒ
     private const string MAT_RIM_COLOR_NAME = "_RimColor";
     private const string MAT_RIM_ARRAY_LENGTH_NAME = "_RimArrayLength";
     private const string MAT_RIM_POSITION_ARRAY_NAME = "_RimPosArray";
@@ -100,13 +100,13 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     #endregion
 
     #region Material Player Properties
-    // Player past pos property´Â SoundObject¸¦ È°¿ëÇÏÁö ¾Ê±â ¶§¹®¿¡ LevelLoader¿¡¼­ Á÷Á¢ °è»êÇÔ
+    // Player past pos propertyëŠ” SoundObjectë¥¼ í™œìš©í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— LevelLoaderì—ì„œ ì§ì ‘ ê³„ì‚°í•¨
     private const string MAT_PLAYER_PAST_POSITION_COLOR_NAME = "_PlayerPastPosColor";
     private const string MAT_PLAYER_PAST_POSITION_ARRAY_LENGTH_NAME = "_PlayerPastPosArrayLength";
     private const string MAT_PLAYER_PAST_POSITION_ARRAY_NAME = "_PlayerPastPosArray";
     private const string MAT_PLAYER_PAST_POSITION_ALPHA_ARRAY_NAME = "_PlayerPastPosAlphaArray";
     private MaterialPropertiesGroup playerMaterialPropertiesGroup = new MaterialPropertiesGroup(
-        SoundManager.SoundFrom.None, //NoneÀ» Àû¿ëÇßÁö¸¸ SoundObject¸¦ »ç¿ëÇÏÁö´Â ¾ÊÀ½
+        SoundManager.SoundFrom.None, //Noneì„ ì ìš©í–ˆì§€ë§Œ SoundObjectë¥¼ ì‚¬ìš©í•˜ì§€ëŠ” ì•ŠìŒ
         MAT_PLAYER_PAST_POSITION_COLOR_NAME, 
         MAT_PLAYER_PAST_POSITION_ARRAY_LENGTH_NAME, 
         MAT_PLAYER_PAST_POSITION_ARRAY_NAME, 
@@ -116,9 +116,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     );
 
     #region Material Draw Properties
-    private const string MAT_USE_BASE_COLOR_NAME = "_UseBaseColor";
-    private const string MAT_DRAW_RIM_NAME = "_DrawRim";
-    private const string MAT_DRAW_PLAYER_PAST_POSITION_NAME = "_DrawPlayerPastPos";
+    //private const string MAT_USE_BASE_COLOR_NAME = "_UseBaseColor";
+    //private const string MAT_DRAW_RIM_NAME = "_DrawRim";
+    //private const string MAT_DRAW_PLAYER_PAST_POSITION_NAME = "_DrawPlayerPastPos";
+    private const string MAT_USE_BASE_COLOR_KEY = "USE_BASE_COLOR";
+    private const string MAT_DRAW_RIM_KEY = "DRAW_RIM";
+    private const string MAT_DRAW_PLAYER_PAST_POSITION_KEY = "DRAW_PLAYER_PAST_POS";
     #endregion
 
     private const string MAT_COLOR_STRENGTH_MAX_NAME = "_ColorStrengthMax";
@@ -128,7 +131,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     #endregion
 
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 5.0f;
-    // SpreadTime µ¿¾È MazeBlockÀ» 10Ä­ ÀÌµ¿ÇÏ±â À§ÇØ 10À» °öÇÔ
+    // SpreadTime ë™ì•ˆ MazeBlockì„ 10ì¹¸ ì´ë™í•˜ê¸° ìœ„í•´ 10ì„ ê³±í•¨
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 10;
     #endregion
 
@@ -176,16 +179,16 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
 
         if(playerMaterialPropertiesGroup.CurrentArrayLength > 0) {
-            // MaterialÀÇ Player Property´Â MazeBlock ¿ÀºêÁ§Æ®¿¡¸¸ Ãß°¡ÇÔ
+            // Materialì˜ Player PropertyëŠ” MazeBlock ì˜¤ë¸Œì íŠ¸ì—ë§Œ ì¶”ê°€í•¨
             playerMaterialPropertiesGroup.SetUpdateAlphaArray(
                 blockFloorMaterial,
                 Time.deltaTime,
-                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //ÀÓÀÇÀÇ ±æÀÌ ¼³Á¤
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //ì„ì˜ì˜ ê¸¸ì´ ì„¤ì •
 #if Use_Two_Materials_On_MazeBlock
             playerMaterialPropertiesGroup.SetUpdateAlphaArray(
                 blockWallMaterial,
                 Time.deltaTime,
-                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //ÀÓÀÇÀÇ ±æÀÌ ¼³Á¤
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //ì„ì˜ì˜ ê¸¸ì´ ì„¤ì •
 #endif
         }
     }
@@ -228,9 +231,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
             }
 
-            mat.SetFloat(MAT_USE_BASE_COLOR_NAME, 1.0f);
-            mat.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
-            mat.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 1.0f);
+            //mat.SetFloat(MAT_USE_BASE_COLOR_NAME, 1.0f);
+            //mat.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
+            //mat.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 1.0f);
+            mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
+            mat.EnableKeyword(MAT_DRAW_RIM_KEY);
+            mat.EnableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
 
             mat.SetFloat(MAT_PLAYER_PAST_POSITION_RADIUS_NAME, 0.15f);
 
@@ -248,9 +254,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
             }
 
-            mat.SetFloat(MAT_USE_BASE_COLOR_NAME, 1.0f);
-            mat.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
-            mat.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 0.0f);
+            //mat.SetFloat(MAT_USE_BASE_COLOR_NAME, 1.0f);
+            //mat.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
+            //mat.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 0.0f);
+            mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
+            mat.EnableKeyword(MAT_DRAW_RIM_KEY);
+            mat.DisableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
 
             blockWallMaterial = mat;
         }
@@ -329,7 +338,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             )
         );
 
-        #region ´Ü¼ø °æ·Î Å½»ö
+        #region ë‹¨ìˆœ ê²½ë¡œ íƒìƒ‰
         int mostCloseHelperIndex;
         PathHelper mostCloseHelper;
         MazeInfo tempInfo;
@@ -361,15 +370,15 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             pastCoordList.Add(helper);
         }
         while(true) {
-            // CheckList¿¡¼­ endCoord¿¡ °¡Àå °¡±î¿î °æ·Î¸¦ °¡Áø Helper¸¦ Ã£´Â´Ù
+            // CheckListì—ì„œ endCoordì— ê°€ì¥ ê°€ê¹Œìš´ ê²½ë¡œë¥¼ ê°€ì§„ Helperë¥¼ ì°¾ëŠ”ë‹¤
             mostCloseHelperIndex = GetMostCloseHelperIndex(checkCoordList);
             mostCloseHelper = checkCoordList[mostCloseHelperIndex];
 
-            // À§¿¡¼­ Ã£Àº Helper¸¦ PastList¿¡ ³Ö°í CheckList¿¡¼­ Á¦°ÅÇÑ´Ù
+            // ìœ„ì—ì„œ ì°¾ì€ Helperë¥¼ PastListì— ë„£ê³  CheckListì—ì„œ ì œê±°í•œë‹¤
             pastCoordList.Add(mostCloseHelper);
             checkCoordList.RemoveAt(mostCloseHelperIndex);
 
-            // À§¿¡¼­ Ã£Àº Helper¸¦ ±âÁØÀ¸·Î °¥ ¼ö ÀÖ´Â °÷À» CheckList¿¡ Ãß°¡ÇÑ´Ù
+            // ìœ„ì—ì„œ ì°¾ì€ Helperë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê°ˆ ìˆ˜ ìˆëŠ” ê³³ì„ CheckListì— ì¶”ê°€í•œë‹¤
             tempInfo = MazeCreator.Maze[mostCloseHelper.Coord.x, mostCloseHelper.Coord.y];
             if(!tempInfo.WallInfo.HasFlag(MazeCreator.ActiveWall.R)) {
                 tempMoveCoord = tempInfo.NextCrossLoadCoord_R;
@@ -412,7 +421,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 }
             }
 
-            // ¸¸¾à CheckList¿¡ Helper°¡ ¾ø´Ù¸é null °ªÀ» return
+            // ë§Œì•½ CheckListì— Helperê°€ ì—†ë‹¤ë©´ null ê°’ì„ return
             if(checkCoordList.Count <= 0) {
                 Debug.LogError("Path not found.");
 
@@ -421,7 +430,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
         #endregion
 
-        #region °æ·Î Á¤¸®
+        #region ê²½ë¡œ ì •ë¦¬
         List<PathHelper> pathHelperList = new List<PathHelper>();
         int searchIndex = pastCoordList.Count - 1;
         while(true) {
@@ -449,10 +458,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             }
         }
 
-        // coord List¸¦ Vector3 List·Î º¯È¯
-        // rayRadius¸¦ »ç¿ëÇÏ¿© CornerPoint¸¦ Àû¿ë
+        // coord Listë¥¼ Vector3 Listë¡œ ë³€í™˜
+        // rayRadiusë¥¼ ì‚¬ìš©í•˜ì—¬ CornerPointë¥¼ ì ìš©
         List<Vector3> pathList = new List<Vector3>();
-        pathList.Add(startPos); //Ã³À½ À§Ä¡ ¼³Á¤
+        pathList.Add(startPos); //ì²˜ìŒ ìœ„ì¹˜ ì„¤ì •
 
         MazeBlock tempBlock;
         Vector2Int pastCoord;
@@ -466,7 +475,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             nextCoord = pathHelperList[i + 1].Coord;
             d1 = GetMovedDirection(pastCoord, currentCoord);
             d2 = GetMovedDirection(currentCoord, nextCoord);
-            // Á÷¼± °æ·Î Á¦°Å
+            // ì§ì„  ê²½ë¡œ ì œê±°
             if(d1 == d2) {
                 pathHelperList.RemoveAt(i);
                 i--;
@@ -478,11 +487,11 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             }
         }
 
-        //pathList.Add(endPos); //¸¶Áö¸· À§Ä¡ ¼³Á¤
+        //pathList.Add(endPos); //ë§ˆì§€ë§‰ ìœ„ì¹˜ ì„¤ì •
         pathList.Add(new Vector3(endPos.x, 0.0f, endPos.z));
         #endregion
 
-        // ½ÉÃş ´Ü¼øÈ­
+        // ì‹¬ì¸µ ë‹¨ìˆœí™”
         //Vector3 p1;
         //Vector3 p2;
         //Vector3 direction;
@@ -495,7 +504,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         //        tempNext = pathList[i + 1];
 
         //        p1 = tempPast;
-        //        p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //ÀÓÀÇ·Î playerÀÇ ³ôÀÌ¸¦ Àû¿ë
+        //        p2 = p1 + Vector3.up * PlayerController.PlayerHeight; //ì„ì˜ë¡œ playerì˜ ë†’ì´ë¥¼ ì ìš©
         //        direction = (tempNext - tempPast).normalized;
         //        distance = Vector3.Distance(tempPast, tempNext);
         //        if(!Physics.CapsuleCast(p1, p2, rayRadius, direction, out tempPathHit, distance, mask)) {
@@ -527,8 +536,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         new Vector2Int(Mathf.FloorToInt(pos.x / MazeBlock.BlockSize), Mathf.FloorToInt(pos.z / MazeBlock.BlockSize));
 
     /// <summary>
-    /// <br/> overDistance == true : currentPos¸¦ ±âÁØÀ¸·Î distance º¸´Ù ¸Õ ÁÂÇ¥ÀÇ °æ·Î ¹İÈ¯
-    /// <br/> overDistance == false : currentPos¸¦ ±âÁØÀ¸·Î distance º¸´Ù °¡±î¿î ÁÂÇ¥ÀÇ °æ·Î ¹İÈ¯
+    /// <br/> overDistance == true : currentPosë¥¼ ê¸°ì¤€ìœ¼ë¡œ distance ë³´ë‹¤ ë¨¼ ì¢Œí‘œì˜ ê²½ë¡œ ë°˜í™˜
+    /// <br/> overDistance == false : currentPosë¥¼ ê¸°ì¤€ìœ¼ë¡œ distance ë³´ë‹¤ ê°€ê¹Œìš´ ì¢Œí‘œì˜ ê²½ë¡œ ë°˜í™˜
     /// </summary>
     public List<Vector3> GetRandomPointPathCompareDistance(Vector3 currentPos, float rayRadius, bool overDistance, float distance) {
         Vector2Int endpoint = overDistance ? GetRandomCoordOverDistance(currentPos, distance) : GetRandomCoordNearbyDistance(currentPos, distance);
@@ -537,8 +546,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     /// <summary>
-    /// <br/>ÇöÀç »ı¼ºµÈ ¸ó½ºÅÍÀÇ À§Ä¡¿Í °ãÄ¡Áö ¾Ê°Ô »ı¼º.
-    /// <br/>ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸®°¡ ÀÏÁ¤ ÀÌ»ó ¶³¾îÁø À§Ä¡¿¡ »ı¼º
+    /// <br/>í˜„ì¬ ìƒì„±ëœ ëª¬ìŠ¤í„°ì˜ ìœ„ì¹˜ì™€ ê²¹ì¹˜ì§€ ì•Šê²Œ ìƒì„±.
+    /// <br/>í”Œë ˆì´ì–´ì™€ì˜ ê±°ë¦¬ê°€ ì¼ì • ì´ìƒ ë–¨ì–´ì§„ ìœ„ì¹˜ì— ìƒì„±
     /// </summary>
     public void AddMonsterOnLevelRandomly(MonsterType type, int count, float compareDistance, bool overDistance) {
         if(count <= 0) {
@@ -557,11 +566,11 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         Vector2Int[] currentMonstersCoordArray = monsters.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
         List<Vector2Int> usingCoordList = new List<Vector2Int>();
         while(usingCoordList.Count < count) {
-            // ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸®°¡ ÀÏÁ¤ °Å¸® ÀÌ»ó ¶³¾îÁ® ÀÖ´Â coord »ı¼º
+            // í”Œë ˆì´ì–´ì™€ì˜ ê±°ë¦¬ê°€ ì¼ì • ê±°ë¦¬ ì´ìƒ ë–¨ì–´ì ¸ ìˆëŠ” coord ìƒì„±
             Vector2Int randomCoord = overDistance ?
                 GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, compareDistance) :
                 GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
-            // ÇöÀç ¸ó½ºÅÍµé°ú °ãÄ¡Áö ¾Ê´Â À§Ä¡ È®ÀÎ
+            // í˜„ì¬ ëª¬ìŠ¤í„°ë“¤ê³¼ ê²¹ì¹˜ì§€ ì•ŠëŠ” ìœ„ì¹˜ í™•ì¸
             if(Array.FindIndex(currentMonstersCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
                 usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0 &&
                 monsters.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0 &&
@@ -578,10 +587,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
-            mc.Material.SetFloat(MAT_USE_BASE_COLOR_NAME, 0.0f);
+            //mc.Material.SetFloat(MAT_USE_BASE_COLOR_NAME, 0.0f);
             //mc.Material.SetFloat(MAT_DRAW_RIM_NAME, 1.0f);
-            mc.Material.SetFloat(MAT_DRAW_RIM_NAME, 0.0f);
-            mc.Material.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 0.0f);
+            //mc.Material.SetFloat(MAT_DRAW_PLAYER_PAST_POSITION_NAME, 0.0f);
+            mc.Material.DisableKeyword(MAT_USE_BASE_COLOR_KEY);
+            mc.Material.DisableKeyword(MAT_DRAW_RIM_KEY);
+            mc.Material.DisableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
 
             monsters.Add(mc);
         }
@@ -604,11 +615,11 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         Vector2Int[] currentItemsCoordArray = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
         List<Vector2Int> usingCoordList = new List<Vector2Int>();
         while(usingCoordList.Count < count) {
-            // ÇÃ·¹ÀÌ¾î¿ÍÀÇ °Å¸®°¡ ÀÏÁ¤ °Å¸® ÀÌ»ó ¶³¾îÁ® ÀÖ´Â coord »ı¼º
+            // í”Œë ˆì´ì–´ì™€ì˜ ê±°ë¦¬ê°€ ì¼ì • ê±°ë¦¬ ì´ìƒ ë–¨ì–´ì ¸ ìˆëŠ” coord ìƒì„±
             Vector2Int randomCoord = overDistance ? 
                 GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, compareDistance) : 
                 GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
-            // ÇöÀç ¾ÆÀÌÅÛ°ú °ãÄ¡Áö ¾Ê´Â À§Ä¡ È®ÀÎ
+            // í˜„ì¬ ì•„ì´í…œê³¼ ê²¹ì¹˜ì§€ ì•ŠëŠ” ìœ„ì¹˜ í™•ì¸
             if(Array.FindIndex(currentItemsCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
                 usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0 && 
                 monsters.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0 &&
@@ -628,7 +639,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     public void PlayMonsters() { 
-        // ¸ó½ºÅÍ°¡ °ÔÀÓ Áß°£¿¡ Ãß°¡µÉ ¶§µµ ÀÖ±â ¶§¹®¿¡ ÀüÃ¼ ¹üÀ§°¡ ¾Æ´Ñ Á¦ÇÑµÈ ¹üÀ§¿¡¼­¸¸ for¹® ½ÇÇà
+        // ëª¬ìŠ¤í„°ê°€ ê²Œì„ ì¤‘ê°„ì— ì¶”ê°€ë  ë•Œë„ ìˆê¸° ë•Œë¬¸ì— ì „ì²´ ë²”ìœ„ê°€ ì•„ë‹Œ ì œí•œëœ ë²”ìœ„ì—ì„œë§Œ forë¬¸ ì‹¤í–‰
         for(int i = monsters.Count - 1; i >= 0; i--) {
             if(monsters[i].IsPlaying) break;
 
@@ -701,7 +712,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     #endregion
 
     /// <summary>
-    /// compareDistance º¸´Ù ¸Ö¸® ÀÖ´Â coord¸¦ ¹İÈ¯
+    /// compareDistance ë³´ë‹¤ ë©€ë¦¬ ìˆëŠ” coordë¥¼ ë°˜í™˜
     /// </summary>
     private Vector2Int GetRandomCoordOverDistance(Vector3 currentPos, float compareDistance) {
         Vector2Int randomCoord;
@@ -720,7 +731,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     /// <summary>
-    /// compareDistance º¸´Ù °¡±îÀÌ ÀÖ´Â coord¸¦ ¹İÈ¯
+    /// compareDistance ë³´ë‹¤ ê°€ê¹Œì´ ìˆëŠ” coordë¥¼ ë°˜í™˜
     /// </summary>
     private Vector2Int GetRandomCoordNearbyDistance(Vector3 currentPos, float compareDistance) {
         Vector2Int randomCoord;
@@ -758,7 +769,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     private bool IsSameVec2Int(Vector2Int v1, Vector2Int v2) => v1.x == v2.x && v1.y == v2.y;
 
-    #region ±æÃ£±â Util Func
+    #region ê¸¸ì°¾ê¸° Util Func
     private int GetStraightDistance(Vector2Int c1, Vector2Int c2) => Mathf.Abs(c2.x - c1.x) + Mathf.Abs(c2.y - c1.y);
     private int GetMostCloseHelperIndex(List<PathHelper> helperList) {
         int index = 0;
@@ -782,7 +793,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         public string MAT_ALPHA_ARRAY_NAME { get; private set; }
 
         public Vector4[] PosArray { get; private set; } = new Vector4[LIST_MAX_LENGTH];
-        // Player Alpha¸¦ °è»êÇÏ±â À§ÇØ tempArray·Î »ç¿ëµÊ
+        // Player Alphaë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´ tempArrayë¡œ ì‚¬ìš©ë¨
         public float[] RadiusArray { get; private set; } = new float[LIST_MAX_LENGTH];
         public float[] AlphaArray { get; private set; } = new float[LIST_MAX_LENGTH];
 
@@ -810,7 +821,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         #region Utility
         #region Player Property Update Func
         /// <summary>
-        /// ArrayÀÇ ¸¶Áö¸· index¿¡ Ãß°¡µÊ
+        /// Arrayì˜ ë§ˆì§€ë§‰ indexì— ì¶”ê°€ë¨
         /// </summary>
         public void AddPos(Vector4 pos) {
             if(CurrentArrayLength >= PosArray.Length) {
@@ -823,7 +834,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
 
         /// <summary>
-        /// ArrayÀÇ Ã¹ index(0)ÀÌ Á¦°ÅµÊ
+        /// Arrayì˜ ì²« index(0)ì´ ì œê±°ë¨
         /// </summary>
         public void RemovePos(int removeCount = 1) {
             if(removeCount < 1) {
@@ -836,7 +847,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             Array.Copy(PosArray, removeCount, newPosArray, 0, PosArray.Length - removeCount);
             PosArray = newPosArray;
 
-            // tempArray·Î »ç¿ëÇÏ±â À§ÇØ °°ÀÌ update
+            // tempArrayë¡œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ê°™ì´ update
             float[] newRadiusArray = new float[RadiusArray.Length];
             Array.Copy(RadiusArray, removeCount, newRadiusArray, 0, RadiusArray.Length - removeCount);
             RadiusArray = newRadiusArray;
@@ -849,8 +860,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
 
         public void SetUpdateAlphaArray(Material mat, float addValue, float max) {
-            // Array´Â »õ·Î¿î °ªÀÌ Ãß°¡µÉ ¶§¿¡ ¸Ç µÚ ÂÊ¿¡ Ãß°¡µÇ±â ¶§¹®¿¡ »ó½Ã ³»¸²Â÷¼ø Á¤·ÄÀÌ µÈ °Í°ú °°À½
-            // tempRadius > max Á¶°ÇÀÌ È®ÀÎµÇ´Â ÀÎµ¦½º(i)¸¦ È®ÀÎÇÏ°í i º¸´Ù ÀÛ°Å³ª °°Àº index¸¦ ¸ğµÎ Á¦°Å
+            // ArrayëŠ” ìƒˆë¡œìš´ ê°’ì´ ì¶”ê°€ë  ë•Œì— ë§¨ ë’¤ ìª½ì— ì¶”ê°€ë˜ê¸° ë•Œë¬¸ì— ìƒì‹œ ë‚´ë¦¼ì°¨ìˆœ ì •ë ¬ì´ ëœ ê²ƒê³¼ ê°™ìŒ
+            // tempRadius > max ì¡°ê±´ì´ í™•ì¸ë˜ëŠ” ì¸ë±ìŠ¤(i)ë¥¼ í™•ì¸í•˜ê³  i ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ì€ indexë¥¼ ëª¨ë‘ ì œê±°
             int i = CurrentArrayLength - 1;
             for(; i >= 0; i--) {
                 float newRadius = RadiusArray[i] + addValue;
@@ -863,7 +874,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 RadiusArray[i] = newRadius;
             }
 
-            // for¹®ÀÌ break ¾øÀÌ ³¡³µ´Ù¸é i´Â -1ÀÌ µÇ¾î ÀÖÀ½
+            // forë¬¸ì´ break ì—†ì´ ëë‚¬ë‹¤ë©´ iëŠ” -1ì´ ë˜ì–´ ìˆìŒ
             if(i >= 0) {
                 RemovePos(i + 1);
 
@@ -887,7 +898,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             return false;
         }
 
-        // ¸Å ÇÁ·¹ÀÓ¸¶´Ù ¾÷µ¥ÀÌÆ® ÇØ¾ßÇÏ´Â properties
+        // ë§¤ í”„ë ˆì„ë§ˆë‹¤ ì—…ë°ì´íŠ¸ í•´ì•¼í•˜ëŠ” properties
         public void SetUpdateRadiusArray(Material mat) {
             float[] rimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
                 From,
@@ -897,7 +908,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mat.SetFloatArray(MAT_RADIUS_ARRAY_NAME, RadiusArray);
         }
 
-        // ¸Å ÇÁ·¹ÀÓ¸¶´Ù ¾÷µ¥ÀÌÆ® ÇØ¾ßÇÏ´Â properties
+        // ë§¤ í”„ë ˆì„ë§ˆë‹¤ ì—…ë°ì´íŠ¸ í•´ì•¼í•˜ëŠ” properties
         public void SetUpdateAlphaArray(Material mat) {
             float[] rimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
                 From,
@@ -908,7 +919,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
         #endregion
 
-        // Rim°ú Player¿¡ ¸ğµÎ »ç¿ëµÊ
+        // Rimê³¼ Playerì— ëª¨ë‘ ì‚¬ìš©ë¨
         public void SetPosArray(Material mat) {
             mat.SetInteger(MAT_ARRAY_LENGTH_NAME, CurrentArrayLength);
             mat.SetVectorArray(MAT_POSITION_ARRAY_NAME, PosArray);
@@ -934,7 +945,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="accumulatedDistance">´©ÀûµÈ °Å¸®</param>
+        /// <param name="accumulatedDistance">ëˆ„ì ëœ ê±°ë¦¬</param>
         public PathHelper(
             int parentIndex,
             MazeInfo info, 

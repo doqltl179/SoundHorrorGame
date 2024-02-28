@@ -64,11 +64,11 @@ public class MazeBlock : MonoBehaviour {
         WallLayerIndex = LayerMask.NameToLayer(WallLayerName);
         EdgeLayerIndex = LayerMask.NameToLayer(EdgeLayerName);
 
-        // ÃµÀå°ú ¹Ù´ÚÀº layer¸¦ ¼³Á¤ÇÏÁö ¾ÊÀ½
-        // º®À» ´ë»óÀ¸·Î ray¸¦ »ç¿ëÇÏ´Â °æ¿ì°¡ ¸¹Àºµ¥, ÀÌ °æ¿ì¿¡ ÃµÀåÀÌ³ª ¹Ù´Ú¿¡ ray°¡ ´ê´Â °ÍÀ» ¹èÁ¦ÇÏ±â À§ÇÔ
+        // ì²œì¥ê³¼ ë°”ë‹¥ì€ layerë¥¼ ì„¤ì •í•˜ì§€ ì•ŠìŒ
+        // ë²½ì„ ëŒ€ìƒìœ¼ë¡œ rayë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ê°€ ë§ì€ë°, ì´ ê²½ìš°ì— ì²œì¥ì´ë‚˜ ë°”ë‹¥ì— rayê°€ ë‹¿ëŠ” ê²ƒì„ ë°°ì œí•˜ê¸° ìœ„í•¨
         floor.tag = TagName;
         ceiling.tag = TagName;
-        // ÀÚµ¿ ÀÌµ¿À» ÇÒ ¶§¿¡ ray°¡ Edge¿¡ °É·Á Wall°ú Edge »çÀÌ¿¡ ¸ó½ºÅÍ°¡ ³¢´Â ¹®Á¦°¡ »ı°Ü¼­ EdgeÀÇ Layer¸¦ µû·Î ºÎ¿©
+        // ìë™ ì´ë™ì„ í•  ë•Œì— rayê°€ Edgeì— ê±¸ë ¤ Wallê³¼ Edge ì‚¬ì´ì— ëª¬ìŠ¤í„°ê°€ ë¼ëŠ” ë¬¸ì œê°€ ìƒê²¨ì„œ Edgeì˜ Layerë¥¼ ë”°ë¡œ ë¶€ì—¬
         foreach(GameObject edge in edges) {
             edge.tag = TagName;
             edge.layer = EdgeLayerIndex;
@@ -112,32 +112,32 @@ public class MazeBlock : MonoBehaviour {
     /// </summary>
     /// <param name="d1">Current moved direction</param>
     /// <param name="d2">Next moved direction</param>
-    /// <param name="radius">ColliderÀÇ radius</param>
+    /// <param name="radius">Colliderì˜ radius</param>
     /// <returns></returns>
     public Vector3 GetCornerPoint(MazeCreator.ActiveWall d1, MazeCreator.ActiveWall d2, float radius) {
         float angle = 0.0f;
 
-        // ¿ŞÂÊ À§
+        // ì™¼ìª½ ìœ„
         if((d1 == MazeCreator.ActiveWall.R && d2 == MazeCreator.ActiveWall.F) ||
             (d1 == MazeCreator.ActiveWall.B && d2 == MazeCreator.ActiveWall.L)) {
             angle = Mathf.PI * 0.75f;
         }
-        // ¿À¸¥ÂÊ À§
+        // ì˜¤ë¥¸ìª½ ìœ„
         else if((d1 == MazeCreator.ActiveWall.L && d2 == MazeCreator.ActiveWall.F) ||
             (d1 == MazeCreator.ActiveWall.B && d2 == MazeCreator.ActiveWall.R)) {
             angle = Mathf.PI * 0.25f;
         }
-        // ¿ŞÂÊ ¾Æ·¡
+        // ì™¼ìª½ ì•„ë˜
         else if((d1 == MazeCreator.ActiveWall.R && d2 == MazeCreator.ActiveWall.B) ||
             (d1 == MazeCreator.ActiveWall.F && d2 == MazeCreator.ActiveWall.L)) {
             angle = Mathf.PI * -0.75f;
         }
-        // ¿À¸¥ÂÊ ¾Æ·¡
+        // ì˜¤ë¥¸ìª½ ì•„ë˜
         else {
             angle = Mathf.PI * -0.25f;
         }
 
-        // Collider¸¦ º®¿¡ µü ºÙ°Ô ÇÏÁö ¾Ê°Ô ÇÏ±â À§ÇØ¼­ 1.05¸¦ °öÇØÁÜ
+        // Colliderë¥¼ ë²½ì— ë”± ë¶™ê²Œ í•˜ì§€ ì•Šê²Œ í•˜ê¸° ìœ„í•´ì„œ 1.05ë¥¼ ê³±í•´ì¤Œ
         float calculatedRadius = (BlockSize - (EdgeSize * 2)) * 0.5f * Mathf.Sqrt(2) - radius * 1.05f;
         Vector3 direction = new Vector3(Mathf.Cos(angle), 0.0f, Mathf.Sin(angle));
         return transform.position + direction * calculatedRadius;
