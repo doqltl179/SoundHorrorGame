@@ -55,10 +55,10 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: 033dfee25b43dc0438e5d9d1d8ce793a, type: 2}
   headPos: {fileID: 1480342638733977503}
   scaleScalar: 1.5
-  moveSpeed: 0.8
+  moveSpeed: 1.8
   twoStepDistance: 1
   moveBoost: 0.8
-  rotateSpeed: 2
+  rotateSpeed: 3.3
   moveSoundOffset: 0
   audioSource: {fileID: 349105038731470927}
   audioVolumeMax: 0.85

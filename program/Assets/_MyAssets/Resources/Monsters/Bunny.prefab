@@ -142,7 +142,7 @@ MonoBehaviour:
   scaleScalar: 1.7
   moveSpeed: 1
   twoStepDistance: 2.1
-  moveBoost: 0.4
+  moveBoost: 0.8
   rotateSpeed: 3
   moveSoundOffset: 0.25
 --- !u!54 &6204383258893231526

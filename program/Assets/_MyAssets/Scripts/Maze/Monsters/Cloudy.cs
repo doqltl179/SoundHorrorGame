@@ -102,8 +102,10 @@ public class Cloudy : MonsterController, IMove {
         // 위치 이동
         if(physicsMoveSpeed > 0) {
             float moveDistanceOfOneSecond = physicsMoveSpeed * moveSpeed * scaleScalar;
-            transform.position += transform.forward * dt * moveDistanceOfOneSecond;
+            //transform.position += transform.forward * dt * moveDistanceOfOneSecond;
+            rigidbody.velocity = transform.forward * moveDistanceOfOneSecond;
         }
+        rigidbody.angularVelocity = Vector3.zero;
 
         // physicsMoveSpeed가 0에 가까울수록 Idle로 전환
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
@@ -118,9 +120,6 @@ public class Cloudy : MonsterController, IMove {
             animationSpeed = 1.0f - Mathf.InverseLerp(0.0f, 0.5f, physicsMoveSpeed);
         }
         animator.SetFloat(AnimatorPropertyName_MoveSpeed, animationSpeed);
-
-        rigidbody.velocity = Vector3.zero;
-        rigidbody.angularVelocity = Vector3.zero;
     }
     #endregion
 

@@ -110,9 +110,9 @@ MonoBehaviour:
   headPos: {fileID: 1495127717194787546}
   scaleScalar: 1.3
   moveSpeed: 0.5
-  twoStepDistance: 0.8
+  twoStepDistance: 1.3
   moveBoost: 0.4
-  rotateSpeed: 1.5
+  rotateSpeed: 2
   moveSoundOffset: 0.25
 --- !u!54 &5266455811726812857
 Rigidbody:

@@ -142,8 +142,8 @@ MonoBehaviour:
   scaleScalar: 1.7
   moveSpeed: 1.3
   twoStepDistance: 3.6
-  moveBoost: 0.4
-  rotateSpeed: 3
+  moveBoost: 0.8
+  rotateSpeed: 4.5
   moveSoundOffset: 0.25
 --- !u!54 &6204383258893231526
 Rigidbody:

@@ -137,8 +137,8 @@ public class MazeBlock : MonoBehaviour {
             angle = Mathf.PI * -0.25f;
         }
 
-        // Collider를 벽에 딱 붙게 하지 않게 하기 위해서 1.05를 곱해줌
-        float calculatedRadius = (BlockSize - (EdgeSize * 2)) * 0.5f * Mathf.Sqrt(2) - radius * 1.05f;
+        // Collider를 벽에 딱 붙게 하지 않게 하기 위해서 1.1를 곱해줌
+        float calculatedRadius = ((BlockSize - (EdgeSize * 2)) * 0.5f - (radius * 1.1f)) * Mathf.Sqrt(2);
         Vector3 direction = new Vector3(Mathf.Cos(angle), 0.0f, Mathf.Sin(angle));
         return transform.position + direction * calculatedRadius;
     }

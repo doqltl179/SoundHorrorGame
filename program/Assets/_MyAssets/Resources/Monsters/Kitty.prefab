@@ -31,6 +31,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6389940881465510956}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6633713729801477336
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1997944740411845689}
+  m_Layer: 0
+  m_Name: StopSensor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1997944740411845689
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6633713729801477336}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6389940881465510956}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7776457412971437398
 GameObject:
   m_ObjectHideFlags: 0
@@ -120,6 +151,7 @@ Transform:
   - {fileID: 2335592724003293912}
   - {fileID: 7071775034156720914}
   - {fileID: 8233475146895850427}
+  - {fileID: 1997944740411845689}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7494227099707292243
@@ -141,10 +173,11 @@ MonoBehaviour:
   headPos: {fileID: 8233475146895850427}
   scaleScalar: 1.2
   moveSpeed: 2.2
-  twoStepDistance: 0.8
+  twoStepDistance: 1.5
   moveBoost: 2
-  rotateSpeed: 6
+  rotateSpeed: 8
   moveSoundOffset: 0
+  stopSensorObject: {fileID: 1997944740411845689}
 --- !u!54 &7294625881942546928
 Rigidbody:
   m_ObjectHideFlags: 0

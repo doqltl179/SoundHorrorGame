@@ -109,7 +109,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         micDecibelCheckCoroutine = null;
     }
 
-    private void FixedUpdate() {
+    private void Update() {
         if(noneFromSoundObjectList.Count > 0) CheckSoundObjct(ref noneFromSoundObjectList, SoundFrom.None);
         if(playerSoundObjectList.Count > 0) CheckSoundObjct(ref playerSoundObjectList, SoundFrom.Player);
         if(monsterSoundObjectList.Count > 0) CheckSoundObjct(ref monsterSoundObjectList, SoundFrom.Monster);

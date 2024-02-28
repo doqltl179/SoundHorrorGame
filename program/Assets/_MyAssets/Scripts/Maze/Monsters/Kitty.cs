@@ -6,6 +6,7 @@ using UnityEngine;
 /// 플레이어가 바라보고 있을 때 움직임을 멈춤. 대신 이동 속도가 굉장히 빠름
 /// </summary>
 public class Kitty : MonsterController, IMove {
+    [SerializeField] private Transform stopSensorObject;
     private StuckHelper stopHelper;
 
     private const float restTime = 5.0f;
@@ -35,6 +36,7 @@ public class Kitty : MonsterController, IMove {
 
     private void Start() {
         transform.localScale = Vector3.one * scaleScalar;
+        stopSensorObject.localPosition = Vector3.up * collider.height * 0.5f;
         physicsMoveSpeed = 0.0f;
 
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
@@ -43,7 +45,7 @@ public class Kitty : MonsterController, IMove {
         stopHelper = new StuckHelper(Radius, mask | (1 << LayerMask.NameToLayer(PlayerController.LayerName)));
     }
 
-    private void FixedUpdate() { 
+    private void Update() { 
         if(!IsPlaying) return;
 
         if(CurrentState == MonsterState.Rest) {
@@ -82,9 +84,9 @@ public class Kitty : MonsterController, IMove {
 
     #region Interface
     public void Move(float dt) {
-        stopHelper.Raycast(UtilObjects.Instance.CamPos, (Pos - UtilObjects.Instance.CamPos).normalized, float.MaxValue);
+        stopHelper.Raycast(Pos, (UtilObjects.Instance.CamPos - Pos).normalized, float.MaxValue);
         if(stopHelper.IsHit && (stopHelper.HitTag == PlayerController.TagName)) {
-            Vector3 viewPoint = UtilObjects.Instance.Cam.WorldToViewportPoint(Pos);
+            Vector3 viewPoint = UtilObjects.Instance.Cam.WorldToViewportPoint(stopSensorObject.position);
             if(viewPoint.z > 0.0f && 
                 0.0f <= viewPoint.x && viewPoint.x <= 1.0f && 
                 0.0f <= viewPoint.y && viewPoint.y <= 1.0f) {
@@ -101,7 +103,7 @@ public class Kitty : MonsterController, IMove {
         if(movePath != null && movePath.Count > 0) {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed + dt * moveBoost, 0.0f, physicsMoveSpeedMax);
 
-            stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f);
+            stuckHelper.Raycast(transform.position, transform.forward, Radius * 2f);
             if(stuckHelper.IsHit) { 
                 // 부딪힌 곳의 normal을 기준으로 가야하는 방향
                 Vector3 hitPosToPathPos = (movePath[0] - stuckHelper.HitPos).normalized;
@@ -128,8 +130,10 @@ public class Kitty : MonsterController, IMove {
         // 위치 이동
         if(physicsMoveSpeed > 0) {
             float moveDistanceOfOneSecond = physicsMoveSpeed * moveSpeed * scaleScalar;
-            transform.position += transform.forward * dt * moveDistanceOfOneSecond;
+            //transform.position += transform.forward * dt * moveDistanceOfOneSecond;
+            rigidbody.velocity = transform.forward * moveDistanceOfOneSecond;
         }
+        rigidbody.angularVelocity = Vector3.zero;
 
         // physicsMoveSpeed가 0에 가까울수록 Idle로 전환
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
@@ -144,9 +148,6 @@ public class Kitty : MonsterController, IMove {
             animationSpeed = 1.0f - Mathf.InverseLerp(0.0f, 0.5f, physicsMoveSpeed);
         }
         animator.SetFloat(AnimatorPropertyName_MoveSpeed, animationSpeed);
-
-        rigidbody.velocity = Vector3.zero;
-        rigidbody.angularVelocity = Vector3.zero;
     }
     #endregion
 
@@ -165,12 +166,16 @@ public class Kitty : MonsterController, IMove {
         switch(so.Type) {
             case SoundManager.SoundType.PlayerWalk: {
                     if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+                        List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+                        float dist = LevelLoader.Instance.GetPathDistance(newPath);
+                        if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+                            movePath = newPath;
 
-                        physicsMoveSpeedMax = 1.0f;
-                        FollowingSound = so;
+                            physicsMoveSpeedMax = 1.0f;
+                            FollowingSound = so;
 
-                        CurrentState = MonsterState.Move;
+                            CurrentState = MonsterState.Move;
+                        }
                     }
                 }
                 break;

@@ -87,7 +87,8 @@ public class SettingController : MonoBehaviour {
         const float fadeTime = 0.1f;
         float fadeTimeChecker = 0.0f;
         while(fadeTimeChecker < fadeTime) {
-            fadeTimeChecker += Time.deltaTime;
+            //fadeTimeChecker += Time.deltaTime;
+            fadeTimeChecker += Time.unscaledDeltaTime;
             canvasGroup.alpha = fadeTimeChecker / fadeTime;
 
             yield return null;
@@ -104,12 +105,6 @@ public class SettingController : MonoBehaviour {
         }
     }
 
-    private void Update() {
-        if(Input.GetKeyUp(closeCode)) {
-            OnClickedBack();
-        }
-    }
-
     #region Action
     public void OnMasterVolumeDrag(BaseEventData data) {
         float volume = UserSettings.CalculateMasterVolume(masterVolumeSlider.value);
@@ -121,6 +116,11 @@ public class SettingController : MonoBehaviour {
         if(volume != UserSettings.MasterVolume) {
             UserSettings.MasterVolume = volume;
         }
+    }
+
+    public void OnMasterSliderValueChanged(Single single) {
+        UserSettings.MasterVolume = UserSettings.CalculateMasterVolume(masterVolumeSlider.value);
+        masterVolumeText.text = string.Format("{0:0.0}", UserSettings.MasterVolume);
     }
 
     public void OnUseMicYesChanged(bool changedValue) {
@@ -182,6 +182,11 @@ public class SettingController : MonoBehaviour {
         }
     }
 
+    public void OnDisplayFOVSliderValueChanged(Single single) {
+        UserSettings.FOV = UserSettings.CalculateFOV(displayFOVSlider.value);
+        displayFOVText.text = string.Format("{0:0.0}", UserSettings.FOV);
+    }
+
     public void OnDisplayBrightnessDrag(BaseEventData data) {
         displayBrightnessText.text = string.Format("{0:0.0}", UserSettings.CalculateBrightness(displayBrightnessSlider.value));
     }
@@ -193,6 +198,11 @@ public class SettingController : MonoBehaviour {
         }
     }
 
+    public void OnDisplayBrightnessSliderValueChanged(Single single) {
+        UserSettings.DisplayBrightness = UserSettings.CalculateBrightness(displayBrightnessSlider.value);
+        displayBrightnessText.text = string.Format("{0:0.0}", UserSettings.DisplayBrightness);
+    }
+
     public void OnDisplaySensitiveDrag(BaseEventData data) {
         displaySensitiveText.text = string.Format("{0:0.0}", UserSettings.CalculateSensitive(displaySensitiveSlider.value));
     }
@@ -202,6 +212,11 @@ public class SettingController : MonoBehaviour {
         if(UserSettings.DisplaySensitive != sensitive) {
             UserSettings.DisplaySensitive = sensitive;
         }
+    }
+
+    public void OnDisplaySensitiveSliderValueChanged(Single single) {
+        UserSettings.DisplaySensitive = UserSettings.CalculateSensitive(displaySensitiveSlider.value);
+        displaySensitiveText.text = string.Format("{0:0.0}", UserSettings.DisplaySensitive);
     }
 
     #region Button OnClicked

@@ -1763,10 +1763,10 @@ RectTransform:
   - {fileID: 5062229063720090196}
   m_Father: {fileID: 6072095487163015824}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 190, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 466.5, y: -32}
+  m_SizeDelta: {x: 190, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &881535847790953886
 GameObject:
@@ -2073,7 +2073,19 @@ MonoBehaviour:
   m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6781572207428141963}
+        m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
+        m_MethodName: OnDisplayBrightnessSliderValueChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &5832933090109054696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2093,8 +2105,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnDisplayBrightnessDrag
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2109,8 +2121,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnDisplayBrightnessDragEnd
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -4227,8 +4239,8 @@ RectTransform:
   - {fileID: 3524540198220409397}
   m_Father: {fileID: 488696442946186438}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 32, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -5715,7 +5727,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2531915023501732649
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5732,10 +5744,10 @@ RectTransform:
   - {fileID: 6072095487163015824}
   m_Father: {fileID: 970787342687188135}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 74}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 761.5, y: -389}
+  m_SizeDelta: {x: 1523, y: 74}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2256716245490164818
 MonoBehaviour:
@@ -8197,10 +8209,10 @@ RectTransform:
   - {fileID: 6311955155987892810}
   m_Father: {fileID: 2531915023501732649}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 941.5, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 490.75, y: -42}
+  m_SizeDelta: {x: 941.5, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &4714774960911114560
 GameObject:
@@ -10040,7 +10052,7 @@ RectTransform:
   m_Father: {fileID: 8862953173282132286}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 4.5, y: 0}
   m_SizeDelta: {x: 15, y: -4}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -11545,7 +11557,19 @@ MonoBehaviour:
   m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6781572207428141963}
+        m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
+        m_MethodName: OnDisplayFOVSliderValueChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &6490358167339707638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11565,8 +11589,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnDisplayFOVDrag
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -11581,8 +11605,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnDisplayFOVDragEnd
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -12116,7 +12140,19 @@ MonoBehaviour:
   m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6781572207428141963}
+        m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
+        m_MethodName: OnMasterSliderValueChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &5612858453836231978
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12136,8 +12172,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnMasterVolumeDrag
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -12152,8 +12188,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnMasterVolumeDragEnd
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -12195,10 +12231,10 @@ RectTransform:
   - {fileID: 9188653533187123590}
   m_Father: {fileID: 2531915023501732649}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 541.5, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 1232.25, y: -42}
+  m_SizeDelta: {x: 541.5, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1554451615203984622
 MonoBehaviour:
@@ -12641,7 +12677,19 @@ MonoBehaviour:
   m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 6781572207428141963}
+        m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
+        m_MethodName: OnDisplaySensitiveSliderValueChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &4696512632437713945
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12661,8 +12709,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnDisplaySensitiveDrag
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -12677,8 +12725,8 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 6781572207428141963}
           m_TargetAssemblyTypeName: SettingController, Assembly-CSharp
-          m_MethodName: OnDisplaySensitiveDragEnd
-          m_Mode: 0
+          m_MethodName: 
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -13004,10 +13052,10 @@ RectTransform:
   - {fileID: 2163814188469485831}
   m_Father: {fileID: 6072095487163015824}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 351.5, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 175.75, y: -32}
+  m_SizeDelta: {x: 351.5, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &8060257954349710498
 GameObject:
@@ -13225,12 +13273,12 @@ Camera:
   m_ShutterSpeed: 0.005
   m_Aperture: 16
   m_FocusDistance: 10
-  m_FocalLength: 50
+  m_FocalLength: 20.78461
   m_BladeCount: 5
   m_Curvature: {x: 2, y: 11}
   m_BarrelClipping: 0.25
   m_Anamorphism: 0
-  m_SensorSize: {x: 36, y: 24}
+  m_SensorSize: {x: 42.666668, y: 24}
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
@@ -13240,7 +13288,7 @@ Camera:
     height: 1
   near clip plane: 0.15
   far clip plane: 1000
-  field of view: 60
+  field of view: 60.000004
   orthographic: 0
   orthographic size: 5
   m_Depth: -1

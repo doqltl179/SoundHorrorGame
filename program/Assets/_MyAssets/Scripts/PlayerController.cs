@@ -11,13 +11,16 @@ public class PlayerController : Singleton<PlayerController> {
 
     public static readonly float PlayerHeight = 0.8f;
     /// <summary>
-    /// «√∑π¿ÃæÓ¿« µŒ≤≤ º≥¡§∞™
+    /// ÌîåÎ†àÏù¥Ïñ¥Ïùò ÎëêÍªò ÏÑ§Ï†ïÍ∞í
     /// </summary>
     public static readonly float Radius = 0.3f;
 
     [Header("Components")]
     [SerializeField] private CapsuleCollider collider;
     [SerializeField] private Rigidbody rigidbody;
+
+    [Header("GameObject")]
+    [SerializeField] private Transform cameraAnchor;
 
     [Header("Properties")]
     [SerializeField, Range(0.1f, 10.0f)] private float moveSpeed = 2.0f;
@@ -26,6 +29,12 @@ public class PlayerController : Singleton<PlayerController> {
     [SerializeField, Range(0.1f, 10.0f)] private float rotateSpeed = 1.5f;
     [SerializeField, Range(0.1f, 10.0f)] private float walkSoundInterval = 0.5f;
     private float walkSoundIntervalChecker = 0.0f;
+    [SerializeField, Range(0.0f, 10.0f)] protected float moveBoost = 0.4f;
+    private float physicsMoveSpeed = 0.0f;
+    private float physicsMoveSpeedMax = 1.0f;
+
+    [SerializeField, Range(0.0f, 90.0f)] private float cameraVerticalAngleLimit = 75.0f;
+    private float cameraVerticalAngleLimitChecker = 0.0f;
 
     public Vector3 Pos {
         get {
@@ -62,9 +71,9 @@ public class PlayerController : Singleton<PlayerController> {
 
     private KeyCode key_moveF = KeyCode.W;
     private KeyCode key_moveB = KeyCode.S;
-    private KeyCode key_moveR = KeyCode.A;
-    private KeyCode key_moveL = KeyCode.D;
-    private KeyCode key_dash = KeyCode.LeftShift;
+    private KeyCode key_moveR = KeyCode.D;
+    private KeyCode key_moveL = KeyCode.A;
+    private KeyCode key_run = KeyCode.LeftShift;
     private KeyCode key_crouch = KeyCode.LeftControl;
 
     public Action<Vector2Int> OnCoordChanged;
@@ -72,10 +81,10 @@ public class PlayerController : Singleton<PlayerController> {
 
 
     private void Awake() {
-        // Tag º≥¡§
+        // Tag ÏÑ§Ï†ï
         gameObject.tag = TagName;
 
-        // Layer º≥¡§
+        // Layer ÏÑ§Ï†ï
         gameObject.layer = LayerMask.NameToLayer(LayerName);
     }
 
@@ -90,7 +99,7 @@ public class PlayerController : Singleton<PlayerController> {
 #else
     private void Start() {
 #endif
-        // Collider º≥¡§
+        // Collider ÏÑ§Ï†ï
         if(collider == null) {
             GameObject go = new GameObject(nameof(CapsuleCollider));
             go.transform.SetParent(transform);
@@ -102,10 +111,17 @@ public class PlayerController : Singleton<PlayerController> {
         collider.radius = Radius;
         collider.height = PlayerHeight;
         collider.center = Vector3.up * PlayerHeight * 0.5f;
+
+        cameraAnchor.localPosition = Vector3.up * PlayerHeight;
     }
 
-    private void FixedUpdate() {
+    private void Update() {
 #if Play_Game_Automatically
+        if(Input.GetKeyDown(KeyCode.Space)) {
+            autoMove = !autoMove;
+            CurrentState = autoMove ? PlayerState.Run : PlayerState.None;
+        }
+
         if(!autoMove) return;
 
         if(movePath == null || movePath.Count <= 0) {
@@ -116,6 +132,7 @@ public class PlayerController : Singleton<PlayerController> {
                 LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
 
             CurrentState = PlayerState.Run;
+            physicsMoveSpeed = 1.0f;
         }
 
         stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f); 
@@ -153,62 +170,63 @@ public class PlayerController : Singleton<PlayerController> {
             movePath.RemoveAt(0);
         }
 #else
-        IsDash = false;
-        IsCrouch = false;
+        #region Rotate
+        float mouseX = Input.GetAxis("Mouse X") * UserSettings.DisplaySensitive * Time.deltaTime;
+        transform.eulerAngles += transform.rotation * (Vector3.up * mouseX);
+        
+        float mouseY = Input.GetAxis("Mouse Y") * UserSettings.DisplaySensitive * Time.deltaTime;
+        cameraVerticalAngleLimitChecker += (-mouseY);
+        if(cameraVerticalAngleLimitChecker < -cameraVerticalAngleLimit) cameraVerticalAngleLimitChecker = -cameraVerticalAngleLimit;
+        else if(cameraVerticalAngleLimitChecker > cameraVerticalAngleLimit) cameraVerticalAngleLimitChecker = cameraVerticalAngleLimit;
+        cameraAnchor.localEulerAngles = Vector3.right * cameraVerticalAngleLimitChecker;
+        #endregion
+
+        #region Move
         Vector3 moveDirection = Vector3.zero;
-        foreach(KeyCode key in Enum.GetValues(typeof(KeyCode))) {
-            if(Input.GetKey(key_moveF)) moveDirection += Vector3.forward;
-            else if(Input.GetKey(key_moveB)) moveDirection += Vector3.back;
-            else if(Input.GetKey(key_moveR)) moveDirection += Vector3.right;
-            else if(Input.GetKey(key_moveL)) moveDirection += Vector3.left;
-            else if(Input.GetKey(key_dash)) IsDash = true;
-            else if(Input.GetKey(key_crouch)) IsCrouch = true;
-        }
+        if(Input.GetKey(key_moveF)) moveDirection += Vector3.forward;
+        if(Input.GetKey(key_moveB)) moveDirection += Vector3.back;
+        if(Input.GetKey(key_moveR)) moveDirection += Vector3.right;
+        if(Input.GetKey(key_moveL)) moveDirection += Vector3.left;
         moveDirection = moveDirection.normalized;
 
-        transform.Translate(moveDirection * Time.deltaTime * moveSpeed, Space.Self);
-#endif
+        if(Vector3.Magnitude(moveDirection) <= 0) CurrentState = PlayerState.None;
+        else if(Input.GetKey(key_crouch)) CurrentState = PlayerState.Crouch;
+        else if(Input.GetKey(key_run)) CurrentState = PlayerState.Run;
+        else CurrentState = PlayerState.Walk;
 
-        rigidbody.velocity = Vector3.zero;
+        float speed = 0.0f;
+        if(CurrentState != PlayerState.None) {
+            physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed + Time.deltaTime * moveBoost, 0.0f, physicsMoveSpeedMax);
+
+            if(CurrentState == PlayerState.Run) speed = runSpeed * physicsMoveSpeed;
+            else if(CurrentState == PlayerState.Walk) speed = moveSpeed * physicsMoveSpeed;
+            else speed = crouchSpeed * physicsMoveSpeed;
+        }
+        else {
+            physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - Time.deltaTime * moveBoost, 0.0f, physicsMoveSpeedMax);
+        }
+        //transform.Translate(moveDirection * Time.deltaTime * speed, Space.Self);
+        rigidbody.velocity = transform.TransformDirection(moveDirection) * speed;
+        #endregion
+
         rigidbody.angularVelocity = Vector3.zero;
-    }
-
-    private void Update() {
-#if Play_Game_Automatically
-        if(Input.GetKeyDown(KeyCode.Space)) {
-            autoMove = !autoMove;
-            CurrentState = autoMove ? PlayerState.Run : PlayerState.None;
-        }
-        if(!autoMove) return;
 #endif
 
-        CurrentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
-    }
+        UtilObjects.Instance.CamPos = cameraAnchor.position;
+        UtilObjects.Instance.CamForward = cameraAnchor.forward;
 
-    private void LateUpdate() {
-        switch(CurrentState) {
-            case PlayerState.None: {
+        #region Sound
+        if(CurrentState == PlayerState.Walk) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed;
+        else if(CurrentState == PlayerState.Run) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed * (runSpeed / moveSpeed);
 
-                }
-                break;
-            case PlayerState.Walk: {
-                    walkSoundIntervalChecker += Time.deltaTime;
-                }
-                break;
-            case PlayerState.Run: {
-                    walkSoundIntervalChecker += Time.deltaTime * (runSpeed / moveSpeed);
-                }
-                break;
-            case PlayerState.Crouch: {
-                    walkSoundIntervalChecker += Time.deltaTime * (crouchSpeed / moveSpeed);
-                }
-                break;
-        }
         if(walkSoundIntervalChecker > walkSoundInterval) {
             SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.PlayerWalk, SoundManager.SoundFrom.Player);
             LevelLoader.Instance.AddPlayerPosInMaterialProperty(Pos);
 
             walkSoundIntervalChecker -= walkSoundInterval;
         }
+        #endregion
+
+        CurrentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
     }
 }

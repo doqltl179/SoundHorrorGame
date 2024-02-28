@@ -6,6 +6,10 @@ using UnityEngine;
 /// 다른 몬스터들과 다르게 소리를 쫒는게 아닌 플레이어가 일정 범위 안에 있을 때에 플레이어의 위치를 직접 쫒음
 /// </summary>
 public class Starry : MonsterController, IMove {
+    private StuckHelper followHelper;
+    private const float followTimeInvertal = 1.0f;
+    private float followTimeChecker = 0.0f;
+
     private const float restTime = 5.0f;
     private float restTimeChecker = 0.0f;
 
@@ -41,9 +45,11 @@ public class Starry : MonsterController, IMove {
 
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
+
+        followHelper = new StuckHelper(Radius, mask | (1 << LayerMask.NameToLayer(PlayerController.LayerName)));
     }
 
-    private void FixedUpdate() {
+    private void Update() {
         if(!IsPlaying) return;
 
         if(CurrentState == MonsterState.Rest) {
@@ -82,6 +88,17 @@ public class Starry : MonsterController, IMove {
 
     #region Interface
     public void Move(float dt) {
+        followTimeChecker += Time.deltaTime;
+        if(followTimeChecker >= followTimeInvertal) {
+            followHelper.Raycast(Pos, (UtilObjects.Instance.CamPos - Pos).normalized, float.MaxValue);
+            if(followHelper.IsHit && (followHelper.HitTag == PlayerController.TagName)) {
+                Vector3 playerPos = PlayerController.Instance.Pos;
+                movePath = new List<Vector3>() { new Vector3(playerPos.x, 0.0f, playerPos.z) };
+            }
+
+            followTimeChecker -= followTimeInvertal;
+        }
+
         if(movePath != null && movePath.Count > 0) {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed + dt * moveBoost, 0.0f, 1.0f);
 
@@ -112,8 +129,10 @@ public class Starry : MonsterController, IMove {
         // 위치 이동
         if(physicsMoveSpeed > 0) {
             float moveDistanceOfOneSecond = physicsMoveSpeed * moveSpeed * scaleScalar;
-            transform.position += transform.forward * dt * moveDistanceOfOneSecond;
+            //transform.position += transform.forward * dt * moveDistanceOfOneSecond;
+            rigidbody.velocity = transform.forward * moveDistanceOfOneSecond;
         }
+        rigidbody.angularVelocity = Vector3.zero;
 
         // physicsMoveSpeed가 0에 가까울수록 Idle로 전환
         animator.SetFloat(AnimatorPropertyName_MoveBlend, physicsMoveSpeed);
@@ -128,9 +147,6 @@ public class Starry : MonsterController, IMove {
             animationSpeed = 1.0f - Mathf.InverseLerp(0.0f, 0.5f, physicsMoveSpeed);
         }
         animator.SetFloat(AnimatorPropertyName_MoveSpeed, animationSpeed);
-
-        rigidbody.velocity = Vector3.zero;
-        rigidbody.angularVelocity = Vector3.zero;
     }
     #endregion
 

@@ -161,7 +161,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         UserSettings.OnDisplayBrightnessChanged -= OnDisplayBrightnessChanged;
     }
 
-    private void Update() {
+    private void LateUpdate() {
         foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
             if(group.CurrentArrayLength > 0) {
                 group.SetUpdateRadiusArray(blockFloorMaterial);

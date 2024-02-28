@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
+    private KeyCode pauseCode = KeyCode.Escape;
 
 
 
@@ -22,40 +23,40 @@ public class GameController : MonoBehaviour {
 #if Play_Game_Automatically
         LevelLoader.Instance.AddMonsterOnLevelRandomly(
             LevelLoader.MonsterType.Kitty,
-            2,
+            200,
             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
             true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Starry,
-            2,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Cloudy,
-            2,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Froggy,
-            2,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2,
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Honey,
-            2,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
-        LevelLoader.Instance.AddMonsterOnLevelRandomly(
-            LevelLoader.MonsterType.Bunny,
-            2,
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Starry,
+        //    20,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Cloudy,
+        //    2,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Froggy,
+        //    2,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2,
+        //    true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Honey,
+        //    20,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
+        //LevelLoader.Instance.AddMonsterOnLevelRandomly(
+        //    LevelLoader.MonsterType.Bunny,
+        //    2,
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
 
-        LevelLoader.Instance.AddItemOnLevelRandomly(
-            LevelLoader.ItemType.Crystal, 
-            20, 
-            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
+        //LevelLoader.Instance.AddItemOnLevelRandomly(
+        //    LevelLoader.ItemType.Crystal, 
+        //    20, 
+        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+        //    true);
 #else
 #endif
 
@@ -64,17 +65,21 @@ public class GameController : MonoBehaviour {
         }
         // 레벨을 생성하고 몬스터가 경로를 찾기 전에 한 프레임을 쉬어주는 것으로
         // 생성된 레벨에 콜라이더가 제대로 적용되는 시간을 줌
-        yield return null; 
+        yield return null;
 
 #if Play_Game_Automatically
         LevelLoader.Instance.PlayMonsters();
 #else
 #endif
+
+        if(UserSettings.UseMicBoolean) MicrophoneRecorder.Instance.IsMute = false;
     }
 
 #if Play_Game_Automatically
     int watchIndex = -1;
+#endif
     private void Update() {
+#if Play_Game_Automatically
         if(Input.GetKeyDown(KeyCode.Alpha1)) watchIndex = 1;
         else if(Input.GetKeyDown(KeyCode.Alpha2)) watchIndex = 2;
         else if(Input.GetKeyDown(KeyCode.Alpha3)) watchIndex = 3;
@@ -99,6 +104,24 @@ public class GameController : MonoBehaviour {
             UtilObjects.Instance.CamPos = PlayerController.Instance.HeadPos;
             UtilObjects.Instance.CamForward = PlayerController.Instance.HeadForward;
         }
-    }
+#else
+        
 #endif
+
+        if(Input.GetKeyDown(pauseCode)) {
+            bool pause = Time.timeScale != 0;
+            if(pause) {
+                Time.timeScale = 0.0f;
+                AudioListener.pause = true;
+
+                UtilObjects.Instance.SetActiveSettingUI(true);
+            }
+            else {
+                Time.timeScale = 1.0f;
+                AudioListener.pause = false;
+
+                UtilObjects.Instance.SetActiveSettingUI(false);
+            }
+        }
+    }
 }

@@ -101,9 +101,9 @@ public static class UserSettings {
 
     public static Action<float> OnDisplaySensitiveChanged;
     private static readonly string m_displaySensitive_pref = "DisplaySensitive";
-    private static readonly float m_standardDisplaySensitive = 1.0f;
+    private static readonly float m_standardDisplaySensitive = 100.0f;
     private static readonly float m_displaySensitiveMin = 0.1f;
-    private static readonly float m_displaySensitiveMax = 10.0f;
+    private static readonly float m_displaySensitiveMax = 200.0f;
     public static float DisplaySensitive {
         get => PlayerPrefs.HasKey(m_displaySensitive_pref) ? PlayerPrefs.GetFloat(m_displaySensitive_pref) : m_standardDisplaySensitive;
         set {

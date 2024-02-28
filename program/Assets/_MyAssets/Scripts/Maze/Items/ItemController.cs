@@ -17,7 +17,7 @@ public class ItemController : MonoBehaviour {
         itemSoundPlayTimeChecker = Random.Range(0.0f, ItemSoundPlayTimeInterval);
     }
 
-    private void FixedUpdate() {
+    private void Update() {
         itemSoundPlayTimeChecker += Time.deltaTime;
         if(itemSoundPlayTimeChecker >= ItemSoundPlayTimeInterval) {
             if(Vector3.Distance(Pos, UtilObjects.Instance.CamPos) < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {

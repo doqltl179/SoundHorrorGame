@@ -27,6 +27,11 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
     /// </summary>
     public bool OverCritical { get { return decibel >= DecibelCritical; } }
 
+    /// <summary>
+    /// 'UserSettings.UseMicBoolean'와는 별개로 컴포넌트 실행중 임의로 데시벨 계산을 중단하기 위해 사용.
+    /// </summary>
+    [HideInInspector] public bool IsMute;
+
 
 
     protected override void Awake() {
@@ -75,6 +80,8 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
                 input = null;
             }
         }
+
+        if(IsMute) return;
 
         if(!Microphone.IsRecording(UserSettings.MicDevice)) {
             if(currentDevice != UserSettings.MicDevice) {
