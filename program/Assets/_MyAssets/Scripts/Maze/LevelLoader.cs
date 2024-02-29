@@ -137,6 +137,21 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 10;
     #endregion
 
+    private float[] noneFromRimRadiusArray;
+    private float[] playerRimRadiusArray;
+    private float[] monsterRimRadiusArray;
+    private float[] itemRimRadiusArray;
+
+    private float[] noneFromRimAlphaArray;
+    private float[] playerRimAlphaArray;
+    private float[] monsterRimAlphaArray;
+    private float[] itemRimAlphaArray;
+
+    private Vector4[] noneFromRimPosArray;
+    private Vector4[] playerRimPosArray;
+    private Vector4[] monsterRimPosArray;
+    private Vector4[] itemRimPosArray;
+
     private AudioReverbZone reverbZone = null;
 
     public Action<ItemController> OnItemCollected;
@@ -164,18 +179,99 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     private void LateUpdate() {
+        noneFromRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
+                SoundManager.SoundFrom.None,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+        playerRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
+                SoundManager.SoundFrom.Player,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+        monsterRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
+                SoundManager.SoundFrom.Monster,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+        itemRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
+                SoundManager.SoundFrom.Item,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+
+        noneFromRimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
+                SoundManager.SoundFrom.None,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+        playerRimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
+                SoundManager.SoundFrom.Player,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+        monsterRimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
+                SoundManager.SoundFrom.Monster,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+        itemRimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
+                SoundManager.SoundFrom.Item,
+                STANDARD_RIM_RADIUS_SPREAD_TIME,
+                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+
         foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
             if(group.CurrentArrayLength > 0) {
-                group.SetUpdateRadiusArray(blockFloorMaterial);
-                group.SetUpdateAlphaArray(blockFloorMaterial);
+                switch(group.From) {
+                    case SoundManager.SoundFrom.None: {
+                            group.SetUpdateRadiusArray(blockFloorMaterial, noneFromRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockFloorMaterial, noneFromRimAlphaArray);
 #if Use_Two_Materials_On_MazeBlock
-                group.SetUpdateRadiusArray(blockWallMaterial);
-                group.SetUpdateAlphaArray(blockWallMaterial);
+                            group.SetUpdateRadiusArray(blockWallMaterial, noneFromRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockWallMaterial, noneFromRimAlphaArray);
 #endif
 
-                foreach(MonsterController mc in monsters) {
-                    group.SetUpdateRadiusArray(mc.Material);
-                    group.SetUpdateAlphaArray(mc.Material);
+                            foreach(MonsterController mc in monsters) {
+                                group.SetUpdateRadiusArray(mc.Material, noneFromRimRadiusArray);
+                                group.SetUpdateAlphaArray(mc.Material, noneFromRimAlphaArray);
+                            }
+                        }
+                        break;
+                    case SoundManager.SoundFrom.Player: {
+                            group.SetUpdateRadiusArray(blockFloorMaterial, playerRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockFloorMaterial, playerRimAlphaArray);
+#if Use_Two_Materials_On_MazeBlock
+                            group.SetUpdateRadiusArray(blockWallMaterial, playerRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockWallMaterial, playerRimAlphaArray);
+#endif
+
+                            foreach(MonsterController mc in monsters) {
+                                group.SetUpdateRadiusArray(mc.Material, playerRimRadiusArray);
+                                group.SetUpdateAlphaArray(mc.Material, playerRimAlphaArray);
+                            }
+                        }
+                        break;
+                    case SoundManager.SoundFrom.Monster: {
+                            group.SetUpdateRadiusArray(blockFloorMaterial, monsterRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockFloorMaterial, monsterRimAlphaArray);
+#if Use_Two_Materials_On_MazeBlock
+                            group.SetUpdateRadiusArray(blockWallMaterial, monsterRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockWallMaterial, monsterRimAlphaArray);
+#endif
+
+                            foreach(MonsterController mc in monsters) {
+                                group.SetUpdateRadiusArray(mc.Material, monsterRimRadiusArray);
+                                group.SetUpdateAlphaArray(mc.Material, monsterRimAlphaArray);
+                            }
+                        }
+                        break;
+                    case SoundManager.SoundFrom.Item: {
+                            group.SetUpdateRadiusArray(blockFloorMaterial, itemRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockFloorMaterial, itemRimAlphaArray);
+#if Use_Two_Materials_On_MazeBlock
+                            group.SetUpdateRadiusArray(blockWallMaterial, itemRimRadiusArray);
+                            group.SetUpdateAlphaArray(blockWallMaterial, itemRimAlphaArray);
+#endif
+
+                            foreach(MonsterController mc in monsters) {
+                                group.SetUpdateRadiusArray(mc.Material, itemRimRadiusArray);
+                                group.SetUpdateAlphaArray(mc.Material, itemRimAlphaArray);
+                            }
+                        }
+                        break;
                 }
             }
         }
@@ -186,12 +282,14 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 blockFloorMaterial,
                 Time.deltaTime,
                 STANDARD_RIM_RADIUS_SPREAD_LENGTH); //임의의 길이 설정
-#if Use_Two_Materials_On_MazeBlock
-            playerMaterialPropertiesGroup.SetUpdateAlphaArray(
-                blockWallMaterial,
-                Time.deltaTime,
-                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //임의의 길이 설정
-#endif
+
+            // `blockWallMaterial`에는 pastPos를 입력하지 않을 예정
+//#if Use_Two_Materials_On_MazeBlock
+//            playerMaterialPropertiesGroup.SetUpdateAlphaArray(
+//                blockWallMaterial,
+//                Time.deltaTime,
+//                STANDARD_RIM_RADIUS_SPREAD_LENGTH); //임의의 길이 설정
+//#endif
         }
     }
 
@@ -676,32 +774,74 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     #region Action
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
-        foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
-            group.UpdateArrayLength();
+        MaterialPropertiesGroup fromGroup = rimMaterialPropertiesGroups.Where(t => t.From == from).FirstOrDefault();
+        List<Material> updateMats = new List<Material>();
 
-            group.SetPosArray(blockFloorMaterial);
+        updateMats.Add(blockFloorMaterial);
 #if Use_Two_Materials_On_MazeBlock
-            group.SetPosArray(blockWallMaterial);
+        updateMats.Add(blockWallMaterial);
 #endif
+        foreach(MonsterController mc in monsters) {
+            updateMats.Add(mc.Material);
+        }
 
-            foreach(MonsterController mc in monsters) {
-                group.SetPosArray(mc.Material);
-            }
+        switch(from) {
+            case SoundManager.SoundFrom.None: {
+                    noneFromRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, noneFromRimPosArray);
+                }
+                break;
+            case SoundManager.SoundFrom.Player: {
+                    playerRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, playerRimPosArray);
+                }
+                break;
+            case SoundManager.SoundFrom.Monster: {
+                    monsterRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, monsterRimPosArray);
+                }
+                break;
+            case SoundManager.SoundFrom.Item: {
+                    itemRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, itemRimPosArray);
+                }
+                break;
         }
     }
 
     private void WorldSoundRemoved(SoundManager.SoundFrom from) {
-        foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
-            group.UpdateArrayLength();
+        MaterialPropertiesGroup fromGroup = rimMaterialPropertiesGroups.Where(t => t.From == from).FirstOrDefault();
+        List<Material> updateMats = new List<Material>();
 
-            group.SetPosArray(blockFloorMaterial);
+        updateMats.Add(blockFloorMaterial);
 #if Use_Two_Materials_On_MazeBlock
-            group.SetPosArray(blockWallMaterial);
+        updateMats.Add(blockWallMaterial);
 #endif
+        foreach(MonsterController mc in monsters) {
+            updateMats.Add(mc.Material);
+        }
 
-            foreach(MonsterController mc in monsters) {
-                group.SetPosArray(mc.Material);
-            }
+        switch(from) {
+            case SoundManager.SoundFrom.None: {
+                    noneFromRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, noneFromRimPosArray);
+                }
+                break;
+            case SoundManager.SoundFrom.Player: {
+                    playerRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, playerRimPosArray);
+                }
+                break;
+            case SoundManager.SoundFrom.Monster: {
+                    monsterRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, monsterRimPosArray);
+                }
+                break;
+            case SoundManager.SoundFrom.Item: {
+                    itemRimPosArray = SoundManager.Instance.GetSoundObjectPosArray(from);
+                    fromGroup.SetUpdatePosArray(updateMats, itemRimPosArray);
+                }
+                break;
         }
     }
 
@@ -895,47 +1035,36 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             mat.SetFloatArray(MAT_ALPHA_ARRAY_NAME, AlphaArray);
         }
-        #endregion
 
-        #region Rim Property Update Func
-        public bool UpdateArrayLength() {
-            Vector4[] rimPosArray = SoundManager.Instance.GetSoundObjectPosArray(From);
-            if(rimPosArray.Length != CurrentArrayLength) {
-                Array.Copy(rimPosArray, 0, PosArray, 0, rimPosArray.Length);
-                CurrentArrayLength = rimPosArray.Length;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        // 매 프레임마다 업데이트 해야하는 properties
-        public void SetUpdateRadiusArray(Material mat) {
-            float[] rimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
-                From,
-                STANDARD_RIM_RADIUS_SPREAD_TIME,
-                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-            Array.Copy(rimRadiusArray, 0, RadiusArray, 0, rimRadiusArray.Length);
-            mat.SetFloatArray(MAT_RADIUS_ARRAY_NAME, RadiusArray);
-        }
-
-        // 매 프레임마다 업데이트 해야하는 properties
-        public void SetUpdateAlphaArray(Material mat) {
-            float[] rimAlphaArray = SoundManager.Instance.GetSoundObjectAlphaArray(
-                From,
-                STANDARD_RIM_RADIUS_SPREAD_TIME,
-                STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-            Array.Copy(rimAlphaArray, 0, AlphaArray, 0, rimAlphaArray.Length);
-            mat.SetFloatArray(MAT_ALPHA_ARRAY_NAME, AlphaArray);
-        }
-        #endregion
-
-        // Rim과 Player에 모두 사용됨
         public void SetPosArray(Material mat) {
             mat.SetInteger(MAT_ARRAY_LENGTH_NAME, CurrentArrayLength);
             mat.SetVectorArray(MAT_POSITION_ARRAY_NAME, PosArray);
         }
+        #endregion
+
+        #region Rim Property Update Func
+        public void SetUpdatePosArray(List<Material> mats, Vector4[] array) {
+            Array.Copy(array, 0, PosArray, 0, array.Length);
+            CurrentArrayLength = array.Length;
+            foreach(Material mat in mats) {
+                mat.SetInteger(MAT_ARRAY_LENGTH_NAME, CurrentArrayLength);
+                mat.SetVectorArray(MAT_POSITION_ARRAY_NAME, PosArray);
+            }
+        }
+
+        // 매 프레임마다 업데이트 해야하는 properties
+        public void SetUpdateRadiusArray(Material mat, float[] array) {
+            Array.Copy(array, 0, RadiusArray, 0, array.Length);
+            mat.SetFloatArray(MAT_RADIUS_ARRAY_NAME, RadiusArray);
+        }
+
+        // 매 프레임마다 업데이트 해야하는 properties
+        public void SetUpdateAlphaArray(Material mat, float[] array) {
+            Array.Copy(array, 0, AlphaArray, 0, array.Length);
+            mat.SetFloatArray(MAT_ALPHA_ARRAY_NAME, AlphaArray);
+        }
+        #endregion
+
         #endregion
     }
 
