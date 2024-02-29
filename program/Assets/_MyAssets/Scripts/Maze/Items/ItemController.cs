@@ -39,4 +39,13 @@ public class ItemController : MonoBehaviour {
             LevelLoader.Instance.OnItemCollected?.Invoke(this);
         }
     }
+
+    #region Utility
+    public void SetMaterial(Material mat) {
+        MeshRenderer[] renderers = transform.GetComponentsInChildren<MeshRenderer>();
+        foreach(MeshRenderer mr in renderers) {
+            mr.material = mat;
+        }
+    }
+    #endregion
 }

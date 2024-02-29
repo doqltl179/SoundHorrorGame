@@ -142,12 +142,16 @@ public class Cloudy : MonsterController, IMove {
         switch(so.Type) {
             case SoundManager.SoundType.PlayerWalk: {
                     if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+                        List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+                        float dist = LevelLoader.Instance.GetPathDistance(newPath);
+                        if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+                            movePath = newPath;
 
-                        physicsMoveSpeedMax = 1.0f;
-                        FollowingSound = so;
+                            physicsMoveSpeedMax = 1.0f;
+                            FollowingSound = so;
 
-                        CurrentState = MonsterState.Move;
+                            CurrentState = MonsterState.Move;
+                        }
                     }
                 }
                 break;

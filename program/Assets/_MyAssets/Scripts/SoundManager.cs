@@ -119,7 +119,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
     private void CheckSoundObjct(ref List<SoundObject> list, SoundFrom from) {
         bool listChanged = false;
         for(int i = 0; i < list.Count; i++) {
-            if(!list[i].Source.isPlaying) {
+            if(!list[i].IsPaused && !list[i].IsPlaying) {
                 SoundObject so = list[i];
                 list.RemoveAt(i);
 
@@ -153,6 +153,36 @@ public class SoundManager : GenericSingleton<SoundManager> {
     #endregion
 
     #region Utility
+    public void UnPauseAllSound() {
+        foreach(SoundObject so in noneFromSoundObjectList) {
+            so.UnPause();
+        }
+        foreach(SoundObject so in playerSoundObjectList) {
+            so.UnPause();
+        }
+        foreach(SoundObject so in monsterSoundObjectList) {
+            so.UnPause();
+        }
+        foreach(SoundObject so in itemSoundObjectList) {
+            so.UnPause();
+        }
+    }
+
+    public void PauseAllSounds() {
+        foreach(SoundObject so in noneFromSoundObjectList) {
+            so.Pause();
+        }
+        foreach(SoundObject so in playerSoundObjectList) {
+            so.Pause();
+        }
+        foreach(SoundObject so in monsterSoundObjectList) {
+            so.Pause();
+        }
+        foreach(SoundObject so in itemSoundObjectList) {
+            so.Pause();
+        }
+    }
+
     public void PlayOneShot(SoundType type, float volumeOffset = 1.0f) {
         if(oneShotSource == null) {
             GameObject go = new GameObject("OneShotSource");
@@ -302,6 +332,9 @@ public class SoundObject {
     public float Length { get { return Source.clip.length; } }
     public float NormalizedTime { get { return CurrentTime / Length; } }
 
+    public bool IsPlaying { get { return Source.isPlaying; } }
+    public bool IsPaused { get; private set; }
+
     public Vector3 Position {
         get => Source.transform.position;
         set {
@@ -336,6 +369,7 @@ public class SoundObject {
     }
 
     #region Utility
+
     public void Play() {
         if(Source.clip == null) {
             Debug.LogWarning("Clip is NULL");
@@ -345,6 +379,7 @@ public class SoundObject {
 
         Source.gameObject.SetActive(true);
 
+        IsPaused = false;
         Source.Play();
     }
 
@@ -352,6 +387,16 @@ public class SoundObject {
         Source.Stop();
 
         Source.gameObject.SetActive(false);
+    }
+
+    public void Pause() {
+        IsPaused = true;
+        Source.Pause();
+    }
+
+    public void UnPause() {
+        IsPaused = false;
+        Source.UnPause();
     }
 
     public void ChangeSoundType(SoundManager.SoundType type) {

@@ -35,10 +35,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     private const string ROOT_PATH_OF_ITEMS = "Items";
+    private const string ROOT_PATH_OF_MATERIALS = "Materials";
 
     private List<ItemController> items = new List<ItemController>();
     public List<ItemController> Items { get { return items; } }
     public int ItemCount { get { return items.Count; } }
+    private Material itemMaterial = null;
     #endregion
 
     #region Maze
@@ -612,6 +614,15 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             return;
         }
 
+        Material material = ResourceLoader.GetResource<Material>(Path.Combine(ROOT_PATH_OF_MATERIALS, type.ToString()));
+        if(resource == null) {
+            Debug.LogError($"Material Resource not found. type: {type}");
+
+            return;
+        }
+        itemMaterial = new Material(material.shader);
+        itemMaterial.CopyMatchingPropertiesFromMaterial(material);
+
         Vector2Int[] currentItemsCoordArray = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
         List<Vector2Int> usingCoordList = new List<Vector2Int>();
         while(usingCoordList.Count < count) {
@@ -633,6 +644,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             go.transform.position = GetBlockPos(coord);
 
             ItemController ic = go.GetComponent<ItemController>();
+            ic.SetMaterial(itemMaterial);
 
             items.Add(ic);
         }

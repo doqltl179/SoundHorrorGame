@@ -60,11 +60,13 @@ public class Honey : MonsterController, IMove {
                     if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
                         List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
                         dist = LevelLoader.Instance.GetPathDistance(tempPath);
-                        SoundManager.Instance.PlayOnWorld(
-                            transform.position,
-                            SoundManager.SoundType.MonsterWalk02,
-                            SoundManager.SoundFrom.Monster,
-                            1.0f - dist / STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+                        if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+                            SoundManager.Instance.PlayOnWorld(
+                                transform.position,
+                                SoundManager.SoundType.MonsterWalk02,
+                                SoundManager.SoundFrom.Monster,
+                                1.0f - dist / STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+                        }
                     }
 
                     animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = normalizedTimeInteger;
@@ -141,12 +143,16 @@ public class Honey : MonsterController, IMove {
         switch(so.Type) {
             case SoundManager.SoundType.PlayerWalk: {
                     if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+                        List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+                        float dist = LevelLoader.Instance.GetPathDistance(newPath);
+                        if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+                            movePath = newPath;
 
-                        physicsMoveSpeedMax = 1.0f;
-                        FollowingSound = so;
+                            physicsMoveSpeedMax = 1.0f;
+                            FollowingSound = so;
 
-                        CurrentState = MonsterState.Move;
+                            CurrentState = MonsterState.Move;
+                        }
                     }
                 }
                 break;

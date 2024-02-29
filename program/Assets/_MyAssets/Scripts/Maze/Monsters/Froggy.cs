@@ -60,21 +60,7 @@ public class Froggy : MonsterController {
         if(!IsPlaying) return;
 
         if(screamActionCoroutine == null && CurrentState != MonsterState.Scream) {
-            if(isPlayerInsideCheckCoordRange) {
-                if(Physics.Raycast(
-                Pos,
-                (PlayerController.Instance.Pos - Pos).normalized,
-                out screamCheckHit,
-                float.MaxValue,
-                screamCheckRayMask)) {
-                    if(screamCheckHit.collider.CompareTag(PlayerController.TagName) &&
-                        PlayerController.Instance.CurrentState != PlayerController.PlayerState.None &&
-                        PlayerController.Instance.CurrentState != PlayerController.PlayerState.Crouch) {
-                        CurrentState = MonsterState.Scream;
-                    }
-                }
-            }
-            else {
+            if(!isPlayerInsideCheckCoordRange) {
                 // Fake Item Sound
                 fakeItemSoundPlayTimeChecker += Time.deltaTime;
                 if(fakeItemSoundPlayTimeChecker >= fakeItemSoundPlayTimeInterval) {
@@ -114,6 +100,28 @@ public class Froggy : MonsterController {
         Vector2Int lb = new Vector2Int(currentCoord.x - checkCoordRange, currentCoord.y - checkCoordRange);
         Vector2Int rt = new Vector2Int(currentCoord.x + checkCoordRange, currentCoord.y + checkCoordRange);
         isPlayerInsideCheckCoordRange = (lb.x <= coord.x && coord.x <= rt.x) && (lb.y <= coord.y && coord.y <= rt.y);
+    }
+
+    private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
+        switch(so.Type) {
+            case SoundManager.SoundType.PlayerWalk: {
+                    if(isPlayerInsideCheckCoordRange) {
+                        if(Physics.Raycast(
+                        Pos,
+                        (PlayerController.Instance.Pos - Pos).normalized,
+                        out screamCheckHit,
+                        float.MaxValue,
+                        screamCheckRayMask)) {
+                            if(screamCheckHit.collider.CompareTag(PlayerController.TagName) &&
+                                PlayerController.Instance.CurrentState != PlayerController.PlayerState.None &&
+                                PlayerController.Instance.CurrentState != PlayerController.PlayerState.Crouch) {
+                                CurrentState = MonsterState.Scream;
+                            }
+                        }
+                    }
+                }
+                break;
+        }
     }
 
     private void CurrentStateChanged(MonsterState state) {

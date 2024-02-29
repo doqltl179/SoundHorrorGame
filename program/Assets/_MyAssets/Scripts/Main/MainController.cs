@@ -43,21 +43,24 @@ public class MainController : MonoBehaviour {
 
         // 음성 감지 시작
         MicrophoneRecorder.Instance.gameObject.SetActive(UserSettings.UseMicBoolean);
+
+        // Scene 명명
+        SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Main);
     }
 
-    private void Update() {
-        if(Input.GetMouseButtonDown(0)) {
-            Ray ray = UtilObjects.Instance.Cam.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if(Physics.Raycast(ray, out hit) && hit.transform.CompareTag(MazeBlock.TagName)) {
-                SoundManager.Instance.PlayOnWorld(
-                    hit.point,
-                    SoundManager.SoundType.MouseClick,
-                    SoundManager.SoundFrom.None,
-                    Mathf.Clamp01(1.0f - hit.distance / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH));
-            }
-        }
-    }
+    //private void Update() {
+    //    if(Input.GetMouseButtonDown(0)) {
+    //        Ray ray = UtilObjects.Instance.Cam.ScreenPointToRay(Input.mousePosition);
+    //        RaycastHit hit;
+    //        if(Physics.Raycast(ray, out hit) && hit.transform.CompareTag(MazeBlock.TagName)) {
+    //            SoundManager.Instance.PlayOnWorld(
+    //                hit.point,
+    //                SoundManager.SoundType.MouseClick,
+    //                SoundManager.SoundFrom.None,
+    //                Mathf.Clamp01(1.0f - hit.distance / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH));
+    //        }
+    //    }
+    //}
 
     private void SetUIProperties() {
 
@@ -90,7 +93,6 @@ public class MainController : MonoBehaviour {
     }
 
     public void OnNewGameClicked() {
-        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.GameEnter);
 
         SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
@@ -99,7 +101,7 @@ public class MainController : MonoBehaviour {
     public void OnSettingsClicked() {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
 
-        UtilObjects.Instance.SetActiveSettingUI(true);
+        UtilObjects.Instance.SetActiveSettings(true);
     }
 
     public void OnExitClicked() {

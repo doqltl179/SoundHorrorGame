@@ -14,7 +14,7 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
     }
 
     public bool IsLoading { get { return loadSceneCoroutine != null; } }
-    public SceneType CurrentLoadScene { get; private set; }
+    public SceneType CurrentLoadedScene { get; private set; }
 
     private IEnumerator loadSceneCoroutine = null;
     private IEnumerator loadingTextAnimationCoroutine = null;
@@ -32,6 +32,13 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
             StartCoroutine(loadSceneCoroutine);
         }
     }
+
+    /// <summary>
+    /// 컴포넌트에 선언된 "CurrentLoadedScene"의 값만 바꾸고 실제로 Scene을 이동하지는 않음
+    /// </summary>
+    public void ChangeCurrentLoadedSceneImmediately(SceneType type) {
+        CurrentLoadedScene = type;
+    }
     #endregion
 
     private IEnumerator LoadSceneCoroutine(SceneType scene) {
@@ -40,8 +47,8 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
             StartCoroutine(loadingTextAnimationCoroutine);
         }
 
-        UtilObjects.Instance.SetActiveLoadingUI(true);
-        yield return UtilObjects.Instance.FadeInLoadingUI(0.5f);
+        StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 0.5f));
+        yield return UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f);
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(scene.ToString());
         while(!asyncLoad.isDone) {
@@ -54,10 +61,10 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
         StopCoroutine(loadingTextAnimationCoroutine);
         UtilObjects.Instance.LoadingText = string.Empty;
 
-        yield return UtilObjects.Instance.FadeOutLoadingUI(0.5f);
-        UtilObjects.Instance.SetActiveLoadingUI(false);
+        StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(false, 0.5f));
+        yield return UtilObjects.Instance.SetActiveLoadingAction(false, 0.5f);
 
-        CurrentLoadScene = scene;
+        CurrentLoadedScene = scene;
 
         loadSceneCoroutine = null;
     }

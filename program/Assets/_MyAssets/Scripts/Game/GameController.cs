@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
-    private KeyCode pauseCode = KeyCode.Escape;
+
 
 
 
@@ -25,7 +25,7 @@ public class GameController : MonoBehaviour {
             LevelLoader.MonsterType.Kitty,
             200,
             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-            true);
+            false);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
         //    LevelLoader.MonsterType.Starry,
         //    20,
@@ -52,11 +52,11 @@ public class GameController : MonoBehaviour {
         //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
         //    true);
 
-        //LevelLoader.Instance.AddItemOnLevelRandomly(
-        //    LevelLoader.ItemType.Crystal, 
-        //    20, 
-        //    LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
-        //    true);
+        LevelLoader.Instance.AddItemOnLevelRandomly(
+            LevelLoader.ItemType.Crystal,
+            20,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            false);
 #else
 #endif
 
@@ -107,21 +107,5 @@ public class GameController : MonoBehaviour {
 #else
         
 #endif
-
-        if(Input.GetKeyDown(pauseCode)) {
-            bool pause = Time.timeScale != 0;
-            if(pause) {
-                Time.timeScale = 0.0f;
-                AudioListener.pause = true;
-
-                UtilObjects.Instance.SetActiveSettingUI(true);
-            }
-            else {
-                Time.timeScale = 1.0f;
-                AudioListener.pause = false;
-
-                UtilObjects.Instance.SetActiveSettingUI(false);
-            }
-        }
     }
 }

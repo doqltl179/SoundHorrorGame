@@ -10,6 +10,11 @@ using UnityEngine.UI;
 public class SettingController : MonoBehaviour {
     [SerializeField] private ScrollRect scrollView;
     [SerializeField] private CanvasGroup canvasGroup;
+    public CanvasGroup CanvasGroup { get { return canvasGroup; } }
+    public float Alpha {
+        get => canvasGroup.alpha;
+        set => canvasGroup.alpha = value;
+    }
 
     [Header("Sound")]
     [SerializeField] private Slider masterVolumeSlider;
@@ -50,14 +55,10 @@ public class SettingController : MonoBehaviour {
     /// <br/>ScrollBar의 설정이 'Top to Bottom'으로 되어있지만 실제로는 위아래가 반전되어 동작하므로
     /// <br/>알기 쉽게 보기 위한 변수를 선언
     /// </summary>
-    private float ScrollValue { 
+    public float ScrollValue { 
         get => 1.0f - scrollView.verticalScrollbar.value;
         set => scrollView.verticalScrollbar.value = 1.0f - value;
     }
-
-    private KeyCode closeCode = KeyCode.Escape;
-
-    private IEnumerator delayOpenCoroutine = null;
 
 
 
@@ -73,36 +74,6 @@ public class SettingController : MonoBehaviour {
         InitDisplayFOV();
         InitDisplayBrightness();
         InitDisplaySensitive();
-
-        delayOpenCoroutine = DelayOpen();
-        StartCoroutine(delayOpenCoroutine);
-    }
-
-    private IEnumerator DelayOpen() {
-        canvasGroup.alpha = 0.0f;
-
-        yield return null;
-        ScrollValue = 0.0f;
-
-        const float fadeTime = 0.1f;
-        float fadeTimeChecker = 0.0f;
-        while(fadeTimeChecker < fadeTime) {
-            //fadeTimeChecker += Time.deltaTime;
-            fadeTimeChecker += Time.unscaledDeltaTime;
-            canvasGroup.alpha = fadeTimeChecker / fadeTime;
-
-            yield return null;
-        }
-        canvasGroup.alpha = 1.0f;
-
-        delayOpenCoroutine = null;
-    }
-
-    private void OnDisable() {
-        if(delayOpenCoroutine != null) {
-            StopCoroutine(delayOpenCoroutine);
-            delayOpenCoroutine = null;
-        }
     }
 
     #region Action
@@ -221,7 +192,9 @@ public class SettingController : MonoBehaviour {
 
     #region Button OnClicked
     public void OnClickedBack() {
-        gameObject.SetActive(false);
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
+        UtilObjects.Instance.SetActiveSettings(false);
     }
     #endregion
     #endregion
