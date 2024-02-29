@@ -23,7 +23,7 @@ public class GameController : MonoBehaviour {
 #if Play_Game_Automatically
         LevelLoader.Instance.AddMonsterOnLevelRandomly(
             LevelLoader.MonsterType.Kitty,
-            200,
+            20,
             LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
             false);
         //LevelLoader.Instance.AddMonsterOnLevelRandomly(
@@ -72,7 +72,8 @@ public class GameController : MonoBehaviour {
 #else
 #endif
 
-        if(UserSettings.UseMicBoolean) MicrophoneRecorder.Instance.IsMute = false;
+        //if(UserSettings.UseMicBoolean) MicrophoneRecorder.Instance.IsMute = false;
+        SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Game);
     }
 
 #if Play_Game_Automatically

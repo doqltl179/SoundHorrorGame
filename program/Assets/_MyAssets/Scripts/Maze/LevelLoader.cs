@@ -41,6 +41,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public List<ItemController> Items { get { return items; } }
     public int ItemCount { get { return items.Count; } }
     private Material itemMaterial = null;
+
+    public int CollectedItemCount { get; private set; }
     #endregion
 
     #region Maze

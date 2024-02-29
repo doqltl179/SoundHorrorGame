@@ -53,6 +53,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
     private List<SoundObject> playerSoundObjectList = new List<SoundObject>();
     private List<SoundObject> monsterSoundObjectList = new List<SoundObject>();
     private List<SoundObject> itemSoundObjectList = new List<SoundObject>();
+
     private List<SoundObject> soundObjectPool = new List<SoundObject>(); //Pool
 
     private AudioSource oneShotSource = null;
