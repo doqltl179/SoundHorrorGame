@@ -83,7 +83,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
     }
 
     private IEnumerator MicDecibelCheckCoroutine() {
-        const float timeInterval = 0.15f;
+        const float timeInterval = 0.25f;
         WaitForSeconds wait = new WaitForSeconds(timeInterval);
 
         while(true) {
@@ -98,11 +98,11 @@ public class SoundManager : GenericSingleton<SoundManager> {
                     MicrophoneRecorder.Instance.DecibelRatio);
                 int soundValue = Mathf.FloorToInt(overRatio / 0.2f);
                 switch(soundValue) {
-                    case 0: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty01s, SoundFrom.Player, 1.0f); break;
-                    case 1: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty02s, SoundFrom.Player, 1.0f); break;
-                    case 2: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty03s, SoundFrom.Player, 1.0f); break;
-                    case 3: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty04s, SoundFrom.Player, 1.0f); break;
-                    case 4: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty05s, SoundFrom.Player, 1.0f); break;
+                    case 0: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty01s, SoundFrom.Player, 0.0f); break;
+                    case 1: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty02s, SoundFrom.Player, 0.0f); break;
+                    case 2: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty03s, SoundFrom.Player, 0.0f); break;
+                    case 3: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty04s, SoundFrom.Player, 0.0f); break;
+                    case 4: PlayOnWorld(UtilObjects.Instance.CamPos, SoundType.Empty05s, SoundFrom.Player, 0.0f); break;
                 }
             }
         }

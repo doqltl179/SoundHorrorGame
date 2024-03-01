@@ -84,9 +84,9 @@ public static class UserSettings {
 
     public static Action<float> OnDisplayBrightnessChanged;
     private static readonly string m_displayBrightness_pref = "DisplayBrightness";
-    private static readonly float m_standardDisplayBrightness = 1.5f;
-    private static readonly float m_displayBrightnessMin = 0.3f;
-    private static readonly float m_displayBrightnessMax = 3.0f;
+    private static readonly float m_standardDisplayBrightness = 1.0f;
+    private static readonly float m_displayBrightnessMin = 0.1f;
+    private static readonly float m_displayBrightnessMax = 2.0f;
     public static float DisplayBrightness {
         get => PlayerPrefs.HasKey(m_displayBrightness_pref) ? PlayerPrefs.GetFloat(m_displayBrightness_pref) : m_standardDisplayBrightness;
         set {

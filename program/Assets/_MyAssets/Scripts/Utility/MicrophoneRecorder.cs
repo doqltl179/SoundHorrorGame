@@ -79,6 +79,9 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
                 currentDevice = "";
                 input = null;
             }
+
+            gameObject.SetActive(false);
+            return;
         }
 
         if(IsMute) return;

@@ -95,6 +95,8 @@ public class Kitty : MonsterController, IMove {
                 physicsMoveSpeed = 0.0f;
                 animator.speed = 0.0f;
 
+                rigidbody.velocity = Vector3.zero;
+
                 return;
             }
             else {

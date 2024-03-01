@@ -107,6 +107,17 @@ public class MazeBlock : MonoBehaviour {
 #endif
     }
 
+    public void SetPhysicMaterial(PhysicMaterial physicMaterial) {
+        floor.GetComponent<Collider>().material = physicMaterial;
+        ceiling.GetComponent<Collider>().material = physicMaterial;
+        foreach(GameObject edge in edges) {
+            edge.GetComponent<Collider>().material = physicMaterial;
+        }
+        foreach(GameObject wall in walls) {
+            wall.GetComponent<Collider>().material = physicMaterial;
+        }
+    }
+
     /// <summary>
     /// 
     /// </summary>

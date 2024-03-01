@@ -65,8 +65,6 @@ public class UserInterface : MonoBehaviour {
     }
 
     private void LateUpdate() {
-
-
         #region Microphone
         micGageSlider.value = Mathf.Lerp(micGageSlider.value, MicrophoneRecorder.Instance.DecibelRatio, Time.deltaTime * Mathf.Pow(2, 4));
         if(MicrophoneRecorder.Instance.OverCritical) {
@@ -81,6 +79,24 @@ public class UserInterface : MonoBehaviour {
         }
         else {
             micGageSliderFillImage.color = micGageSliderStartColor;
+        }
+        #endregion
+
+        #region Player Run
+        RunGage = PlayerController.Instance.NormalizedRunTime;
+
+        if(RunGage < 0.15) {
+            runGageCanvasGroup.alpha = Mathf.InverseLerp(0.0f, 0.15f, RunGage) * runGageMaxAlpha;
+        }
+        else {
+            runGageCanvasGroup.alpha = runGageMaxAlpha;
+        }
+
+        if(!PlayerController.Instance.OverHit) {
+            Color runGageColor = Color.Lerp(runGageStartColor, runGageEndColor, RunGage);
+            foreach(Image image in runGageImages) {
+                image.color = runGageColor;
+            }
         }
         #endregion
     }

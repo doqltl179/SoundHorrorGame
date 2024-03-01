@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,7 +30,14 @@ public class PlayerController : Singleton<PlayerController> {
     [SerializeField, Range(0.1f, 10.0f)] private float rotateSpeed = 1.5f;
     [SerializeField, Range(0.1f, 10.0f)] private float walkSoundInterval = 0.5f;
     private float walkSoundIntervalChecker = 0.0f;
-    [SerializeField, Range(0.0f, 10.0f)] protected float moveBoost = 0.4f;
+    [SerializeField, Range(1.0f, 20.0f)] private float runTimeMax = 10.0f;
+    private float runTimeChecker = 0.0f;
+    public float NormalizedRunTime { get { return runTimeChecker / runTimeMax; } }
+    /// <summary>
+    /// runTimeChecker가 runTimeMax보다 높아지면 runTimeMax의 값만큼 run상태가 될 수 없음.
+    /// </summary>
+    public bool OverHit { get; private set; }
+    [SerializeField, Range(0.0f, 10.0f)] private float moveBoost = 0.4f;
     private float physicsMoveSpeed = 0.0f;
     private float physicsMoveSpeedMax = 1.0f;
 
@@ -49,11 +57,12 @@ public class PlayerController : Singleton<PlayerController> {
 
     public Vector3 HeadForward { get { return transform.forward; } }
 
+    [Flags]
     public enum PlayerState {
-        None, 
-        Walk, 
-        Run, 
-        Crouch, 
+        None = 0, 
+        Walk = 1 << 0,
+        Run = 1 << 1,
+        Crouch = 1 << 2, 
     }
     public PlayerState CurrentState { get; private set; } = PlayerState.None;
 
@@ -149,7 +158,7 @@ public class PlayerController : Singleton<PlayerController> {
 
         switch(CurrentState) {
             case PlayerState.None: {
-
+                    runTimeChecker -= Time.deltaTime;
                 }
                 break;
             case PlayerState.Walk: {
@@ -189,18 +198,44 @@ public class PlayerController : Singleton<PlayerController> {
         if(Input.GetKey(key_moveL)) moveDirection += Vector3.left;
         moveDirection = moveDirection.normalized;
 
-        if(Vector3.Magnitude(moveDirection) <= 0) CurrentState = PlayerState.None;
-        else if(Input.GetKey(key_crouch)) CurrentState = PlayerState.Crouch;
-        else if(Input.GetKey(key_run)) CurrentState = PlayerState.Run;
-        else CurrentState = PlayerState.Walk;
+        if(OverHit) {
+            runTimeChecker -= Time.deltaTime;
+            if(runTimeChecker < 0) {
+                OverHit = false;
+                runTimeChecker = 0.0f;
+            }
+        }
+
+        CurrentState = PlayerState.None;
+        if(Input.GetKey(key_crouch)) CurrentState |= PlayerState.Crouch;
+        if(Vector3.Magnitude(moveDirection) > 0) CurrentState |= PlayerState.Walk;
+        if(Input.GetKey(key_run)) {
+            if(!OverHit) {
+                runTimeChecker += Time.deltaTime;
+                if(runTimeChecker >= runTimeMax) {
+                    OverHit = true;
+                    runTimeChecker = runTimeMax;
+                }
+
+                CurrentState |= PlayerState.Run;
+            }
+        }
+        else {
+            if(!OverHit) {
+                runTimeChecker -= Time.deltaTime;
+                if(runTimeChecker < 0) {
+                    runTimeChecker = 0.0f;
+                }
+            }
+        }
 
         float speed = 0.0f;
         if(CurrentState != PlayerState.None) {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed + Time.deltaTime * moveBoost, 0.0f, physicsMoveSpeedMax);
 
-            if(CurrentState == PlayerState.Run) speed = runSpeed * physicsMoveSpeed;
-            else if(CurrentState == PlayerState.Walk) speed = moveSpeed * physicsMoveSpeed;
-            else speed = crouchSpeed * physicsMoveSpeed;
+            if(CurrentState.HasFlag(PlayerState.Run)) speed = runSpeed * physicsMoveSpeed;
+            else if(CurrentState.HasFlag(PlayerState.Crouch)) speed = crouchSpeed * physicsMoveSpeed;
+            else if(CurrentState.HasFlag(PlayerState.Walk)) speed = moveSpeed * physicsMoveSpeed;
         }
         else {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - Time.deltaTime * moveBoost, 0.0f, physicsMoveSpeedMax);
@@ -212,12 +247,18 @@ public class PlayerController : Singleton<PlayerController> {
         rigidbody.angularVelocity = Vector3.zero;
 #endif
 
+        #region Camera
+        float anchorHeight = CurrentState.HasFlag(PlayerState.Crouch) ? PlayerHeight * 0.5f : PlayerHeight;
+        cameraAnchor.localPosition = Vector3.up * Mathf.Lerp(cameraAnchor.localPosition.y, anchorHeight, Time.deltaTime * Mathf.Pow(2, 4));
+
         UtilObjects.Instance.CamPos = cameraAnchor.position;
         UtilObjects.Instance.CamForward = cameraAnchor.forward;
+        #endregion
 
         #region Sound
-        if(CurrentState == PlayerState.Walk) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed;
-        else if(CurrentState == PlayerState.Run) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed * (runSpeed / moveSpeed);
+        if(CurrentState.HasFlag(PlayerState.Run)) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed * (runSpeed / moveSpeed);
+        else if(CurrentState.HasFlag(PlayerState.Crouch)) { }
+        else if(CurrentState.HasFlag(PlayerState.Walk)) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed;
 
         if(walkSoundIntervalChecker > walkSoundInterval) {
             SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.PlayerWalk, SoundManager.SoundFrom.Player);

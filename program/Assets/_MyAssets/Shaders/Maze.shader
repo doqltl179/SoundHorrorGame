@@ -24,11 +24,18 @@ Shader "MyCustomShader/Maze" {
         _PlayerPastPosColor ("Player Past Pos Color", Color) = (1, 1, 1, 1)
         _PlayerPastPosRadius ("Player Past Pos Radius", float) = 0.3
 
+        [Header(Edge)]
+        _MazeBlockEdgeThickness ("MazeBlock Edge Thickness", Range(0.0, 1.0)) = 0.01
+        _MazeBlockEdgeColor ("MazeBlock Edge Color", Color) = (1, 1, 1, 1)
+        _MazeBlockEdgeShowDistance ("MazeBlock Edge Show Distance", float) = 10
+
         [Header(Util Properties)]
         _ColorStrengthMax ("Color Strength Max", Float) = 1.5
+        _ColorStrengthOffset ("Color Strength Offset", Float) = 1.0
         [Toggle(USE_BASE_COLOR)] _UseBaseColor ("Use Base Color", float) = 1.0
         [Toggle(DRAW_RIM)] _DrawRim ("Draw Rim", float) = 1.0
         [Toggle(DRAW_PLAYER_PAST_POS)] _DrawPlayerPastPos ("Draw Player Past Pos", float) = 0.0
+        [Toggle(DRAW_MAZEBLOCK_EDGE)] _DrawMazeBlockEdge ("Draw MazeBlock Edge", float) = 0.0
 
         [HideInInspector] _RimArrayLength_None ("Rim Array (None) Length", Integer) = 0
         [HideInInspector] _RimArrayLength_Player ("Rim Array Length (Player)", Integer) = 0
@@ -51,6 +58,7 @@ Shader "MyCustomShader/Maze" {
             #pragma shader_feature USE_BASE_COLOR
             #pragma shader_feature DRAW_RIM
             #pragma shader_feature DRAW_PLAYER_PAST_POS
+            #pragma shader_feature DRAW_MAZEBLOCK_EDGE
 
             #include "UnityCG.cginc"
 
@@ -67,11 +75,6 @@ Shader "MyCustomShader/Maze" {
                 float2 uv : TEXCOORD0;
                 float3 worldNormal : TEXCOORD1;
                 float3 worldPos : TEXCOORD2;
-                // float4 vertex : SV_POSITION;
-                // float2 uv : TEXCOORD0;
-                // float3 localPos : TEXCOORD1;
-                // float3 worldNormal : TEXCOORD2;
-                // float4 worldPos : TEXCOORD3;
             };
 
             v2f vert (appdata v)
@@ -106,7 +109,12 @@ Shader "MyCustomShader/Maze" {
             fixed4 _PlayerPastPosColor;
             float _PlayerPastPosRadius;
 
+            float _MazeBlockEdgeThickness;
+            fixed4 _MazeBlockEdgeColor;
+            float _MazeBlockEdgeShowDistance;
+
             float _ColorStrengthMax;
+            float _ColorStrengthOffset;
 
             int _RimArrayLength_None;
             int _RimArrayLength_Player;
@@ -332,7 +340,26 @@ Shader "MyCustomShader/Maze" {
 
                 #endif
 
-                return c;
+                #ifdef DRAW_MAZEBLOCK_EDGE
+
+                    if(i.uv.x < _MazeBlockEdgeThickness || i.uv.x > (1.0 - _MazeBlockEdgeThickness) ||
+                        i.uv.y < _MazeBlockEdgeThickness || i.uv.y > (1.0 - _MazeBlockEdgeThickness)) {
+                        float dist = distance(i.worldPos, _WorldSpaceCameraPos); 
+                        float distRatio = dist / _MazeBlockEdgeShowDistance;
+                        const float limitRatio = 1.5;
+                        if(distRatio < limitRatio) {
+                            if(limitRatio < 1.0) c += _MazeBlockEdgeColor;
+                            else {
+                                float overRatio = (distRatio - 1.0) / (limitRatio - 1.0);
+                                c += _MazeBlockEdgeColor * (1.0 - overRatio);
+                            }
+                        }
+                        //c += _MazeBlockEdgeColor;
+                    }
+
+                #endif
+
+                return c * _ColorStrengthOffset;
             }
             ENDCG
         }
