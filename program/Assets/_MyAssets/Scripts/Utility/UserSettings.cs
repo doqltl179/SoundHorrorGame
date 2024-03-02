@@ -4,6 +4,36 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public static class UserSettings {
+    #region Language
+    //public static Action<Localization.Local> OnLocalChanged;
+    private static readonly string m_languageCode_pref = "LanguageCode";
+    private static readonly Localization.Local m_standardLanguageCode = Localization.Local.en;
+    public static Localization.Local LanguageCode {
+        get {
+            if(PlayerPrefs.HasKey(m_languageCode_pref)) {
+                Localization.Local outValue = Localization.Local.en;
+                Enum.TryParse(PlayerPrefs.GetString(m_languageCode_pref), out outValue);
+
+                return outValue;
+            }
+            else {
+                return m_standardLanguageCode;
+            }
+        }
+        set {
+            PlayerPrefs.SetString(m_languageCode_pref, value.ToString());
+            //OnLocalChanged?.Invoke(value);
+        }
+    }
+    public static string LanguageCodeString {
+        get => PlayerPrefs.HasKey(m_languageCode_pref) ? PlayerPrefs.GetString(m_languageCode_pref) : m_standardLanguageCode.ToString();
+        set {
+            PlayerPrefs.SetString(m_languageCode_pref, value);
+            //OnLocalChanged?.Invoke(value);
+        }
+    }
+    #endregion
+
     #region Sound
     public static Action<float> OnMasterVolumeChanged;
     private static readonly string m_masterVolume_pref = "MasterVolume";

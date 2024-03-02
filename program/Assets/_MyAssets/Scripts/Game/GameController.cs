@@ -77,6 +77,14 @@ public class GameController : MonoBehaviour {
         LevelLoader.Instance.PlayMonsters();
 #else
 #endif
+        int zoom = 3;
+        Vector2Int calculatedLevelSize = LevelLoader.Instance.GetLevelSize(zoom);
+        for(int x = 0; x < calculatedLevelSize.x; x++) {
+            for(int y = 0; y < calculatedLevelSize.y; y++) {
+                Debug.Log(LevelLoader.Instance.GetRandomCoordOnZoomInCoordArea(new Vector2Int(x, y), zoom));
+            }
+        }
+        Localization.LoadText();
 
         SoundManager.Instance.PlayBGM(SoundManager.SoundType.Game, 5.0f, 0.3f);
 

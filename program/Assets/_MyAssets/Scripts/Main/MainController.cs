@@ -14,6 +14,9 @@ public class MainController : MonoBehaviour {
 
 
 
+    private void Awake() {
+        Localization.LoadText();
+    }
 
     private void OnDestroy() {
         if(mainCameraAnimationCoroutine != null) {
@@ -63,7 +66,7 @@ public class MainController : MonoBehaviour {
     //}
 
     private void SetUIProperties() {
-
+        
     }
 
     private IEnumerator MainCameraAnimationCoroutine() {

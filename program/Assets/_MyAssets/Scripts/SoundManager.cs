@@ -439,6 +439,7 @@ public class SoundObject {
             AudioSource source = go.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.spatialBlend = 1.0f;
+            source.dopplerLevel = 0.2f;
             source.rolloffMode = AudioRolloffMode.Linear;
             source.minDistance = 0.0f;
             source.maxDistance = LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH;

@@ -16,6 +16,9 @@ public class SettingController : MonoBehaviour {
         set => canvasGroup.alpha = value;
     }
 
+    [Header("Language")]
+    [SerializeField] private TMP_Dropdown languageDropdown;
+
     [Header("Sound")]
     [SerializeField] private Slider masterVolumeSlider;
     [SerializeField] private TextMeshProUGUI masterVolumeText;
@@ -47,6 +50,7 @@ public class SettingController : MonoBehaviour {
     };
     private readonly int[] FPSOptions = new int[] { 60, 75, 120, 144, 165, 240 };
 
+    private string[] currentLanguageOptions = null;
     private string[] currentMicDeviceOptions = null;
     private Resolution[] currentDisplayResolutionOptions = null;
     private int[] currentDisplayFPSOptions = null;
@@ -63,6 +67,8 @@ public class SettingController : MonoBehaviour {
 
 
     private void OnEnable() {
+        InitLanguageOptions();
+
         InitMasterVolume();
 
         InitUseMicToggles();
@@ -77,6 +83,12 @@ public class SettingController : MonoBehaviour {
     }
 
     #region Action
+    public void OnLanguageChanged(int index) {
+        Localization.Local outValue = Localization.Local.en;
+        Enum.TryParse(currentLanguageOptions[index], out outValue);
+        Localization.CurrentLocal = outValue;
+    }
+
     public void OnMasterVolumeDrag(BaseEventData data) {
         float volume = UserSettings.CalculateMasterVolume(masterVolumeSlider.value);
         masterVolumeText.text = string.Format("{0:0.0}", volume);
@@ -198,6 +210,34 @@ public class SettingController : MonoBehaviour {
     }
     #endregion
     #endregion
+    private void InitLanguageOptions() {
+        languageDropdown.ClearOptions();
+        string currentLanguage = "";
+        int currentIndex = 0;
+
+        List<string> languages = new List<string>();
+        foreach(Localization.Local local in Enum.GetValues(typeof(Localization.Local))) {
+            languages.Add(Localization.GetText(local, Localization.Key.language));
+        }
+
+        // name이 아닌 code를 저장
+        currentLanguageOptions = new string[languages.Count];
+        int i = 0;
+        foreach(Localization.Local local in Enum.GetValues(typeof(Localization.Local))) {
+            currentLanguageOptions[i] = Localization.GetText(local, Localization.Key.code);
+            i++;
+        }
+
+        List<TMP_Dropdown.OptionData> languageOptions = new List<TMP_Dropdown.OptionData>();
+        if(languages.Count > 0) {
+            foreach(string language in languages) {
+                languageOptions.Add(new TMP_Dropdown.OptionData(language));
+            }
+        }
+        languageDropdown.AddOptions(languageOptions);
+        // Dropdown의 value가 기본적으로 0이기 때문에 0은 제외
+        if(currentIndex > 0) languageDropdown.value = currentIndex;
+    }
 
     private void InitMasterVolume() {
         masterVolumeSlider.value = UserSettings.MasterVolumeRatio;
