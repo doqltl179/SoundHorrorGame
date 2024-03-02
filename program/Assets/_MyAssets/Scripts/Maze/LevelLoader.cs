@@ -49,6 +49,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private MazeBlock[,] mazeBlocks = null;
     public int LevelWidth { get; private set; }
     public int LevelHeight { get; private set; }
+    public int ZoomMaxX { get; private set; }
+    public int ZoomMaxY { get; private set; }
+    public int HighestZoomMax { get { return ZoomMaxX > ZoomMaxY ? ZoomMaxX : ZoomMaxY; } }
 
     private readonly Vector3 basicBlockPos = new Vector3(1.0f, 0.0f, 1.0f) * MazeBlock.BlockSize;
     private readonly Vector3 blockPosOffset = MazeBlock.StandardBlockAnchor * MazeBlock.BlockSize;
@@ -139,6 +142,11 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private const string MAT_MAZEBLOCK_EDGE_THICKNESS_NAME = "_MazeBlockEdgeThickness";
     private const string MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME = "_MazeBlockEdgeShowDistance";
     #endregion
+
+    /// <summary>
+    /// zoom 1당 10개의 블록을 포함
+    /// </summary>
+    private const int ZoomIncludeMazeBlockCount = 10;
 
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 5.0f;
     // SpreadTime 동안 MazeBlock을 10칸 이동하기 위해 10을 곱함
@@ -409,6 +417,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         LevelWidth = width;
         LevelHeight = height;
 
+        ZoomMaxX = GetMaxZoom(width);
+        ZoomMaxY = GetMaxZoom(height);
+
         SetReverbZone();
     }
 
@@ -649,8 +660,67 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return distance;
     }
 
-    public Vector2Int GetMazeCoordinate(Vector3 pos) =>
-        new Vector2Int(Mathf.FloorToInt(pos.x / MazeBlock.BlockSize), Mathf.FloorToInt(pos.z / MazeBlock.BlockSize));
+    //public Vector2Int GetMazeCoordinate(Vector3 pos) =>
+    //    new Vector2Int(Mathf.FloorToInt(pos.x / MazeBlock.BlockSize), Mathf.FloorToInt(pos.z / MazeBlock.BlockSize));
+
+    public Vector2Int GetMazeCoordinate(Vector3 pos, int zoom = 0) {
+        int includeBlockCount = Mathf.FloorToInt(Mathf.Pow(2, zoom));
+        float calculatedCoordSize = MazeBlock.BlockSize * includeBlockCount;
+        return new Vector2Int(Mathf.FloorToInt(pos.x / calculatedCoordSize), Mathf.FloorToInt(pos.z / calculatedCoordSize));
+    }
+
+    /// <summary>
+    /// <br/> zoomInCoord 구역에 해당하는 zoom이 0일 때의 startCoord, endCoord를 반환한다.
+    /// <br/> startCoord: 포함
+    /// <br/> endCoord: 미포함
+    /// </summary>
+    /// <param name="zoomInCoord"></param>
+    /// <param name="zoom"></param>
+    /// <param name="startCoord"></param>
+    /// <param name="endCoord"></param>
+    /// <returns></returns>
+    public void GetStartEndCoordOnZoomInCoord(Vector2Int zoomInCoord, int zoom, out Vector2Int startCoord, out Vector2Int endCoord) {
+        int includeBlockCount = Mathf.FloorToInt(Mathf.Pow(2, zoom));
+        startCoord = zoomInCoord * includeBlockCount;
+        endCoord = startCoord + Vector2Int.one * includeBlockCount;
+        if(endCoord.x > LevelWidth) endCoord.x = LevelWidth;
+        if(endCoord.y > LevelHeight) endCoord.y = LevelHeight;
+    }
+
+    public int GetMaxZoom(int length) {
+        int includeBlockCount = 0;
+        int zoom = 0;
+        while(true) {
+            includeBlockCount = Mathf.FloorToInt(Mathf.Pow(2, zoom));
+            if(includeBlockCount >= length) {
+                break;
+            }
+
+            zoom++;
+        }
+
+        return zoom;
+    }
+
+    public Vector2Int GetLevelSize(int zoom) {
+        float includeBlockCount = Mathf.Floor(Mathf.Pow(2, zoom));
+        int x = Mathf.CeilToInt(LevelWidth / includeBlockCount);
+        int y = Mathf.CeilToInt(LevelHeight / includeBlockCount);
+        return new Vector2Int(x, y);
+    }
+
+    public bool IsCoordInLevelSize(Vector2Int zoomInCoord, int zoom) {
+        Vector2Int calculatedLevelSize = GetLevelSize(zoom);
+        return (0 <= zoomInCoord.x && zoomInCoord.x < calculatedLevelSize.x && 0 <= zoomInCoord.y && zoomInCoord.y < calculatedLevelSize.y);
+    }
+
+    public bool IsCoordIncludeInZoomInCoord(Vector2Int coord, Vector2Int zoomInCoord, int zoom) {
+        Vector2Int startCoord;
+        Vector2Int endCoord;
+        GetStartEndCoordOnZoomInCoord(zoomInCoord, zoom, out startCoord, out endCoord);
+
+        return (startCoord.x <= coord.x && coord.x < endCoord.x && startCoord.y <= coord.y && coord.y < endCoord.y);
+    }
 
     /// <summary>
     /// <br/> overDistance == true : currentPos를 기준으로 distance 보다 먼 좌표의 경로 반환
@@ -886,6 +956,20 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
     #endregion
+
+    public Vector2Int GetRandomCoordOnZoomInCoordArea(Vector2Int zoomInCoord, int zoom) {
+        if(!IsCoordInLevelSize(zoomInCoord, zoom)) {
+            Debug.LogWarning($"Out of range. LevelWidth: {LevelWidth}, LevelHeight: {LevelHeight}, zoomInCoord: {zoomInCoord}, zoom: {zoom}");
+
+            return Vector2Int.one * -1;
+        }
+
+        Vector2Int startCoord;
+        Vector2Int endCoord;
+        GetStartEndCoordOnZoomInCoord(zoomInCoord, zoom, out startCoord, out endCoord);
+
+        return new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+    }
 
     /// <summary>
     /// compareDistance 보다 멀리 있는 coord를 반환
