@@ -162,17 +162,13 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     private AudioReverbZone reverbZone = null;
 
-    public Action<ItemController> OnItemCollected;
+    public Action OnItemCollected;
 
 
 
-    protected override void Awake() {
-        base.Awake();
-
+    private void Awake() {
         SoundManager.Instance.OnWorldSoundAdded += WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved += WorldSoundRemoved;
-
-        OnItemCollected += ItemCollected;
 
         UserSettings.OnDisplayBrightnessChanged += OnDisplayBrightnessChanged;
     }
@@ -180,8 +176,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
-
-        OnItemCollected -= ItemCollected;
 
         UserSettings.OnDisplayBrightnessChanged -= OnDisplayBrightnessChanged;
     }
@@ -334,7 +328,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             //mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
             mat.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, UserSettings.DisplayBrightness);
-            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
@@ -348,7 +342,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             mat.SetFloat(MAT_PLAYER_PAST_POSITION_RADIUS_NAME, 0.15f);
             //mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, MazeBlock.BlockSize * 0.0002f);
-            //mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 1.0f);
+            //mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 0.75f);
 
             blockFloorMaterial = mat;
         }
@@ -358,7 +352,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             //mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
             mat.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, UserSettings.DisplayBrightness);
-            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             //mat.SetColor("_BaseColor", Color.red);
             mat.SetColor("_BaseColor", Color.black);
@@ -372,7 +366,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
 
             mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, MazeBlock.BlockSize * 0.0002f);
-            mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 1.0f);
+            mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 0.75f);
 
             blockWallMaterial = mat;
         }
@@ -793,6 +787,17 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         playerMaterialPropertiesGroup.SetPosArray(blockWallMaterial);
 #endif
     }
+
+    public void CollectItem(ItemController collectingItem) {
+        int itemIndex = items.IndexOf(collectingItem);
+        if(itemIndex >= 0) {
+            items.RemoveAt(itemIndex);
+        }
+
+        Destroy(collectingItem.gameObject);
+
+        OnItemCollected?.Invoke();
+    }
     #endregion
 
     #region Action
@@ -866,10 +871,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 }
                 break;
         }
-    }
-
-    private void ItemCollected(ItemController item) {
-
     }
 
     private void OnDisplayBrightnessChanged(float value) {

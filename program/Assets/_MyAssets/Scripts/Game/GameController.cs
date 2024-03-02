@@ -60,6 +60,12 @@ public class GameController : MonoBehaviour {
 #else
 #endif
 
+        LevelLoader.Instance.AddItemOnLevelRandomly(
+            LevelLoader.ItemType.Crystal,
+            20,
+            LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH,
+            false);
+
         while(SceneLoader.Instance.IsLoading) {
             yield return null;
         }
@@ -72,7 +78,8 @@ public class GameController : MonoBehaviour {
 #else
 #endif
 
-        //if(UserSettings.UseMicBoolean) MicrophoneRecorder.Instance.IsMute = false;
+        SoundManager.Instance.PlayBGM(SoundManager.SoundType.Game, 5.0f, 0.3f);
+
         SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Game);
     }
 

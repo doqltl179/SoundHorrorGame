@@ -354,7 +354,6 @@ Shader "MyCustomShader/Maze" {
                                 c += _MazeBlockEdgeColor * (1.0 - overRatio);
                             }
                         }
-                        //c += _MazeBlockEdgeColor;
                     }
 
                 #endif

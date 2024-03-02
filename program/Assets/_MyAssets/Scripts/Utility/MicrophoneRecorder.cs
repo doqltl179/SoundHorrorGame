@@ -34,9 +34,7 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
 
 
 
-    protected override void Awake() {
-        base.Awake();
-
+    private void Awake() {
         UserSettings.OnMicDeviceChanged += OnMicrophoneDeviceChanged;
         UserSettings.OnUseMicChanged += OnUseMicChanged;
     }

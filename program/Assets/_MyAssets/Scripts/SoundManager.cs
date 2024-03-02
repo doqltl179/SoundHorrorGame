@@ -8,6 +8,8 @@ using static Unity.VisualScripting.Member;
 
 public class SoundManager : GenericSingleton<SoundManager> {
     public enum SoundType {
+        None, 
+
         // Fake Sound
         Empty00_5s, 
         Empty01s, 
@@ -28,11 +30,22 @@ public class SoundManager : GenericSingleton<SoundManager> {
         // Item
         Crystal, 
 
+        Mining01,
+        Mining02,
+        Mining03,
+        Mining04,
+        MiningEnd,
+
         // Player
         PlayerWalk,
 
+        // BGM
+        Main,
+        Game, 
+        Warning, 
+
         // Etc
-        MouseClick, //'Main'������ ����
+        MouseClick, 
         ButtonClick, 
         GameEnter, 
     }
@@ -47,14 +60,14 @@ public class SoundManager : GenericSingleton<SoundManager> {
     private readonly string BASIC_PATH_OF_SFX = "Audios/SFX";
     private readonly string BASIC_PATH_OF_BGM = "Audios/BGM";
 
-    private Dictionary<SoundType, AudioClip> clipResources = new Dictionary<SoundType, AudioClip>();
-
     private List<SoundObject> noneFromSoundObjectList = new List<SoundObject>();
     private List<SoundObject> playerSoundObjectList = new List<SoundObject>();
     private List<SoundObject> monsterSoundObjectList = new List<SoundObject>();
     private List<SoundObject> itemSoundObjectList = new List<SoundObject>();
 
     private List<SoundObject> soundObjectPool = new List<SoundObject>(); //Pool
+
+    private Dictionary<SoundType, AudioSource> bgmSources = new Dictionary<SoundType, AudioSource>();
 
     private AudioSource oneShotSource = null;
 
@@ -65,9 +78,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
 
 
-    protected override void Awake() {
-        base.Awake();
-
+    private void Awake() {
         UserSettings.OnUseMicChanged += OnUseMicChanged;
     }
 
@@ -184,7 +195,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         }
     }
 
-    public void PlayOneShot(SoundType type, float volumeOffset = 1.0f) {
+    public void PlayOneShot(SoundType type, float volume = 1.0f) {
         if(oneShotSource == null) {
             GameObject go = new GameObject("OneShotSource");
             go.transform.SetParent(transform);
@@ -196,10 +207,69 @@ public class SoundManager : GenericSingleton<SoundManager> {
             oneShotSource = source;
         }
 
-        oneShotSource.PlayOneShot(GetAudioClip(type), volumeOffset);
+        oneShotSource.PlayOneShot(GetSfxClip(type), volume);
     }
 
-    public void PlayOnWorld(Vector3 worldPos, SoundType type, SoundFrom from, float volumeOffset = 1.0f) {
+    //public bool IsPlayingBGM(SoundType type) {
+    //    AudioSource source = null;
+    //    if(bgmSources.TryGetValue(type, out source)) {
+    //        return source.isPlaying;
+    //    }
+    //    else {
+    //        return false;
+    //    }
+    //}
+
+    public void StopBGM(SoundType type, float fadeTime = 0.0f) {
+        AudioSource bgmSource = null;
+        if(bgmSources.TryGetValue(type, out bgmSource)) {
+            if(fadeTime > 0.0f) {
+                StartCoroutine(FadeCoroutine(bgmSource, fadeTime, bgmSource.volume, 0.0f, () => {
+                    bgmSource.Stop();
+                }));
+            }
+            else {
+                bgmSource.volume = 0.0f;
+                bgmSource.Stop();
+            }
+        }
+        else {
+            Debug.Log($"BGM not found. BGM: {type.ToString()}");
+        }
+    }
+
+    public void PlayBGM(SoundType type, float fadeTime = 0.0f, float volume = 1.0f) {
+        AudioSource bgmSource = null;
+        if(bgmSources.TryGetValue(type, out bgmSource)) {
+            if(bgmSource.isPlaying) return;
+        }
+        else {
+            GameObject go = new GameObject(type.ToString());
+            go.transform.SetParent(transform);
+
+            AudioSource source = go.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.loop = true;
+            source.reverbZoneMix = 0.0f;
+
+            AudioClip clip = ResourceLoader.GetResource<AudioClip>(GetBgmPath(type));
+            source.clip = clip;
+
+            bgmSources.Add(type, source);
+            bgmSource = source;
+        }
+
+        if(fadeTime > 0.0f) {
+            bgmSource.Play();
+            StartCoroutine(FadeCoroutine(bgmSource, fadeTime, 0.0f, volume));
+        }
+        else {
+            bgmSource.volume = volume;
+            bgmSource.Play();
+        }
+    }
+
+    public void PlayOnWorld(Vector3 worldPos, SoundType type, SoundFrom from, float volume = 1.0f) {
         SoundObject so = GetSoundObject(type);
         so.Position = worldPos;
 
@@ -214,7 +284,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
                 break;
 
             default:
-                so.Volume = 1.0f * volumeOffset;
+                so.Volume = volume;
                 break;
         }
 
@@ -229,17 +299,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
         OnWorldSoundAdded?.Invoke(so, from);
     }
 
-    public AudioClip GetAudioClip(SoundType type) {
-        AudioClip clip = null;
-        if(!clipResources.TryGetValue(type, out clip)) {
-            string path = GetSoundPath(type);
-            clip = ResourceLoader.GetResource<AudioClip>(path);
-
-            clipResources.Add(type, clip);
-        }
-
-        return clip;
-    }
+    public AudioClip GetBgmClip(SoundType type) => ResourceLoader.GetResource<AudioClip>(GetBgmPath(type));
+    public AudioClip GetSfxClip(SoundType type) => ResourceLoader.GetResource<AudioClip>(GetSfxPath(type));
 
     #region Material Property Util Func
     public Vector4[] GetSoundObjectPosArray(SoundFrom from) {
@@ -299,6 +360,22 @@ public class SoundManager : GenericSingleton<SoundManager> {
     #endregion
     #endregion
 
+    private IEnumerator FadeCoroutine(AudioSource source, float fadeTime, float startVolume, float endVolume, Action callback = null) {
+        source.volume = startVolume;
+
+        float fadeTimeChecker = 0.0f;
+        while(fadeTimeChecker < fadeTime) {
+            fadeTimeChecker += Time.deltaTime;
+            source.volume = Mathf.Lerp(startVolume, endVolume, fadeTimeChecker / fadeTime);
+
+            yield return null;
+        }
+
+        source.volume = endVolume;
+
+        callback?.Invoke();
+    }
+
     private SoundObject GetSoundObject(SoundType type) {
         SoundObject so = null;
 
@@ -323,7 +400,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
         return so;
     }
 
-    private string GetSoundPath(SoundType type) => Path.Combine(BASIC_PATH_OF_SFX, type.ToString());
+    private string GetBgmPath(SoundType type) => Path.Combine(BASIC_PATH_OF_BGM, type.ToString());
+    private string GetSfxPath(SoundType type) => Path.Combine(BASIC_PATH_OF_SFX, type.ToString());
 }
 
 public class SoundObject {
@@ -401,7 +479,7 @@ public class SoundObject {
     }
 
     public void ChangeSoundType(SoundManager.SoundType type) {
-        Source.clip = SoundManager.Instance.GetAudioClip(type);
+        Source.clip = SoundManager.Instance.GetSfxClip(type);
 
         Type = type;
     }

@@ -102,7 +102,7 @@ public class UserInterface : MonoBehaviour {
     }
 
     #region Action
-    private void OnitemCollected(ItemController itemController) {
+    private void OnitemCollected() {
 
     }
     #endregion

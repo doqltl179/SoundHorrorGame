@@ -42,7 +42,7 @@ public class Cloudy : MonsterController, IMove {
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
 
-        audioSource.clip = SoundManager.Instance.GetAudioClip(SoundManager.SoundType.Whisper);
+        audioSource.clip = SoundManager.Instance.GetSfxClip(SoundManager.SoundType.Whisper);
         audioSource.minDistance = 0.0f;
         audioSource.maxDistance = STANDARD_RIM_RADIUS_SPREAD_LENGTH;
     }

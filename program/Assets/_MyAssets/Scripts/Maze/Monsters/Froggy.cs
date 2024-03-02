@@ -51,7 +51,7 @@ public class Froggy : MonsterController {
             (1 << LayerMask.NameToLayer(MazeBlock.EdgeLayerName)) | 
             (1 << LayerMask.NameToLayer(PlayerController.LayerName));
 
-        audioSource.clip = SoundManager.Instance.GetAudioClip(SoundManager.SoundType.Scream);
+        audioSource.clip = SoundManager.Instance.GetSfxClip(SoundManager.SoundType.Scream);
         audioSource.minDistance = 0.0f;
         audioSource.maxDistance = STANDARD_RIM_RADIUS_SPREAD_LENGTH;
     }

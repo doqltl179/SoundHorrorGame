@@ -6,7 +6,27 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class PlayerController : Singleton<PlayerController> {
+public class PlayerController : MonoBehaviour {
+    private static PlayerController instance = null;
+    public static PlayerController Instance {
+        get {
+            if(instance == null) {
+                PlayerController[] insts = FindObjectsOfType<PlayerController>();
+                if(insts.Length > 0) {
+                    instance = insts[0];
+                    for(int i = 1; i < insts.Length; i++) {
+                        Destroy(insts[i].gameObject);
+                    }
+                }
+                else {
+                    Debug.LogError($"Component not found. name: {typeof(PlayerController).Name}");
+                }
+            }
+
+            return instance;
+        }
+    }
+
     public static readonly string TagName = "Player";
     public static readonly string LayerName = "Player";
 
@@ -209,7 +229,7 @@ public class PlayerController : Singleton<PlayerController> {
         CurrentState = PlayerState.None;
         if(Input.GetKey(key_crouch)) CurrentState |= PlayerState.Crouch;
         if(Vector3.Magnitude(moveDirection) > 0) CurrentState |= PlayerState.Walk;
-        if(Input.GetKey(key_run)) {
+        if(!CurrentState.HasFlag(PlayerState.Crouch) && Input.GetKey(key_run)) {
             if(!OverHit) {
                 runTimeChecker += Time.deltaTime;
                 if(runTimeChecker >= runTimeMax) {
@@ -233,8 +253,8 @@ public class PlayerController : Singleton<PlayerController> {
         if(CurrentState != PlayerState.None) {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed + Time.deltaTime * moveBoost, 0.0f, physicsMoveSpeedMax);
 
-            if(CurrentState.HasFlag(PlayerState.Run)) speed = runSpeed * physicsMoveSpeed;
-            else if(CurrentState.HasFlag(PlayerState.Crouch)) speed = crouchSpeed * physicsMoveSpeed;
+            if(CurrentState.HasFlag(PlayerState.Crouch)) speed = crouchSpeed * physicsMoveSpeed;
+            else if(CurrentState.HasFlag(PlayerState.Run)) speed = runSpeed * physicsMoveSpeed;
             else if(CurrentState.HasFlag(PlayerState.Walk)) speed = moveSpeed * physicsMoveSpeed;
         }
         else {
@@ -256,8 +276,8 @@ public class PlayerController : Singleton<PlayerController> {
         #endregion
 
         #region Sound
-        if(CurrentState.HasFlag(PlayerState.Run)) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed * (runSpeed / moveSpeed);
-        else if(CurrentState.HasFlag(PlayerState.Crouch)) { }
+        if(CurrentState.HasFlag(PlayerState.Crouch)) { }
+        else if(CurrentState.HasFlag(PlayerState.Run)) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed * (runSpeed / moveSpeed);
         else if(CurrentState.HasFlag(PlayerState.Walk)) walkSoundIntervalChecker += Time.deltaTime * physicsMoveSpeed;
 
         if(walkSoundIntervalChecker > walkSoundInterval) {

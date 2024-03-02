@@ -5,9 +5,6 @@ using UnityEngine;
 public class MainController : MonoBehaviour {
     [SerializeField] private Canvas canvas = null;
 
-    [Header("Settings")]
-    [SerializeField] private SettingController settingController;
-
     [Header("Camera Animation Properties")]
     [SerializeField, Range(0.1f, 10.0f)] private float cameraRotateSpeed = 1.0f;
     [SerializeField, Range(0.0f, 180.0f)] private float cameraRotateAngle = 120.0f;
@@ -43,6 +40,9 @@ public class MainController : MonoBehaviour {
 
         // 음성 감지 시작
         MicrophoneRecorder.Instance.gameObject.SetActive(UserSettings.UseMicBoolean);
+
+        // BGM 재생
+        SoundManager.Instance.PlayBGM(SoundManager.SoundType.Main, 3.0f, 0.65f);
 
         // Scene 명명
         SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Main);
@@ -94,6 +94,7 @@ public class MainController : MonoBehaviour {
 
     public void OnNewGameClicked() {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.GameEnter);
+        SoundManager.Instance.StopBGM(SoundManager.SoundType.Main, 0.5f);
 
         SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
     }

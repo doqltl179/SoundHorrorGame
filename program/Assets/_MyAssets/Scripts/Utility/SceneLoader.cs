@@ -21,10 +21,6 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
 
 
 
-    protected override void Awake() {
-        base.Awake();
-    }
-
     #region Utility
     public void LoadScene(SceneType scene) {
         if(loadSceneCoroutine == null) {
