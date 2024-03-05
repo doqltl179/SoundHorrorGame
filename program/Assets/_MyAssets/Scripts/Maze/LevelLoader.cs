@@ -132,15 +132,17 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private const string MAT_DRAW_RIM_KEY = "DRAW_RIM";
     private const string MAT_DRAW_PLAYER_PAST_POSITION_KEY = "DRAW_PLAYER_PAST_POS";
     private const string MAT_DRAW_MAZEBLOCK_EDGE_KEY = "DRAW_MAZEBLOCK_EDGE";
+    private const string MAT_DRAW_MONSTER_OUTLINE_KEY = "DRAW_OUTLINE";
     #endregion
 
     private const string MAT_COLOR_STRENGTH_MAX_NAME = "_ColorStrengthMax";
-    private const string MAT_COLOR_STRENGTH_OFFSET_NAME = "_ColorStrengthOffset";
     private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
     private const string MAT_RIM_THICKNESS_OFFSET_NAME = "_RimThicknessOffset";
     private const string MAT_PLAYER_PAST_POSITION_RADIUS_NAME = "_PlayerPastPosRadius";
     private const string MAT_MAZEBLOCK_EDGE_THICKNESS_NAME = "_MazeBlockEdgeThickness";
     private const string MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME = "_MazeBlockEdgeShowDistance";
+    private const string MAT_MONSTER_OUTLINE_THICKNESS_NAME = "_MonsterOutlineThickness";
+    private const string MAT_MONSTER_OUTLINE_COLOR_NAME = "_MonsterOutlineColor";
     #endregion
 
     /// <summary>
@@ -177,15 +179,11 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private void Awake() {
         SoundManager.Instance.OnWorldSoundAdded += WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved += WorldSoundRemoved;
-
-        UserSettings.OnDisplayBrightnessChanged += OnDisplayBrightnessChanged;
     }
 
     private void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
-
-        UserSettings.OnDisplayBrightnessChanged -= OnDisplayBrightnessChanged;
     }
 
     private void LateUpdate() {
@@ -334,8 +332,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-            //mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
-            mat.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, UserSettings.DisplayBrightness);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
@@ -345,12 +341,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
             mat.EnableKeyword(MAT_DRAW_RIM_KEY);
             mat.EnableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
-            //mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
-            mat.DisableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
 
             mat.SetFloat(MAT_PLAYER_PAST_POSITION_RADIUS_NAME, 0.15f);
-            //mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, MazeBlock.BlockSize * 0.0002f);
-            //mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 0.75f);
 
             blockFloorMaterial = mat;
         }
@@ -358,11 +350,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         if(blockWallMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-            //mat.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
-            mat.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, UserSettings.DisplayBrightness);
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
-            //mat.SetColor("_BaseColor", Color.red);
             mat.SetColor("_BaseColor", Color.black);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
@@ -370,7 +359,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
             mat.EnableKeyword(MAT_DRAW_RIM_KEY);
-            mat.DisableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
             mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
 
             mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, MazeBlock.BlockSize * 0.0002f);
@@ -771,15 +759,11 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             go.transform.position = GetBlockPos(coord);
 
             MonsterController mc = go.GetComponent<MonsterController>();
-            //mc.Material.SetFloat(MAT_COLOR_STRENGTH_MAX_NAME, UserSettings.DisplayBrightness);
-            mc.Material.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, UserSettings.DisplayBrightness);
-            mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.35f);
+            mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 2.0f);
             mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
-            mc.Material.DisableKeyword(MAT_USE_BASE_COLOR_KEY);
-            //mc.Material.DisableKeyword(MAT_DRAW_RIM_KEY);
+            mc.Material.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
             mc.Material.EnableKeyword(MAT_DRAW_RIM_KEY);
-            mc.Material.DisableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
-            mc.Material.DisableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
+            mc.Material.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
 
             monsters.Add(mc);
         }
@@ -943,18 +927,18 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
 
-    private void OnDisplayBrightnessChanged(float value) {
-        if(blockFloorMaterial != null) blockFloorMaterial.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
-#if Use_Two_Materials_On_MazeBlock
-        if(blockWallMaterial != null) blockWallMaterial.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
-#endif
+//    private void OnDisplayBrightnessChanged(float value) {
+//        if(blockFloorMaterial != null) blockFloorMaterial.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
+//#if Use_Two_Materials_On_MazeBlock
+//        if(blockWallMaterial != null) blockWallMaterial.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
+//#endif
 
-        if(monsters != null) {
-            foreach(MonsterController mc in monsters) {
-                mc.Material.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
-            }
-        }
-    }
+//        if(monsters != null) {
+//            foreach(MonsterController mc in monsters) {
+//                mc.Material.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
+//            }
+//        }
+//    }
     #endregion
 
     public Vector2Int GetRandomCoordOnZoomInCoordArea(Vector2Int zoomInCoord, int zoom) {

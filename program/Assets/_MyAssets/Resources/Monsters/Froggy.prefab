@@ -351,6 +351,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5192059685496283340, guid: b04517f289bb23548b2cc858040ecc0c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6763737257872425918, guid: b04517f289bb23548b2cc858040ecc0c, type: 3}
       propertyPath: m_Name
       value: Froggy

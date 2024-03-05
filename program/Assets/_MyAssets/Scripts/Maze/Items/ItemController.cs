@@ -17,6 +17,8 @@ public class ItemController : MonoBehaviour {
     public Vector3 Pos { get { return transform.position; } }
     public float Radius { get { return collider.radius * transform.localScale.x; } }
 
+    public static KeyCode key_interact = KeyCode.E;
+
     private const float ItemSoundPlayTimeInterval = 10.0f;
     private float itemSoundPlayTimeChecker = 0.0f;
 
@@ -29,6 +31,8 @@ public class ItemController : MonoBehaviour {
     }
 
     private void Update() {
+        if(PlayerEnter) return;
+
         itemSoundPlayTimeChecker += Time.deltaTime;
         if(itemSoundPlayTimeChecker >= ItemSoundPlayTimeInterval) {
             if(Vector3.Distance(Pos, UtilObjects.Instance.CamPos) < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {

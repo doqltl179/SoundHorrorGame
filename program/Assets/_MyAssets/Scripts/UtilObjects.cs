@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Rendering.PostProcessing;
 using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
@@ -23,17 +25,22 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
 
     public Vector3 CamPos {
         get => Cam.transform.position;
-        set {
-            Cam.transform.position = value;
-        }
+        set => Cam.transform.position = value;
     }
-
     public Vector3 CamForward {
         get => Cam.transform.forward;
-        set {
-            Cam.transform.forward = value;
-        }
+        set => Cam.transform.forward = value;
     }
+    public Quaternion CamRotation {
+        get => Cam.transform.rotation;
+        set => Cam.transform.rotation = value;
+    }
+    #endregion
+
+    #region Post Process
+    [Header("Post Process")]
+    [SerializeField] private PostProcessVolume volume;
+    private ColorGrading colorGrading = null;
     #endregion
 
     #region UI
@@ -42,7 +49,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         None = 0, 
         PauseMenu = 1 << 0, 
         Settings = 1 << 1, 
-
+        KeyGuide = 1 << 2, 
 
     }
     private Page currentPages = Page.None;
@@ -91,14 +98,19 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     }
     #endregion
 
+    #region PauseMenu
+    [Header("Pause Menu")]
+    [SerializeField] private PauseMenuController pauseMenuController;
+    #endregion
+
     #region Settings
     [Header("Settings")]
     [SerializeField] private SettingController settingController;
     #endregion
 
-    #region PauseMenu
-    [Header("Pause Menu")]
-    [SerializeField] private PauseMenuController pauseMenuController;
+    #region Key Guide
+    [Header("Key Guide")]
+    [SerializeField] private KeyGuideController keyGuideController;
     #endregion
 
     private KeyCode Key_Escape = KeyCode.Escape;
@@ -109,23 +121,40 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     private void Awake() {
         DontDestroyOnLoad(gameObject);
 
+        volume.profile.TryGetSettings<ColorGrading>(out colorGrading);
+
         UserSettings.OnMasterVolumeChanged += OnMasterVolumeChanged;
         UserSettings.OnDisplayFOVChanged += OnDisplayFOVChanged;
+        UserSettings.OnDisplayBrightnessChanged += OnBrightnessChanged;
     }
 
     private void OnDestroy() {
         UserSettings.OnMasterVolumeChanged -= OnMasterVolumeChanged;
         UserSettings.OnDisplayFOVChanged -= OnDisplayFOVChanged;
+        UserSettings.OnDisplayBrightnessChanged -= OnBrightnessChanged;
     }
 
-    private void Start() {
-        rayBlock.gameObject.SetActive(false);
+    private IEnumerator Start() {
         loadingGroup.gameObject.SetActive(false);
         pauseMenuController.gameObject.SetActive(false);
         settingController.gameObject.SetActive(false);
+        keyGuideController.gameObject.SetActive(false);
 
+        rayBlock.gameObject.SetActive(true);
+        rayBlock.Color = Color.black;
+        rayBlock.Alpha = 1.0f;
+
+        yield return LocalizationSettings.InitializationOperation;
+
+        LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.GetLocale(UserSettings.LanguageCode);
         AudioListener.volume = UserSettings.MasterVolumeRatio;
         Cam.fieldOfView = UserSettings.FOV;
+        colorGrading.colorFilter.value = Color.white * UserSettings.DisplayBrightness;
+
+        yield return new WaitForSeconds(0.5f);
+
+        yield return StartCoroutine(FadeOut(rayBlock.CanvasGroup, 1.0f));
+        rayBlock.gameObject.SetActive(false);
     }
 
     private void Update() {
@@ -246,6 +275,36 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         }
     }
     #endregion
+
+    #region Key Guide
+    public void SetActiveKeyGuide(bool active) {
+        if(active) CurrentPages |= Page.KeyGuide;
+        else CurrentPages &= ~Page.KeyGuide;
+    }
+
+    private IEnumerator SetActiveKeyGuideAction(bool active, float fadeTime = 0.0f) {
+        if(active) {
+            keyGuideController.gameObject.SetActive(true);
+            if(fadeTime > 0.0f) {
+                keyGuideController.Alpha = 0.0f;
+                yield return StartCoroutine(FadeIn(keyGuideController.CanvasGroup, fadeTime));
+            }
+            else {
+                keyGuideController.Alpha = 1.0f;
+            }
+        }
+        else {
+            if(fadeTime > 0.0f) {
+                yield return StartCoroutine(FadeOut(keyGuideController.CanvasGroup, fadeTime, false, null, () => {
+                    keyGuideController.gameObject.SetActive(false);
+                }));
+            }
+            else {
+                keyGuideController.gameObject.SetActive(false);
+            }
+        }
+    }
+    #endregion
     #endregion
 
     private IEnumerator FadeIn(CanvasGroup canvasGroup, float fadeTime, bool waitOneFrame = false, 
@@ -298,6 +357,10 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         AudioListener.volume = ratio;
     }
 
+    private void OnBrightnessChanged(float value) {
+        colorGrading.colorFilter.value = Color.white * value;
+    }
+
     private void OnPageChanged(Page page, bool active) {
         switch(SceneLoader.Instance.CurrentLoadedScene) {
             case SceneLoader.SceneType.Main: OnPageChangedInMain(page, active); break;
@@ -317,6 +380,19 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                         StartCoroutine(SetActiveRayBlockAction(false, 0.1f));
 
                         StartCoroutine(SetActiveSettingsAction(false, 0.1f));
+                    }
+                }
+                break;
+            case Page.KeyGuide: {
+                    if(active) {
+                        StartCoroutine(SetActiveRayBlockAction(true, 0.1f, new Color(0, 0, 0, 210f / 255f)));
+
+                        StartCoroutine(SetActiveKeyGuideAction(true, 0.1f));
+                    }
+                    else {
+                        StartCoroutine(SetActiveRayBlockAction(false, 0.1f));
+
+                        StartCoroutine(SetActiveKeyGuideAction(false, 0.1f));
                     }
                 }
                 break;
@@ -357,6 +433,17 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                     else {
                         pauseMenuController.CanvasGroup.alpha = 1.0f;
                         StartCoroutine(SetActiveSettingsAction(false, 0.1f));
+                    }
+                }
+                break;
+            case Page.KeyGuide: {
+                    if(active) {
+                        pauseMenuController.CanvasGroup.alpha = 0.0f;
+                        StartCoroutine(SetActiveKeyGuideAction(true, 0.1f));
+                    }
+                    else {
+                        pauseMenuController.CanvasGroup.alpha = 1.0f;
+                        StartCoroutine(SetActiveKeyGuideAction(false, 0.1f));
                     }
                 }
                 break;

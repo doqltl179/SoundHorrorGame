@@ -29,13 +29,17 @@ Shader "MyCustomShader/Maze" {
         _MazeBlockEdgeColor ("MazeBlock Edge Color", Color) = (1, 1, 1, 1)
         _MazeBlockEdgeShowDistance ("MazeBlock Edge Show Distance", float) = 10
 
+        [Header(Outline)]
+        _MonsterOutlineThickness ("Monster Outline Thickness", Range(0.0, 1.0)) = 0.4
+        _MonsterOutlineColor("Monster Outline Color", Color) = (1, 1, 1, 1)
+
         [Header(Util Properties)]
         _ColorStrengthMax ("Color Strength Max", Float) = 1.5
-        _ColorStrengthOffset ("Color Strength Offset", Float) = 1.0
         [Toggle(USE_BASE_COLOR)] _UseBaseColor ("Use Base Color", float) = 1.0
-        [Toggle(DRAW_RIM)] _DrawRim ("Draw Rim", float) = 1.0
+        [Toggle(DRAW_RIM)] _DrawRim ("Draw Rim", float) = 0.0
         [Toggle(DRAW_PLAYER_PAST_POS)] _DrawPlayerPastPos ("Draw Player Past Pos", float) = 0.0
         [Toggle(DRAW_MAZEBLOCK_EDGE)] _DrawMazeBlockEdge ("Draw MazeBlock Edge", float) = 0.0
+        [Toggle(DRAW_OUTLINE)] _DrawOutline ("Draw Outline", float) = 0.0
 
         [HideInInspector] _RimArrayLength_None ("Rim Array (None) Length", Integer) = 0
         [HideInInspector] _RimArrayLength_Player ("Rim Array Length (Player)", Integer) = 0
@@ -59,6 +63,7 @@ Shader "MyCustomShader/Maze" {
             #pragma shader_feature DRAW_RIM
             #pragma shader_feature DRAW_PLAYER_PAST_POS
             #pragma shader_feature DRAW_MAZEBLOCK_EDGE
+            #pragma shader_feature DRAW_OUTLINE
 
             #include "UnityCG.cginc"
 
@@ -113,8 +118,10 @@ Shader "MyCustomShader/Maze" {
             fixed4 _MazeBlockEdgeColor;
             float _MazeBlockEdgeShowDistance;
 
+            float _MonsterOutlineThickness;
+            fixed4 _MonsterOutlineColor;
+
             float _ColorStrengthMax;
-            float _ColorStrengthOffset;
 
             int _RimArrayLength_None;
             int _RimArrayLength_Player;
@@ -286,6 +293,12 @@ Shader "MyCustomShader/Maze" {
                 return float3(ambient + (diffuse + specular) * occlusion);
             }
 
+            float getOutlineRatio(v2f i) {
+                float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
+                float ndot = dot(i.worldNormal, viewDir) < _MonsterOutlineThickness ? 1.0 : 0.0;
+                return ndot;
+            }
+
             // RenderType을 Transparent로 설정하지 않았기 때문에 투명도가 적용되지 않음
             fixed4 frag (v2f i) : SV_Target
             {
@@ -340,6 +353,13 @@ Shader "MyCustomShader/Maze" {
 
                 #endif
 
+                #ifdef DRAW_OUTLINE
+
+                    float mosnterOutlineRatio = getOutlineRatio(i);
+                    c *= _MonsterOutlineColor * mosnterOutlineRatio;
+
+                #endif
+
                 #ifdef DRAW_MAZEBLOCK_EDGE
 
                     if(i.uv.x < _MazeBlockEdgeThickness || i.uv.x > (1.0 - _MazeBlockEdgeThickness) ||
@@ -358,7 +378,7 @@ Shader "MyCustomShader/Maze" {
 
                 #endif
 
-                return c * _ColorStrengthOffset;
+                return c;
             }
             ENDCG
         }

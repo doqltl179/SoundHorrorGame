@@ -47,10 +47,12 @@ public class MazeBlock : MonoBehaviour {
     public static readonly Vector3 StandardBlockScale = new Vector3(FloorScale, WallHeightScale, FloorScale);
 
     public static readonly float StandardBlockSize = 2.0f;
+    public static readonly float StandardWallHeight = 2.0f;
     /// <summary>
     /// StandardSize * Scale
     /// </summary>
     public static readonly float BlockSize = StandardBlockSize * FloorScale;
+    public static readonly float WallHeight = StandardWallHeight * WallHeightScale;
 
     public static readonly float StandardEdgeSize = StandardBlockSize * 0.1f;
     public static readonly float EdgeSize = BlockSize * 0.1f;
@@ -152,6 +154,26 @@ public class MazeBlock : MonoBehaviour {
         float calculatedRadius = ((BlockSize - (EdgeSize * 2)) * 0.5f - (radius * 1.1f)) * Mathf.Sqrt(2);
         Vector3 direction = new Vector3(Mathf.Cos(angle), 0.0f, Mathf.Sin(angle));
         return transform.position + direction * calculatedRadius;
+    }
+
+    public IEnumerator WallAnimation(MazeCreator.ActiveWall animationWall, bool isDown, float animationTime) {
+        Transform wall = null;
+        switch(animationWall) {
+            case MazeCreator.ActiveWall.R: wall = walls[0].transform; break;
+            case MazeCreator.ActiveWall.F: wall = walls[1].transform; break;
+            case MazeCreator.ActiveWall.L: wall = walls[2].transform; break;
+            case MazeCreator.ActiveWall.B: wall = walls[3].transform; break;
+        }
+        float goalHeight = isDown ? -WallHeight : 0.0f;
+
+        float timeChecker = 0.0f;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+
+            wall.localPosition = Vector3.up * Mathf.Lerp(wall.localPosition.y, goalHeight, timeChecker / animationTime);
+
+            yield return null;
+        }
     }
 #endregion
 }

@@ -64,13 +64,15 @@ public class PlayerController : MonoBehaviour {
     [SerializeField, Range(0.0f, 90.0f)] private float cameraVerticalAngleLimit = 75.0f;
     private float cameraVerticalAngleLimitChecker = 0.0f;
 
+    public bool IsPlaying = false;
+
     public Vector3 Pos {
-        get {
-            return transform.position;
-        }
-        set {
-            transform.position = value;
-        }
+        get => transform.position;
+        set => transform.position = value;
+    }
+    public Quaternion Rotation {
+        get => transform.rotation;
+        set => transform.rotation = value;
     }
 
     public Vector3 HeadPos { get { return transform.position + Vector3.up * PlayerHeight; } }
@@ -98,14 +100,15 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    private KeyCode key_moveF = KeyCode.W;
-    private KeyCode key_moveB = KeyCode.S;
-    private KeyCode key_moveR = KeyCode.D;
-    private KeyCode key_moveL = KeyCode.A;
-    private KeyCode key_run = KeyCode.LeftShift;
-    private KeyCode key_crouch = KeyCode.LeftControl;
+    public static KeyCode key_moveF = KeyCode.W;
+    public static KeyCode key_moveB = KeyCode.S;
+    public static KeyCode key_moveR = KeyCode.D;
+    public static KeyCode key_moveL = KeyCode.A;
+    public static KeyCode key_run = KeyCode.LeftShift;
+    public static KeyCode key_crouch = KeyCode.LeftControl;
 
     public Action<Vector2Int> OnCoordChanged;
+    public Action OnEnteredNPCArea;
 
 
 
@@ -117,17 +120,7 @@ public class PlayerController : MonoBehaviour {
         gameObject.layer = LayerMask.NameToLayer(LayerName);
     }
 
-#if Play_Game_Automatically
-    List<Vector3> movePath = null;
-    StuckHelper stuckHelper = null;
-
-    bool autoMove = false;
-
     private void Start() {
-        stuckHelper = new StuckHelper(Radius, 1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
-#else
-    private void Start() {
-#endif
         // Collider 설정
         if(collider == null) {
             GameObject go = new GameObject(nameof(CapsuleCollider));
@@ -145,60 +138,8 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void Update() {
-#if Play_Game_Automatically
-        if(Input.GetKeyDown(KeyCode.Space)) {
-            autoMove = !autoMove;
-            CurrentState = autoMove ? PlayerState.Run : PlayerState.None;
-        }
+        if(!IsPlaying) return;
 
-        if(!autoMove) return;
-
-        if(movePath == null || movePath.Count <= 0) {
-            movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
-                Pos,
-                Radius,
-                false,
-                LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2);
-
-            CurrentState = PlayerState.Run;
-            physicsMoveSpeed = 1.0f;
-        }
-
-        stuckHelper.Raycast(transform.position, transform.forward, Radius * 1.01f); 
-        if(stuckHelper.IsHit) {
-            Vector3 hitPosToCurrentPos = (transform.position - stuckHelper.HitPos).normalized;
-            bool isRightSide = Vector3.Cross(hitPosToCurrentPos, stuckHelper.HitNormal).y > 0;
-            Vector3 moveDirection = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
-            transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed * 2);
-        }
-        else {
-            Vector3 moveDirection = (movePath[0] - transform.position).normalized;
-            transform.forward = Vector3.Lerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
-        }
-
-        switch(CurrentState) {
-            case PlayerState.None: {
-                    runTimeChecker -= Time.deltaTime;
-                }
-                break;
-            case PlayerState.Walk: {
-                    transform.position += transform.forward * Time.deltaTime * moveSpeed;
-                }
-                break;
-            case PlayerState.Run: {
-                    transform.position += transform.forward * Time.deltaTime * runSpeed;
-                }
-                break;
-            case PlayerState.Crouch: {
-                    transform.position += transform.forward * Time.deltaTime * crouchSpeed;
-                }
-                break;
-        }
-
-        if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
-            movePath.RemoveAt(0);
-        }
-#else
         #region Rotate
         float mouseX = Input.GetAxis("Mouse X") * UserSettings.DisplaySensitive * Time.deltaTime;
         transform.eulerAngles += transform.rotation * (Vector3.up * mouseX);
@@ -229,7 +170,7 @@ public class PlayerController : MonoBehaviour {
         CurrentState = PlayerState.None;
         if(Input.GetKey(key_crouch)) CurrentState |= PlayerState.Crouch;
         if(Vector3.Magnitude(moveDirection) > 0) CurrentState |= PlayerState.Walk;
-        if(!CurrentState.HasFlag(PlayerState.Crouch) && Input.GetKey(key_run)) {
+        if(!CurrentState.HasFlag(PlayerState.Crouch) && CurrentState.HasFlag(PlayerState.Walk) && Input.GetKey(key_run)) {
             if(!OverHit) {
                 runTimeChecker += Time.deltaTime;
                 if(runTimeChecker >= runTimeMax) {
@@ -265,7 +206,6 @@ public class PlayerController : MonoBehaviour {
         #endregion
 
         rigidbody.angularVelocity = Vector3.zero;
-#endif
 
         #region Camera
         float anchorHeight = CurrentState.HasFlag(PlayerState.Crouch) ? PlayerHeight * 0.5f : PlayerHeight;
@@ -289,5 +229,11 @@ public class PlayerController : MonoBehaviour {
         #endregion
 
         CurrentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
+    }
+
+    private void OnTriggerEnter(Collider other) {
+        if(other.CompareTag("NPC")) {
+            OnEnteredNPCArea?.Invoke();
+        }
     }
 }

@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 
 public class UserInterface : MonoBehaviour {
@@ -19,6 +21,7 @@ public class UserInterface : MonoBehaviour {
     private const float micGageRectHeightOffset = -8;
 
     [Header("Item")]
+    [SerializeField] private CanvasGroup collectItemCanvasGroup;
     [SerializeField] private TextMeshProUGUI itemCountText;
 
     [Header("Run")]
@@ -36,32 +39,80 @@ public class UserInterface : MonoBehaviour {
         }
     }
 
+    [Header("Message")]
+    [SerializeField] private CanvasGroup messageCanvasGroup;
+    [SerializeField] private TextMeshProUGUI messageText;
+    [SerializeField] private LocalizeStringEvent messageLocalizeEvent;
+    [SerializeField] private Button[] messageButtons; //Yes, No
+    [SerializeField] private Button[] scenarioButtons; //Previous, Next
+    [SerializeField] private Button messageBoxButton;
+    public bool SetActiveMessage {
+        get => messageCanvasGroup.gameObject.activeSelf;
+        set => messageCanvasGroup.gameObject.SetActive(value);
+    }
+    public float MessageAlpha {
+        get => messageCanvasGroup.alpha;
+        set => messageCanvasGroup.alpha = value;
+    }
+    public string MessageText {
+        get => messageText.text;
+        set => messageText.text = value;
+    }
+    public float MessageSize {
+        get => messageText.fontSize;
+        set => messageText.fontSize = value;
+    }
+    public Color MessageColor {
+        get => messageText.color;
+        set => messageText.color = value;
+    }
+    public string MessageKey {
+        get => messageLocalizeEvent.StringReference.TableEntryReference;
+        set => messageLocalizeEvent.StringReference.TableEntryReference = value;
+    }
+    public Button.ButtonClickedEvent MessageBoxClicked {
+        get => messageBoxButton.onClick;
+    }
+
     [Header("Warning")]
     [SerializeField] private CanvasGroup warningCanvasGroup;
 
 
 
     private void Awake() {
-        LevelLoader.Instance.OnItemCollected += OnitemCollected;
+        UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
+
+        LevelLoader.Instance.OnItemCollected += OnItemCollected;
     }
 
     private void OnDestroy() {
-        LevelLoader.Instance.OnItemCollected -= OnitemCollected;
+        UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
+
+        LevelLoader.Instance.OnItemCollected -= OnItemCollected;
     }
 
     private void Start() {
         micGageSlider.value = 0.0f;
         RunGage = 0.0f;
 
-        itemCountText.text = "x" + LevelLoader.Instance.CollectedItemCount;
+        //itemCountText.text = "x" + LevelLoader.Instance.CollectedItemCount;
+        messageText.text = "";
 
+        collectItemCanvasGroup.alpha = 0.0f;
         runGageCanvasGroup.alpha = 0.0f;
+        messageCanvasGroup.alpha = 0.0f;
         warningCanvasGroup.alpha = 0.0f;
 
         micGageSliderLimitLine.anchoredPosition =
             Vector2.up *
             (micGageRect.sizeDelta.y + micGageRectHeightOffset) *
             MicrophoneRecorder.Instance.DecibelCriticalRatio;
+
+        collectItemCanvasGroup.gameObject.SetActive(false);
+        runGageCanvasGroup.gameObject.SetActive(false);
+        messageCanvasGroup.gameObject.SetActive(false);
+        warningCanvasGroup.gameObject.SetActive(false);
+        micGageCanvasGroup.gameObject.SetActive(UserSettings.UseMicBoolean);
     }
 
     private void LateUpdate() {
@@ -102,8 +153,81 @@ public class UserInterface : MonoBehaviour {
     }
 
     #region Action
-    private void OnitemCollected() {
+    public void OnUseMicrophoneChanged(bool value) {
+        micGageRect.gameObject.SetActive(value);
+    }
 
+    private void OnItemCollected() {
+
+    }
+    #endregion
+
+    #region Utility
+    public void SetMessageBoxButton(Action action = null) {
+        messageBoxButton.onClick.RemoveAllListeners();
+
+        if(action != null) {
+            messageBoxButton.onClick.AddListener(() => {
+                action?.Invoke();
+            });
+        }
+    }
+
+    public void SetScenarioButtons(Action action1 = null, Action action2 = null) {
+        scenarioButtons[0].onClick.RemoveAllListeners();
+        scenarioButtons[1].onClick.RemoveAllListeners();
+
+        if(action1 != null) {
+            scenarioButtons[0].gameObject.SetActive(true);
+            scenarioButtons[0].onClick.AddListener(() => {
+                action1?.Invoke();
+            });
+        }
+        else {
+            scenarioButtons[0].gameObject.SetActive(false);
+        }
+
+        if(action2 != null) {
+            scenarioButtons[1].gameObject.SetActive(true);
+            scenarioButtons[1].onClick.AddListener(() => {
+                action2?.Invoke();
+            });
+        }
+        else {
+            scenarioButtons[1].gameObject.SetActive(false);
+        }
+    }
+
+    public void SetMessageButtons(string textKey1 = "", Action action1 = null, string textKey2 = "", Action action2 = null) {
+        messageButtons[0].onClick.RemoveAllListeners();
+        messageButtons[1].onClick.RemoveAllListeners();
+
+        if(action1 != null) {
+            messageButtons[0].gameObject.SetActive(true);
+            messageButtons[0].onClick.AddListener(() => {
+                action1?.Invoke();
+            });
+            messageButtons[0].GetComponentInChildren<LocalizeStringEvent>().StringReference.TableEntryReference = textKey1;
+        }
+        else {
+            messageButtons[0].gameObject.SetActive(false);
+        }
+
+        if(action2 != null) {
+            messageButtons[1].gameObject.SetActive(true);
+            messageButtons[1].onClick.AddListener(() => {
+                action2?.Invoke();
+            });
+            messageButtons[1].GetComponentInChildren<LocalizeStringEvent>().StringReference.TableEntryReference = textKey2;
+        }
+        else {
+            messageButtons[1].gameObject.SetActive(false);
+        }
+    }
+
+    public void SetLocalVariables(Dictionary<string, string>[] arguments) {
+        if(arguments == null || arguments.Length <= 0) messageLocalizeEvent.StringReference.Arguments.Clear();
+        else messageLocalizeEvent.StringReference.Arguments = arguments;
     }
     #endregion
 }

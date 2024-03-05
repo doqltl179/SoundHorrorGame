@@ -355,6 +355,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cloudy
       objectReference: {fileID: 0}
+    - target: {fileID: 942487522196888270, guid: 2f90f57dc2491b14dbba7f064adc74ca, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7399306340544564253, guid: 2f90f57dc2491b14dbba7f064adc74ca, type: 3}
       propertyPath: m_WarningMessage
       value: 

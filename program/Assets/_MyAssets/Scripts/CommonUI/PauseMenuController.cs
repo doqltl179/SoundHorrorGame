@@ -21,6 +21,12 @@ public class PauseMenuController : MonoBehaviour {
         UtilObjects.Instance.SetActiveSettings(true);
     }
 
+    public void OnClickKeyGuide() {
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
+        UtilObjects.Instance.SetActiveKeyGuide(true);
+    }
+
     public void OnClickExit() {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
 

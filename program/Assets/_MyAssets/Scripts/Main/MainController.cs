@@ -14,10 +14,6 @@ public class MainController : MonoBehaviour {
 
 
 
-    private void Awake() {
-        Localization.LoadText();
-    }
-
     private void OnDestroy() {
         if(mainCameraAnimationCoroutine != null) {
             StopCoroutine(mainCameraAnimationCoroutine);
@@ -91,8 +87,10 @@ public class MainController : MonoBehaviour {
     }
 
     #region OnClick
-    public void OnContinueClicked() {
+    public void OnKeyGuideClicked() {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
+        UtilObjects.Instance.SetActiveKeyGuide(true);
     }
 
     public void OnNewGameClicked() {

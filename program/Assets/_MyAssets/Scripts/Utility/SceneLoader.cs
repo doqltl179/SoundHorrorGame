@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class SceneLoader : GenericSingleton<SceneLoader> {
+    public object[] Param { get; private set; } = null;
+
     public enum SceneType {
         None,
         Main, 
@@ -22,8 +24,10 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
 
 
     #region Utility
-    public void LoadScene(SceneType scene) {
+    public void LoadScene(SceneType scene, object[] param = null) {
         if(loadSceneCoroutine == null) {
+            Param = param;
+
             loadSceneCoroutine = LoadSceneCoroutine(scene);
             StartCoroutine(loadSceneCoroutine);
         }

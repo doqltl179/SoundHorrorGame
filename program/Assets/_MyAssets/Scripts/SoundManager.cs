@@ -165,6 +165,26 @@ public class SoundManager : GenericSingleton<SoundManager> {
     #endregion
 
     #region Utility
+    public void ResetAllSoundObjects() {
+        foreach(SoundObject so in noneFromSoundObjectList) {
+            Destroy(so.Source.gameObject);
+        }
+        foreach(SoundObject so in playerSoundObjectList) {
+            Destroy(so.Source.gameObject);
+        }
+        foreach(SoundObject so in monsterSoundObjectList) {
+            Destroy(so.Source.gameObject);
+        }
+        foreach(SoundObject so in itemSoundObjectList) {
+            Destroy(so.Source.gameObject);
+        }
+
+        noneFromSoundObjectList.Clear();
+        playerSoundObjectList.Clear();
+        monsterSoundObjectList.Clear();
+        itemSoundObjectList.Clear();
+    }
+
     public void UnPauseAllSound() {
         foreach(SoundObject so in noneFromSoundObjectList) {
             so.UnPause();
@@ -449,7 +469,6 @@ public class SoundObject {
     }
 
     #region Utility
-
     public void Play() {
         if(Source.clip == null) {
             Debug.LogWarning("Clip is NULL");

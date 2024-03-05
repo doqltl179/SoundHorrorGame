@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MazeBlock
   - Monster
+  - NPC
   layers:
   - Default
   - TransparentFX

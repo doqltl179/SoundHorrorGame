@@ -1,35 +1,44 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 public static class UserSettings {
-    #region Language
-    //public static Action<Localization.Local> OnLocalChanged;
-    private static readonly string m_languageCode_pref = "LanguageCode";
-    private static readonly Localization.Local m_standardLanguageCode = Localization.Local.en;
-    public static Localization.Local LanguageCode {
-        get {
-            if(PlayerPrefs.HasKey(m_languageCode_pref)) {
-                Localization.Local outValue = Localization.Local.en;
-                Enum.TryParse(PlayerPrefs.GetString(m_languageCode_pref), out outValue);
-
-                return outValue;
-            }
-            else {
-                return m_standardLanguageCode;
-            }
-        }
-        set {
-            PlayerPrefs.SetString(m_languageCode_pref, value.ToString());
-            //OnLocalChanged?.Invoke(value);
-        }
+    #region GameLevel
+    private static readonly string m_gameLevel_pref = "GameLevel";
+    private static readonly int m_standardGameLevel = 0;
+    public static int GameLevel {
+        get => PlayerPrefs.HasKey(m_gameLevel_pref) ? PlayerPrefs.GetInt(m_gameLevel_pref) : m_standardGameLevel;
+        set => PlayerPrefs.SetInt(m_gameLevel_pref, value);
     }
-    public static string LanguageCodeString {
-        get => PlayerPrefs.HasKey(m_languageCode_pref) ? PlayerPrefs.GetString(m_languageCode_pref) : m_standardLanguageCode.ToString();
+    #endregion
+
+    #region Tutorial
+    private static readonly string m_isFirstPlay_pref = "IsFistPlay";
+    private static readonly int m_standardIsFirstPlay = 1;
+    public static int IsFirstPlay {
+        get => PlayerPrefs.HasKey(m_isFirstPlay_pref) ? PlayerPrefs.GetInt(m_isFirstPlay_pref) : m_standardIsFirstPlay;
+        set => PlayerPrefs.SetInt(m_isFirstPlay_pref, value);
+    }
+    public static bool IsFirstPlayBoolean {
+        get => IsFirstPlay == 1 ? true : false;
+        set => IsFirstPlay = value ? 1 : 0;
+    }
+    #endregion
+
+    #region Language
+    public static Action<string> OnLocaleChanged;
+    private static readonly string m_languageCode_pref = "LanguageCode";
+    private static readonly string m_standardLanguageCode = "en";
+    public static string LanguageCode {
+        get => PlayerPrefs.HasKey(m_languageCode_pref) ? PlayerPrefs.GetString(m_languageCode_pref) : m_standardLanguageCode;
         set {
             PlayerPrefs.SetString(m_languageCode_pref, value);
-            //OnLocalChanged?.Invoke(value);
+            LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.GetLocale(value);
+            OnLocaleChanged?.Invoke(value);
         }
     }
     #endregion
@@ -116,7 +125,7 @@ public static class UserSettings {
     private static readonly string m_displayBrightness_pref = "DisplayBrightness";
     private static readonly float m_standardDisplayBrightness = 1.0f;
     private static readonly float m_displayBrightnessMin = 0.1f;
-    private static readonly float m_displayBrightnessMax = 2.0f;
+    private static readonly float m_displayBrightnessMax = 3.0f;
     public static float DisplayBrightness {
         get => PlayerPrefs.HasKey(m_displayBrightness_pref) ? PlayerPrefs.GetFloat(m_displayBrightness_pref) : m_standardDisplayBrightness;
         set {

@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Common Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Common
+  m_TableCollectionNameGuidString: b537d50376fb7a442aae770aac86264c
+  m_Entries:
+  - m_Id: 560931586048
+    m_Key: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49309611507712
+    m_Key: Start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49530496139264
+    m_Key: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49601035943936
+    m_Key: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 247595512274944
+    m_Key: Continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 250762765443072
+    m_Key: Back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 247711891628032
+    m_Key: Sound
+    m_Metadata:
+      m_Items: []
+  - m_Id: 247889147109376
+    m_Key: MasterVolume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 248200242831360
+    m_Key: Microphone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 252359125934080
+    m_Key: UseMicrophone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 248573422641152
+    m_Key: Device
+    m_Metadata:
+      m_Items: []
+  - m_Id: 249014155911168
+    m_Key: Display
+    m_Metadata:
+      m_Items: []
+  - m_Id: 249084481806336
+    m_Key: Mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 249653426561024
+    m_Key: Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 250072257175552
+    m_Key: FPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 250278990225408
+    m_Key: Brightness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 250354911322112
+    m_Key: Sensitive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 251727786713088
+    m_Key: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 251819969126400
+    m_Key: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 433575280156672
+    m_Key: On
+    m_Metadata:
+      m_Items: []
+  - m_Id: 433610474561536
+    m_Key: Off
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 647797146045382688
+  references:
+    version: 2
+    RefIds:
+    - rid: 647797146045382688
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1709467731854

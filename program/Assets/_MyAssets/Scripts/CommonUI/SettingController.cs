@@ -5,7 +5,9 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
+using static UnityEditor.PlayerSettings.Switch;
 
 public class SettingController : MonoBehaviour {
     [SerializeField] private ScrollRect scrollView;
@@ -66,6 +68,14 @@ public class SettingController : MonoBehaviour {
 
 
 
+    private void Awake() {
+        UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
+    }
+
+    private void OnDestroy() {
+        UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
+    }
+
     private void OnEnable() {
         InitLanguageOptions();
 
@@ -83,10 +93,13 @@ public class SettingController : MonoBehaviour {
     }
 
     #region Action
+    public void OnUseMicrophoneChanged(bool value) {
+        micDeviceDropdown.enabled = value;
+        micDeviceDropdown.image.color = value ? Color.white : Color.gray;
+    }
+
     public void OnLanguageChanged(int index) {
-        Localization.Local outValue = Localization.Local.en;
-        Enum.TryParse(currentLanguageOptions[index], out outValue);
-        Localization.CurrentLocal = outValue;
+        UserSettings.LanguageCode = LocalizationSettings.AvailableLocales.Locales[index].Identifier.Code;
     }
 
     public void OnMasterVolumeDrag(BaseEventData data) {
@@ -210,26 +223,26 @@ public class SettingController : MonoBehaviour {
     }
     #endregion
     #endregion
+
     private void InitLanguageOptions() {
         languageDropdown.ClearOptions();
         string currentLanguage = "";
-        int currentIndex = 0;
-
-        List<string> languages = new List<string>();
-        foreach(Localization.Local local in Enum.GetValues(typeof(Localization.Local))) {
-            languages.Add(Localization.GetText(local, Localization.Key.language));
-        }
 
         // name이 아닌 code를 저장
-        currentLanguageOptions = new string[languages.Count];
-        int i = 0;
-        foreach(Localization.Local local in Enum.GetValues(typeof(Localization.Local))) {
-            currentLanguageOptions[i] = Localization.GetText(local, Localization.Key.code);
-            i++;
+        currentLanguageOptions = new string[LocalizationSettings.AvailableLocales.Locales.Count];
+        for(int i = 0; i < currentLanguageOptions.Length; i++) {
+            currentLanguageOptions[i] = LocalizationSettings.AvailableLocales.Locales[i].Identifier.Code;
         }
 
+        string[] languages = new string[currentLanguageOptions.Length];
+        for(int i = 0; i < languages.Length; i++) {
+            languages[i] = LocalizationSettings.AvailableLocales.Locales[i].Identifier.CultureInfo.NativeName;
+        }
+
+        int currentIndex = Array.FindIndex(currentLanguageOptions, t => t == UserSettings.LanguageCode);
+
         List<TMP_Dropdown.OptionData> languageOptions = new List<TMP_Dropdown.OptionData>();
-        if(languages.Count > 0) {
+        if(languages.Length > 0) {
             foreach(string language in languages) {
                 languageOptions.Add(new TMP_Dropdown.OptionData(language));
             }
@@ -278,6 +291,9 @@ public class SettingController : MonoBehaviour {
         micDeviceDropdown.AddOptions(micList);
         // Dropdown의 value가 기본적으로 0이기 때문에 0은 제외
         if(currentIndex > 0) micDeviceDropdown.value = currentIndex;
+
+        micDeviceDropdown.enabled = UserSettings.UseMicBoolean;
+        micDeviceDropdown.image.color = UserSettings.UseMicBoolean ? Color.white : Color.gray;
     }
 
     private void InitDisplayModeOptions() {
