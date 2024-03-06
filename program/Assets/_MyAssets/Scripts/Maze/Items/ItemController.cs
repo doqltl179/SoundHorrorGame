@@ -9,11 +9,11 @@ public class ItemController : MonoBehaviour {
     [Header("Pickaxe")]
     [SerializeField] private GameObject pickaxe;
     [SerializeField] private int collectingCount = 5;
-    [SerializeField] private float collectingAnimationTime = 3.0f;
+    [SerializeField] private float collectingAnimationTime = 2.0f;
     private const float PickaxeHeight = 0.5f;
     public int CollectingCount { get; private set; } = 0;
 
-    public bool IsPlaying = false;
+    [HideInInspector] public bool IsPlaying = false;
     public bool PlayerEnter { get; private set; } = false;
 
     public Vector3 Pos { get { return transform.position; } }
@@ -30,6 +30,8 @@ public class ItemController : MonoBehaviour {
 
     private void Start() {
         itemSoundPlayTimeChecker = Random.Range(0.0f, ItemSoundPlayTimeInterval);
+
+        pickaxe.SetActive(false);
     }
 
     private void Update() {

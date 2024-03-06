@@ -195,6 +195,8 @@ public class UserInterface : MonoBehaviour {
 
         if(action != null) {
             messageBoxButton.onClick.AddListener(() => {
+                SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
                 action?.Invoke();
             });
         }
@@ -207,6 +209,8 @@ public class UserInterface : MonoBehaviour {
         if(action1 != null) {
             scenarioButtons[0].gameObject.SetActive(true);
             scenarioButtons[0].onClick.AddListener(() => {
+                SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
                 action1?.Invoke();
             });
         }
@@ -217,6 +221,8 @@ public class UserInterface : MonoBehaviour {
         if(action2 != null) {
             scenarioButtons[1].gameObject.SetActive(true);
             scenarioButtons[1].onClick.AddListener(() => {
+                SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
                 action2?.Invoke();
             });
         }
@@ -232,6 +238,8 @@ public class UserInterface : MonoBehaviour {
         if(action1 != null) {
             messageButtons[0].gameObject.SetActive(true);
             messageButtons[0].onClick.AddListener(() => {
+                SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
                 action1?.Invoke();
             });
             messageButtons[0].GetComponentInChildren<LocalizeStringEvent>().StringReference.TableEntryReference = textKey1;
@@ -243,6 +251,8 @@ public class UserInterface : MonoBehaviour {
         if(action2 != null) {
             messageButtons[1].gameObject.SetActive(true);
             messageButtons[1].onClick.AddListener(() => {
+                SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
                 action2?.Invoke();
             });
             messageButtons[1].GetComponentInChildren<LocalizeStringEvent>().StringReference.TableEntryReference = textKey2;

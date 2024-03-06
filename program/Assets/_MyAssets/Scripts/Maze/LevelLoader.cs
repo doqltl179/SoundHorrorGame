@@ -32,6 +32,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public enum ItemType {
         Crystal,
 
+        HandlingCube, 
     }
 
     private const string ROOT_PATH_OF_ITEMS = "Items";
@@ -41,8 +42,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public List<ItemController> Items { get { return items; } }
     public int ItemCount { get { return items.Count; } }
     private Material itemMaterial = null;
-
     public int CollectedItemCount { get; private set; }
+
+    private List<HandlingCube> handlingCubes = new List<HandlingCube>();
+    public List<HandlingCube> HandlingCubes { get { return handlingCubes; } }
+    public int HandlingCubeCount { get { return handlingCubes.Count; } }
+    private Material handlingCubeMaterial = null;
     #endregion
 
     #region Maze
@@ -322,6 +327,22 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             }
 
             monsters.Clear();
+        }
+
+        if(items.Count > 0) {
+            foreach(ItemController ic in items) {
+                Destroy(ic.gameObject);
+            }
+
+            items.Clear();
+        }
+
+        if(handlingCubes.Count > 0) {
+            foreach(HandlingCube hc in handlingCubes) {
+                Destroy(hc.gameObject);
+            }
+
+            handlingCubes.Clear();
         }
     }
 
@@ -750,56 +771,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
     }
-    /*
-    /// <summary>
-    /// <br/>현재 생성된 몬스터의 위치와 겹치지 않게 생성.
-    /// <br/>플레이어와의 거리가 일정 이상 떨어진 위치에 생성
-    /// </summary>
-    */
-    //public void AddMonsterOnLevelRandomly(MonsterType type, int count, float compareDistance, bool overDistance) {
-    //    if(count <= 0) {
-    //        Debug.LogWarning($"Count not enough. Count: {count}");
-
-    //        return;
-    //    }
-
-    //    GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_MONSTERS, type.ToString()));
-    //    if(resource == null) {
-    //        Debug.LogError($"Monster Resource not found. type: {type}");
-
-    //        return;
-    //    }
-
-    //    Vector2Int[] currentMonstersCoordArray = monsters.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
-    //    List<Vector2Int> usingCoordList = new List<Vector2Int>();
-    //    while(usingCoordList.Count < count) {
-    //        // 플레이어와의 거리가 일정 거리 이상 떨어져 있는 coord 생성
-    //        Vector2Int randomCoord = overDistance ?
-    //            GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, compareDistance) :
-    //            GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
-    //        // 현재 몬스터들과 겹치지 않는 위치 확인
-    //        if(Array.FindIndex(currentMonstersCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
-    //            usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0 &&
-    //            monsters.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0 &&
-    //            items.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0) {
-    //            usingCoordList.Add(randomCoord);
-    //        }
-    //    }
-
-    //    foreach(Vector2Int coord in usingCoordList) {
-    //        GameObject go = Instantiate(resource, transform);
-    //        go.transform.position = GetBlockPos(coord);
-
-    //        MonsterController mc = go.GetComponent<MonsterController>();
-    //        mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 2.0f);
-    //        mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
-    //        mc.Material.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
-    //        mc.Material.EnableKeyword(MAT_DRAW_RIM_KEY);
-    //        mc.Material.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
-
-    //        monsters.Add(mc);
-    //    }
-    //}
 
     public void AddItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
@@ -840,55 +811,52 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         items.Add(ic);
     }
 
-    //public void AddItemOnLevelRandomly(ItemType type, int count, float compareDistance, bool overDistance) {
-    //    if(count <= 0) {
-    //        Debug.LogWarning($"Count not enough. Count: {count}");
+    public void AddPickUpItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
+        GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
+        if(resource == null) {
+            Debug.LogError($"Monster Resource not found. type: {type}");
 
-    //        return;
-    //    }
+            return;
+        }
 
-    //    GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
-    //    if(resource == null) {
-    //        Debug.LogError($"Item Resource not found. type: {type}");
+        if(handlingCubeMaterial == null) {
+            Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-    //        return;
-    //    }
+            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
+            mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
+            mat.SetColor("_BaseColor", Color.black);
+            foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
+                mat.SetVector(group.MAT_COLOR_NAME, group.Color);
+            }
 
-    //    Material material = ResourceLoader.GetResource<Material>(Path.Combine(ROOT_PATH_OF_MATERIALS, type.ToString()));
-    //    if(material == null) {
-    //        Debug.LogError($"Material Resource not found. type: {type}");
+            mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
+            mat.EnableKeyword(MAT_DRAW_RIM_KEY);
+            mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
 
-    //        return;
-    //    }
-    //    itemMaterial = new Material(material.shader);
-    //    itemMaterial.CopyMatchingPropertiesFromMaterial(material);
+            mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, MazeBlock.BlockSize * 0.0002f);
+            mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 0.75f);
 
-    //    Vector2Int[] currentItemsCoordArray = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
-    //    List<Vector2Int> usingCoordList = new List<Vector2Int>();
-    //    while(usingCoordList.Count < count) {
-    //        // 플레이어와의 거리가 일정 거리 이상 떨어져 있는 coord 생성
-    //        Vector2Int randomCoord = overDistance ? 
-    //            GetRandomCoordOverDistance(UtilObjects.Instance.CamPos, compareDistance) : 
-    //            GetRandomCoordNearbyDistance(UtilObjects.Instance.CamPos, compareDistance);
-    //        // 현재 아이템과 겹치지 않는 위치 확인
-    //        if(Array.FindIndex(currentItemsCoordArray, t => IsSameVec2Int(t, randomCoord)) < 0 &&
-    //            usingCoordList.FindIndex(t => IsSameVec2Int(t, randomCoord)) < 0 && 
-    //            monsters.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0 &&
-    //            items.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord)) < 0) {
-    //            usingCoordList.Add(randomCoord);
-    //        }
-    //    }
+            handlingCubeMaterial = mat;
+        }
 
-    //    foreach(Vector2Int coord in usingCoordList) {
-    //        GameObject go = Instantiate(resource, transform);
-    //        go.transform.position = GetBlockPos(coord);
+        GameObject go = Instantiate(resource, transform);
+        if(zoom <= 0) {
+            go.transform.position = GetBlockPos(coord);
+        }
+        else {
+            Vector2Int startCoord;
+            Vector2Int endCoord;
+            GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
-    //        ItemController ic = go.GetComponent<ItemController>();
-    //        ic.SetMaterial(itemMaterial);
+            Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            go.transform.position = GetBlockPos(randomCoord);
+        }
 
-    //        items.Add(ic);
-    //    }
-    //}
+        HandlingCube hc = go.GetComponent<HandlingCube>();
+        hc.SetMaterial(handlingCubeMaterial);
+
+        handlingCubes.Add(hc);
+    }
 
     public void PlayItems() {
         foreach(ItemController ic in items) {

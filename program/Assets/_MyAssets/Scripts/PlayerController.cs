@@ -50,7 +50,6 @@ public class PlayerController : MonoBehaviour {
     [SerializeField, Range(0.1f, 10.0f)] private float moveSpeed = 2.0f;
     [SerializeField, Range(0.1f, 10.0f)] private float runSpeed = 3.0f;
     [SerializeField, Range(0.1f, 10.0f)] private float crouchSpeed = 1.0f;
-    [SerializeField, Range(0.1f, 10.0f)] private float rotateSpeed = 1.5f;
     [SerializeField, Range(0.1f, 10.0f)] private float walkSoundInterval = 0.5f;
     private float walkSoundIntervalChecker = 0.0f;
     [SerializeField, Range(1.0f, 20.0f)] private float runTimeMax = 10.0f;
@@ -67,7 +66,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField, Range(0.0f, 90.0f)] private float cameraVerticalAngleLimit = 75.0f;
     private float cameraVerticalAngleLimitChecker = 0.0f;
 
-    public bool IsPlaying = false;
+    [HideInInspector] public bool IsPlaying = false;
 
     public Vector3 Pos {
         get => transform.position;
@@ -85,6 +84,12 @@ public class PlayerController : MonoBehaviour {
     public Vector3 HeadPos { get { return transform.position + Vector3.up * PlayerHeight; } }
 
     public Vector3 HeadForward { get { return transform.forward; } }
+
+    [SerializeField] private Transform pickUpHandAnchor;
+    public HandlingCube PickUpCube { get; private set; } = null;
+    private RaycastHit pickUpHit;
+    private int pickUpRayMask;
+    private bool pickUpMouseDown;
 
     [Flags]
     public enum PlayerState {
@@ -149,6 +154,8 @@ public class PlayerController : MonoBehaviour {
         collider.center = Vector3.up * PlayerHeight * 0.5f;
 
         cameraAnchor.localPosition = Vector3.up * PlayerHeight;
+
+        pickUpRayMask = ~(1 << LayerMask.NameToLayer("Player"));
     }
 
     private void Update() {
@@ -243,6 +250,34 @@ public class PlayerController : MonoBehaviour {
         #endregion
 
         CurrentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
+
+        #region PickUp
+        bool currentMouseDown = Input.GetMouseButton(0);
+        if(PickUpCube == null) {
+            if(!pickUpMouseDown && currentMouseDown) {
+                if(Physics.Raycast(UtilObjects.Instance.CamPos, UtilObjects.Instance.CamForward, out pickUpHit, float.MaxValue, pickUpRayMask)) {
+                    HandlingCube pickUpObject = pickUpHit.rigidbody?.GetComponent<HandlingCube>();
+                    if(pickUpObject != null) {
+                        PickUpCube = pickUpObject;
+
+                        PickUpCube.IsPickUp = true;
+                    }
+                }
+            }
+        }
+        else {
+            if(pickUpMouseDown && !currentMouseDown) {
+                PickUpCube.IsPickUp = false;
+
+                PickUpCube = null;
+            }
+            else {
+                PickUpCube.Pos = Vector3.Lerp(PickUpCube.Pos, pickUpHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 8));
+                PickUpCube.Forward = Vector3.Lerp(PickUpCube.Forward, pickUpHandAnchor.forward, Time.deltaTime * Mathf.Pow(2, 8));
+            }
+        }
+        pickUpMouseDown = currentMouseDown;
+        #endregion
     }
 
     private void OnTriggerEnter(Collider other) {

@@ -51,7 +51,8 @@ MonoBehaviour:
   collider: {fileID: 2414157917663184592}
   pickaxe: {fileID: 6636549409733173553}
   collectingCount: 5
-  collectingAnimationTime: 3
+  collectingAnimationTime: 2
+  IsPlaying: 0
 --- !u!54 &6636123632193094872
 Rigidbody:
   m_ObjectHideFlags: 0

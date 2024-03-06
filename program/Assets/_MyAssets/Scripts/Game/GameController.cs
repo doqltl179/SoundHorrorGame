@@ -86,7 +86,8 @@ public class GameController : MonoBehaviour {
         }
 
         // Level 초기화
-        InitGameLevel(CurrentLevelSettings.LevelWidth, CurrentLevelSettings.LevelHeight);
+        LevelLoader.Instance.ResetLevel();
+        LevelLoader.Instance.LoadLevel(CurrentLevelSettings.LevelWidth, CurrentLevelSettings.LevelHeight);
 
         // Sound 초기화
         SoundManager.Instance.ResetAllSoundObjects();
@@ -101,7 +102,7 @@ public class GameController : MonoBehaviour {
         int randomMin, randomMax;
 
         int monsterCount = CurrentLevelSettings.Monsters.Sum(t => t.generateCount);
-        randomMax = coordCount / monsterCount;
+        randomMax = coordCount / monsterCount + 1;
         randomMin = randomMax / 2;
 
         GameLevelSettings.MonsterStruct monsterStruct;
@@ -121,7 +122,7 @@ public class GameController : MonoBehaviour {
 
         // 아이템 생성
         int itemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
-        randomMax = coordCount / itemCount;
+        randomMax = coordCount / itemCount + 1;
         randomMin = randomMax / 2;
 
         GameLevelSettings.ItemStruct itemStruct;
@@ -137,6 +138,20 @@ public class GameController : MonoBehaviour {
                 coordMoveCount += Random.Range(randomMin, randomMax);
             }
         }
+        // PickUP 아이템 생성
+        //itemCount = 20;
+        //randomMax = coordCount / itemCount + 1;
+        //randomMin = randomMax / 2;
+
+        //coordMoveCount = 0;
+        //for(int i = 0; i < itemCount; i++) {
+        //    zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
+        //    zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
+
+        //    LevelLoader.Instance.AddPickUpItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom);
+
+        //    coordMoveCount += Random.Range(randomMin, randomMax);
+        //}
 
         // StandingSpace 위치 설정
         standingSpaceCoord = new Vector2Int(Random.Range(1, CurrentLevelSettings.LevelWidth - 2), -1);
@@ -170,11 +185,6 @@ public class GameController : MonoBehaviour {
         #region 나중에 삭제하세요
         SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Game);
         #endregion
-    }
-
-    private void InitGameLevel(int levelWidth, int levelHeight) {
-        LevelLoader.Instance.ResetLevel();
-        LevelLoader.Instance.LoadLevel(levelWidth, levelHeight);
     }
 
     #region Utility
