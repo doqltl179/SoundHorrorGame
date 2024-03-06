@@ -156,6 +156,16 @@ public class MazeBlock : MonoBehaviour {
         return transform.position + direction * calculatedRadius;
     }
 
+    public Vector3 GetSidePos(MazeCreator.ActiveWall d) {
+        switch(d) {
+            case MazeCreator.ActiveWall.R: return transform.position + Vector3.right * BlockSize * 0.5f;
+            case MazeCreator.ActiveWall.F: return transform.position + Vector3.forward * BlockSize * 0.5f;
+            case MazeCreator.ActiveWall.L: return transform.position + Vector3.left * BlockSize * 0.5f;
+            case MazeCreator.ActiveWall.B: return transform.position + Vector3.back * BlockSize * 0.5f;
+            default: return Vector3.zero;
+        }
+    }
+
     public IEnumerator WallAnimation(MazeCreator.ActiveWall animationWall, bool isDown, float animationTime) {
         Transform wall = null;
         switch(animationWall) {
@@ -164,13 +174,16 @@ public class MazeBlock : MonoBehaviour {
             case MazeCreator.ActiveWall.L: wall = walls[2].transform; break;
             case MazeCreator.ActiveWall.B: wall = walls[3].transform; break;
         }
-        float goalHeight = isDown ? -WallHeight : 0.0f;
+        // isDown이 true일 때에 바닥에 딱 맞게 내려버리면
+        // 오브젝트가 겹쳐서 그래픽이 깨지는 것처럼 나오게 되므로 1.05를 곱해서 조금 더 내림
+        float goalHeight = isDown ? -StandardWallHeight * 1.05f : 0.0f;
 
+        float wallStartHeight = wall.localPosition.y;
         float timeChecker = 0.0f;
         while(timeChecker < animationTime) {
             timeChecker += Time.deltaTime;
 
-            wall.localPosition = Vector3.up * Mathf.Lerp(wall.localPosition.y, goalHeight, timeChecker / animationTime);
+            wall.localPosition = Vector3.up * Mathf.Lerp(wallStartHeight, goalHeight, timeChecker / animationTime);
 
             yield return null;
         }

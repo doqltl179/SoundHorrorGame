@@ -710,6 +710,37 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return (startCoord.x <= coord.x && coord.x < endCoord.x && startCoord.y <= coord.y && coord.y < endCoord.y);
     }
 
+    public void AddMonsterOnLevel(MonsterType type, Vector2Int coord, int zoom = 0) {
+        GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_MONSTERS, type.ToString()));
+        if(resource == null) {
+            Debug.LogError($"Monster Resource not found. type: {type}");
+
+            return;
+        }
+
+        GameObject go = Instantiate(resource, transform);
+        if(zoom <= 0) {
+            go.transform.position = GetBlockPos(coord);
+        }
+        else {
+            Vector2Int startCoord;
+            Vector2Int endCoord;
+            GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
+
+            Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            go.transform.position = GetBlockPos(randomCoord);
+        }
+
+        MonsterController mc = go.GetComponent<MonsterController>();
+        mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 2.0f);
+        mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
+        mc.Material.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
+        mc.Material.EnableKeyword(MAT_DRAW_RIM_KEY);
+        mc.Material.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
+
+        monsters.Add(mc);
+    }
+
     /// <summary>
     /// <br/> overDistance == true : currentPos를 기준으로 distance 보다 먼 좌표의 경로 반환
     /// <br/> overDistance == false : currentPos를 기준으로 distance 보다 가까운 좌표의 경로 반환
@@ -842,6 +873,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 #endif
     }
 
+    public MazeBlock GetMazeBlock(Vector2Int coord) => GetMazeBlock(coord.x, coord.y);
+    public MazeBlock GetMazeBlock(int x, int y) => mazeBlocks[x, y];
+
     public void CollectItem(ItemController collectingItem) {
         int itemIndex = items.IndexOf(collectingItem);
         if(itemIndex >= 0) {
@@ -926,19 +960,6 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
                 break;
         }
     }
-
-//    private void OnDisplayBrightnessChanged(float value) {
-//        if(blockFloorMaterial != null) blockFloorMaterial.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
-//#if Use_Two_Materials_On_MazeBlock
-//        if(blockWallMaterial != null) blockWallMaterial.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
-//#endif
-
-//        if(monsters != null) {
-//            foreach(MonsterController mc in monsters) {
-//                mc.Material.SetFloat(MAT_COLOR_STRENGTH_OFFSET_NAME, value);
-//            }
-//        }
-//    }
     #endregion
 
     public Vector2Int GetRandomCoordOnZoomInCoordArea(Vector2Int zoomInCoord, int zoom) {

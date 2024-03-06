@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Localization.Plugins.XLIFF.V12;
 using UnityEngine;
 
 public class StandingSpaceConrtoller : MonoBehaviour {
     [SerializeField] private Transform npcAnchor;
     [SerializeField] private Transform playerAnchor;
     [SerializeField] private Transform npcCameraView;
+
+    [SerializeField] private Animator npcAnimator;
 
     public Vector3 PlayerPos { get { return playerAnchor.position; } }
     public Quaternion PlayerRotation { get { return playerAnchor.rotation; } }
@@ -93,4 +94,13 @@ public class StandingSpaceConrtoller : MonoBehaviour {
         playerAnchor.localPosition = levels[1, 0].transform.localPosition;
         playerAnchor.forward = (npcAnchor.localPosition - playerAnchor.localPosition).normalized;
     }
+
+    #region Utility
+    public void SetAnimationTrigger_Talking() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Talking);
+    public void SetAnimationResetTrigger_Talking() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Talking);
+    public void SetAnimationTrigger_Surprised() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Surprised);
+    public void SetAnimationResetTrigger_Surprised() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Surprised);
+
+    public MazeBlock GetOpenCoordBlock() => levels[1, 2];
+    #endregion
 }

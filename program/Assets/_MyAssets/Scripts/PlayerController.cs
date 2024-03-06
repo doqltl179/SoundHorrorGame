@@ -42,6 +42,9 @@ public class PlayerController : MonoBehaviour {
 
     [Header("GameObject")]
     [SerializeField] private Transform cameraAnchor;
+    public Vector3 CamPos { get { return cameraAnchor.position; } }
+    public Vector3 CamForward { get { return cameraAnchor.forward; } }
+    public Quaternion CamRotation { get { return cameraAnchor.rotation; } }
 
     [Header("Properties")]
     [SerializeField, Range(0.1f, 10.0f)] private float moveSpeed = 2.0f;
@@ -69,6 +72,10 @@ public class PlayerController : MonoBehaviour {
     public Vector3 Pos {
         get => transform.position;
         set => transform.position = value;
+    }
+    public Vector3 Forward {
+        get => transform.forward;
+        set => transform.forward = value;
     }
     public Quaternion Rotation {
         get => transform.rotation;
@@ -108,7 +115,9 @@ public class PlayerController : MonoBehaviour {
     public static KeyCode key_crouch = KeyCode.LeftControl;
 
     public Action<Vector2Int> OnCoordChanged;
+
     public Action OnEnteredNPCArea;
+    public Action OnEnterTriggerEntered;
 
 
 
@@ -236,4 +245,12 @@ public class PlayerController : MonoBehaviour {
             OnEnteredNPCArea?.Invoke();
         }
     }
+
+    #region Utility
+    public void ResetCameraAnchor() {
+        cameraVerticalAngleLimitChecker = 0.0f;
+        cameraAnchor.localPosition = Vector3.up * PlayerHeight;
+        cameraAnchor.localEulerAngles = Vector3.zero;
+    }
+    #endregion
 }
