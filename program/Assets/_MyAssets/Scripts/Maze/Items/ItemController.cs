@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static MonsterController;
 
 public class ItemController : MonoBehaviour {
     [SerializeField] private SphereCollider collider;
@@ -12,6 +13,7 @@ public class ItemController : MonoBehaviour {
     private const float PickaxeHeight = 0.5f;
     public int CollectingCount { get; private set; } = 0;
 
+    public bool IsPlaying = false;
     public bool PlayerEnter { get; private set; } = false;
 
     public Vector3 Pos { get { return transform.position; } }
@@ -31,6 +33,8 @@ public class ItemController : MonoBehaviour {
     }
 
     private void Update() {
+        if(!IsPlaying) return;
+
         if(PlayerEnter) return;
 
         itemSoundPlayTimeChecker += Time.deltaTime;
@@ -126,6 +130,14 @@ public class ItemController : MonoBehaviour {
                 pickaxe.SetActive(false);
             }
         }
+    }
+
+    public void Play() {
+        IsPlaying = true;
+    }
+
+    public void Stop() {
+        IsPlaying = false;
     }
 
     #region Utility

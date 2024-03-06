@@ -368,10 +368,11 @@ Shader "MyCustomShader/Maze" {
                         float distRatio = dist / _MazeBlockEdgeShowDistance;
                         const float limitRatio = 1.5;
                         if(distRatio < limitRatio) {
-                            if(limitRatio < 1.0) c += _MazeBlockEdgeColor;
+                            if(distRatio < 1.0) c = _MazeBlockEdgeColor;
                             else {
                                 float overRatio = (distRatio - 1.0) / (limitRatio - 1.0);
-                                c += _MazeBlockEdgeColor * (1.0 - overRatio);
+                                //c += _MazeBlockEdgeColor * (1.0 - overRatio);
+                                c = _MazeBlockEdgeColor * (1.0 - overRatio);
                             }
                         }
                     }

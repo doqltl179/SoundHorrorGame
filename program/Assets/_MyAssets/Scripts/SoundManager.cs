@@ -48,6 +48,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
         MouseClick, 
         ButtonClick, 
         GameEnter, 
+
+        WallAnimation, 
     }
 
     public enum SoundFrom {
@@ -433,6 +435,7 @@ public class SoundObject {
 
     public bool IsPlaying { get { return Source.isPlaying; } }
     public bool IsPaused { get; private set; }
+    public float SpreadLength { get; private set; }
 
     public Vector3 Position {
         get => Source.transform.position;
@@ -499,7 +502,10 @@ public class SoundObject {
     }
 
     public void ChangeSoundType(SoundManager.SoundType type) {
-        Source.clip = SoundManager.Instance.GetSfxClip(type);
+        AudioClip clip = SoundManager.Instance.GetSfxClip(type); ;
+        SpreadLength = LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * clip.length / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_TIME;
+
+        Source.clip = clip;
 
         Type = type;
     }

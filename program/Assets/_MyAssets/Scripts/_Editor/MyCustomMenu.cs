@@ -14,16 +14,16 @@ public class MyCustomMenu : MonoBehaviour
     private const string FuncsMenuName = MenuName + "/Funcs";
 
     private const string SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock = SymbolsMenuName + "/Use Two Materials On MazeBlock";
-    private const string SymbolsMenuItemName_PlayGameAutomatically = SymbolsMenuName + "/Play Game Automatically";
+    private const string SymbolsMenuItemName_SkipScenario = SymbolsMenuName + "/Skip Scenario";
     private const string FuncsMenuItemName_ResetAllSymbols = FuncsMenuName + "/Reset All Symbols";
     private const string FuncsMenuItemName_ApplyAllSymbols = FuncsMenuName + "/Apply All Symbols";
 
     private static string def_UNITY_POST_PROCESSING_STACK_V2 = "UNITY_POST_PROCESSING_STACK_V2";
     private static string def_Use_Two_Materials_On_MazeBlock = "Use_Two_Materials_On_MazeBlock";
-    private static string def_Play_Game_Automatically = "Play_Game_Automatically";
+    private static string def_Skip_Scenario = "Skip_Scenario";
 
     private static bool useTwoMaterialsOnMazeBlock = false;
-    private static bool playGameAutomatically = false;
+    private static bool skipScenario = false;
 
 
 
@@ -37,14 +37,14 @@ public class MyCustomMenu : MonoBehaviour
                 if(d == def_Use_Two_Materials_On_MazeBlock) {
                     useTwoMaterialsOnMazeBlock = true;
                 }
-                else if(d == def_Play_Game_Automatically) {
-                    playGameAutomatically = true;
+                else if(d == def_Skip_Scenario) {
+                    skipScenario = true;
                 }
             }
         }
 
         Menu.SetChecked(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock, useTwoMaterialsOnMazeBlock);
-        Menu.SetChecked(SymbolsMenuItemName_PlayGameAutomatically, playGameAutomatically);
+        Menu.SetChecked(SymbolsMenuItemName_SkipScenario, skipScenario);
     }
 
     [MenuItem(FuncsMenuItemName_ApplyAllSymbols)]
@@ -58,9 +58,9 @@ public class MyCustomMenu : MonoBehaviour
             ref useTwoMaterialsOnMazeBlock,
             true);
         SetDefine(
-            def_Play_Game_Automatically,
-            SymbolsMenuItemName_PlayGameAutomatically,
-            ref playGameAutomatically,
+            def_Skip_Scenario,
+            SymbolsMenuItemName_SkipScenario,
+            ref skipScenario,
             true);
     }
 
@@ -75,9 +75,9 @@ public class MyCustomMenu : MonoBehaviour
             ref useTwoMaterialsOnMazeBlock,
             false);
         SetDefine(
-            def_Play_Game_Automatically,
-            SymbolsMenuItemName_PlayGameAutomatically,
-            ref playGameAutomatically,
+            def_Skip_Scenario,
+            SymbolsMenuItemName_SkipScenario,
+            ref skipScenario,
             false);
     }
 
@@ -89,12 +89,12 @@ public class MyCustomMenu : MonoBehaviour
             ref useTwoMaterialsOnMazeBlock);
     }
 
-    [MenuItem(SymbolsMenuItemName_PlayGameAutomatically)]
-    private static void PlayGameAutomatically() {
+    [MenuItem(SymbolsMenuItemName_SkipScenario)]
+    private static void SkipScenario() {
         SetDefine(
-            def_Play_Game_Automatically,
-            SymbolsMenuItemName_PlayGameAutomatically,
-            ref playGameAutomatically);
+            def_Skip_Scenario,
+            SymbolsMenuItemName_SkipScenario,
+            ref skipScenario);
     }
 
     private static void SetDefine(string def, string menuPath, ref bool property) {

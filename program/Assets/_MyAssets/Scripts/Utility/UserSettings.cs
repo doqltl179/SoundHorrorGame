@@ -7,6 +7,22 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 public static class UserSettings {
+    #region IsCleared
+    private static readonly string m_isCleared_pref = "IsCleared";
+    private static readonly int m_standardIsCleared = 0;
+    public static int IsCleared {
+        get => PlayerPrefs.HasKey(m_isCleared_pref) ? PlayerPrefs.GetInt(m_isCleared_pref) : m_standardIsCleared;
+        set => PlayerPrefs.SetInt(m_isCleared_pref, value);
+    }
+    public static bool IsClearedBoolean {
+        get => IsCleared == 1 ? true : false;
+        set {
+            if(value) IsCleared = 1;
+            else IsCleared = 0;
+        }
+    }
+    #endregion
+
     #region GameLevel
     private static readonly string m_gameLevel_pref = "GameLevel";
     private static readonly int m_standardGameLevel = 0;
@@ -25,7 +41,10 @@ public static class UserSettings {
     }
     public static bool IsFirstPlayBoolean {
         get => IsFirstPlay == 1 ? true : false;
-        set => IsFirstPlay = value ? 1 : 0;
+        set {
+            if(value) IsFirstPlay = 1;
+            else IsFirstPlay = 0;
+        }
     }
     #endregion
 

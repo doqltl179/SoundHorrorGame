@@ -14,17 +14,23 @@ public class StandingSpaceConrtoller : MonoBehaviour {
 
     public Vector3 NPCCameraViewPos { get { return npcCameraView.position; } }
     public Quaternion NPCCameraViewRotation { get { return npcCameraView.rotation; } }
+    public Vector3 NPCCameraViewForward { get { return npcCameraView.forward; } }
 
     private const string AnimatorTrigger_NPC_Surprised = "Surprised";
     private const string AnimatorTrigger_NPC_Talking = "Talking";
 
     private MazeBlock[,] levels = null;
-    private Material levelMaterial = null;
+    private Material levelFloorMaterial = null;
+    private Material levelWallMaterial = null;
     private PhysicMaterial levelPhysicMaterial = null;
 
     private const string MAT_BASE_COLOR_NAME = "_BaseColor";
+    private const string MAT_MAZEBLOCK_EDGE_COLOR_NAME = "_MazeBlockEdgeColor";
+    private const string MAT_MAZEBLOCK_EDGE_THICKNESS_NAME = "_MazeBlockEdgeThickness";
+    private const string MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME = "_MazeBlockEdgeShowDistance";
 
     private const string MAT_USE_BASE_COLOR_KEY = "USE_BASE_COLOR";
+    private const string MAT_DRAW_MAZEBLOCK_EDGE_KEY = "DRAW_MAZEBLOCK_EDGE";
 
 
 
@@ -32,12 +38,24 @@ public class StandingSpaceConrtoller : MonoBehaviour {
         string componentName = typeof(MazeBlock).Name;
         GameObject resourceObj = ResourceLoader.GetResource<GameObject>(componentName);
 
-        if(levelMaterial == null) {
+        if(levelFloorMaterial == null) {
             Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
             mat.SetColor(MAT_BASE_COLOR_NAME, Color.white);
             mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
 
-            levelMaterial = mat;
+            levelFloorMaterial = mat;
+        }
+        if(levelWallMaterial == null) {
+            Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
+            mat.SetColor(MAT_BASE_COLOR_NAME, Color.white);
+            mat.SetColor(MAT_MAZEBLOCK_EDGE_COLOR_NAME, Color.black);
+            mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
+            mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
+
+            mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, MazeBlock.BlockSize * 0.0002f);
+            mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 10.0f);
+
+            levelWallMaterial = mat;
         }
 
         if(levelPhysicMaterial == null) {
@@ -70,7 +88,7 @@ public class StandingSpaceConrtoller : MonoBehaviour {
                         (y + MazeBlock.StandardBlockAnchor.z) * MazeBlock.BlockSize) + levelPosOffset;
 
                     MazeBlock mb = go.GetComponent<MazeBlock>();
-                    mb.SetMaterial(levelMaterial, levelMaterial);
+                    mb.SetMaterial(levelFloorMaterial, levelWallMaterial);
                     mb.SetPhysicMaterial(levelPhysicMaterial);
 
                     levels[x, y] = mb;

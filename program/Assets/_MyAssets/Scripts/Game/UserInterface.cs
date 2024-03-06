@@ -20,9 +20,27 @@ public class UserInterface : MonoBehaviour {
     /// </summary>
     private const float micGageRectHeightOffset = -8;
 
+    public bool MicGageActive {
+        get => micGageCanvasGroup.gameObject.activeSelf;
+        set => micGageCanvasGroup.gameObject.SetActive(value);
+    }
+    public float MicGageAlpha {
+        get => micGageCanvasGroup.alpha;
+        set => micGageCanvasGroup.alpha = value;
+    }
+
     [Header("Item")]
     [SerializeField] private CanvasGroup collectItemCanvasGroup;
     [SerializeField] private TextMeshProUGUI itemCountText;
+
+    public bool CollectItemActive {
+        get => collectItemCanvasGroup.gameObject.activeSelf;
+        set => collectItemCanvasGroup.gameObject.SetActive(value);
+    }
+    public float CollectItemAlpha {
+        get => collectItemCanvasGroup.alpha;
+        set => collectItemCanvasGroup.alpha = value;
+    }
 
     [Header("Run")]
     [SerializeField] private CanvasGroup runGageCanvasGroup;
@@ -30,6 +48,15 @@ public class UserInterface : MonoBehaviour {
     [SerializeField] private Color runGageStartColor;
     [SerializeField] private Color runGageEndColor;
     [SerializeField, Range(0.0f, 1.0f)] private float runGageMaxAlpha = 1.0f;
+
+    public bool RunGageActive {
+        get => runGageCanvasGroup.gameObject.activeSelf;
+        set => runGageCanvasGroup.gameObject.SetActive(value);
+    }
+    public float RunGageAlpha {
+        get => runGageCanvasGroup.alpha;
+        set => runGageCanvasGroup.alpha = value;
+    }
     public float RunGage {
         get => runGageImages[0].fillAmount;
         set {
@@ -46,7 +73,7 @@ public class UserInterface : MonoBehaviour {
     [SerializeField] private Button[] messageButtons; //Yes, No
     [SerializeField] private Button[] scenarioButtons; //Previous, Next
     [SerializeField] private Button messageBoxButton;
-    public bool SetActiveMessage {
+    public bool MessageActive {
         get => messageCanvasGroup.gameObject.activeSelf;
         set => messageCanvasGroup.gameObject.SetActive(value);
     }

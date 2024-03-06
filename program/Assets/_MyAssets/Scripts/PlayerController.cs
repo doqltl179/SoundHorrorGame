@@ -117,7 +117,6 @@ public class PlayerController : MonoBehaviour {
     public Action<Vector2Int> OnCoordChanged;
 
     public Action OnEnteredNPCArea;
-    public Action OnEnterTriggerEntered;
 
 
 
@@ -127,6 +126,12 @@ public class PlayerController : MonoBehaviour {
 
         // Layer 설정
         gameObject.layer = LayerMask.NameToLayer(LayerName);
+    }
+
+    private void OnDestroy() {
+        OnCoordChanged = null;
+
+        OnEnteredNPCArea = null;
     }
 
     private void Start() {

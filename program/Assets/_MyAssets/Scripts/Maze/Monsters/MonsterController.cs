@@ -26,6 +26,8 @@ public class MonsterController : MonoBehaviour {
         }
     }
 
+    public Vector2Int CurrentCoord { get; protected set; }
+
     [Header("Components")]
     [SerializeField] protected Animator animator;
     [SerializeField] protected Rigidbody rigidbody;

@@ -44,6 +44,8 @@ public class Honey : MonsterController, IMove {
             if(restTimeChecker >= restTime) {
                 CurrentState = MonsterState.Move;
             }
+
+            rigidbody.velocity = Vector3.zero;
         }
 
         Move(Time.deltaTime);
@@ -141,11 +143,49 @@ public class Honey : MonsterController, IMove {
     #region Action
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
+            //case SoundManager.SoundType.PlayerWalk: {
+            //        if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+            //            List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+            //            float dist = LevelLoader.Instance.GetPathDistance(newPath);
+            //            if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+            //                movePath = newPath;
+
+            //                physicsMoveSpeedMax = 1.0f;
+            //                FollowingSound = so;
+
+            //                CurrentState = MonsterState.Move;
+            //            }
+            //        }
+            //    }
+            //    break;
+            //case SoundManager.SoundType.Empty00_5s: {
+            //        if(FollowingSound == null &&
+            //            from == SoundManager.SoundFrom.Monster &&
+            //            Vector3.Distance(so.Position, Pos) < Froggy.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+            //            movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+
+            //            physicsMoveSpeedMax = 1.0f;
+            //            FollowingSound = so;
+
+            //            CurrentState = MonsterState.Move;
+            //        }
+            //    }
+            //    break;
+
+            case SoundManager.SoundType.Empty00_5s:
+            case SoundManager.SoundType.Empty01s:
+            case SoundManager.SoundType.Empty02s:
+            case SoundManager.SoundType.Empty03s:
+            case SoundManager.SoundType.Empty04s:
+            case SoundManager.SoundType.Empty05s:
             case SoundManager.SoundType.PlayerWalk: {
-                    if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+                    Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
+                    if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;
+
+                    if(Vector3.Distance(so.Position, Pos) < so.SpreadLength) {
                         List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
                         float dist = LevelLoader.Instance.GetPathDistance(newPath);
-                        if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+                        if(dist <= so.SpreadLength * 1.5f) {
                             movePath = newPath;
 
                             physicsMoveSpeedMax = 1.0f;
@@ -153,19 +193,6 @@ public class Honey : MonsterController, IMove {
 
                             CurrentState = MonsterState.Move;
                         }
-                    }
-                }
-                break;
-            case SoundManager.SoundType.Empty00_5s: {
-                    if(FollowingSound == null &&
-                        from == SoundManager.SoundFrom.Monster &&
-                        Vector3.Distance(so.Position, Pos) < Froggy.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
-
-                        physicsMoveSpeedMax = 1.0f;
-                        FollowingSound = so;
-
-                        CurrentState = MonsterState.Move;
                     }
                 }
                 break;
