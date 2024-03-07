@@ -34,6 +34,8 @@ public class HandlingCube : MonoBehaviour {
         set => transform.forward = value;
     }
 
+    public static readonly float PickUpDistance = PlayerController.PlayerHeight * 1.5f;
+
     private Vector3 posSaver;
     private Vector3 calculatedVelocity;
 

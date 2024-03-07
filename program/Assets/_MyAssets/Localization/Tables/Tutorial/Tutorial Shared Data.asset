@@ -35,6 +35,30 @@ MonoBehaviour:
     m_Key: MoveR
     m_Metadata:
       m_Items: []
+  - m_Id: 1259624264015872
+    m_Key: Run
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1259693537140736
+    m_Key: Crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1259814010134528
+    m_Key: Interact
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1260134601760768
+    m_Key: PickUp
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1260728171274240
+    m_Key: InteractMessage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1262062991745024
+    m_Key: PickUpMessage
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -5,6 +5,10 @@ using static MonsterController;
 
 public class ItemController : MonoBehaviour {
     [SerializeField] private SphereCollider collider;
+    [SerializeField] private GameObject guide;
+
+    [Header("Parts")]
+    [SerializeField] private Rigidbody[] parts;
 
     [Header("Pickaxe")]
     [SerializeField] private GameObject pickaxe;
@@ -32,6 +36,7 @@ public class ItemController : MonoBehaviour {
         itemSoundPlayTimeChecker = Random.Range(0.0f, ItemSoundPlayTimeInterval);
 
         pickaxe.SetActive(false);
+        guide.SetActive(false);
     }
 
     private void Update() {
@@ -74,6 +79,7 @@ public class ItemController : MonoBehaviour {
         while(CollectingCount < collectingCount) {
             if(Input.GetKey(KeyCode.E)) {
                 if(!pickaxe.activeSelf) pickaxe.SetActive(true);
+                if(guide.activeSelf) guide.SetActive(false);
 
                 itemSoundPlayTimeChecker += Time.deltaTime;
 
@@ -99,6 +105,11 @@ public class ItemController : MonoBehaviour {
                     itemSoundPlayTimeChecker = 0.0f;
                 }
             }
+            else {
+                if(!guide.activeSelf) guide.SetActive(true);
+
+                guide.transform.forward = (PlayerController.Instance.Pos - guide.transform.position).normalized;
+            }
 
             yield return null;
         }
@@ -115,6 +126,8 @@ public class ItemController : MonoBehaviour {
             //LevelLoader.Instance.OnItemCollected?.Invoke(this);
             PlayerEnter = true;
 
+            guide.SetActive(true);
+
             if(pickaxeAnimationCoroutine != null) StopCoroutine(pickaxeAnimationCoroutine);
             pickaxeAnimationCoroutine = PickaxeAnimationCoroutine();
             StartCoroutine(pickaxeAnimationCoroutine);
@@ -124,6 +137,8 @@ public class ItemController : MonoBehaviour {
     private void OnTriggerExit(Collider other) {
         if(other.CompareTag(PlayerController.TagName)) {
             PlayerEnter = false;
+
+            guide.SetActive(false);
 
             if(pickaxeAnimationCoroutine != null) {
                 StopCoroutine(pickaxeAnimationCoroutine);
@@ -143,6 +158,13 @@ public class ItemController : MonoBehaviour {
     }
 
     #region Utility
+    public void Explode(float power) {
+        foreach(Rigidbody r in parts) {
+            r.isKinematic = false;
+            r.AddExplosionForce(r.mass * power, transform.position, Radius);
+        }
+    }
+
     public void SetMaterial(Material mat) {
         MeshRenderer[] renderers = transform.GetComponentsInChildren<MeshRenderer>();
         foreach(MeshRenderer mr in renderers) {

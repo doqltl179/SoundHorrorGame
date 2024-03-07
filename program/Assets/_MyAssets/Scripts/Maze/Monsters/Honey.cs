@@ -6,7 +6,9 @@ public class Honey : MonsterController, IMove {
     private const float restTime = 5.0f;
     private float restTimeChecker = 0.0f;
 
-    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 3.0f;
+    private const float stuckCheckTime = 10.0f;
+    private float stuckTimeChecker = 0.0f;
+    private Vector2Int coordChecker;
 
 
 
@@ -59,19 +61,38 @@ public class Honey : MonsterController, IMove {
                 if(animatorStateInfo[AnimatorLayerName_Motion].CompareInteger < normalizedTimeInteger) {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
-                    if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
-                        dist = LevelLoader.Instance.GetPathDistance(tempPath);
-                        if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
-                            SoundManager.Instance.PlayOnWorld(
-                                transform.position,
-                                SoundManager.SoundType.MonsterWalk02,
-                                SoundManager.SoundFrom.Monster,
-                                1.0f - dist / STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-                        }
+                    float clipSpreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.MonsterWalk02);
+                    if(dist < clipSpreadLength) {
+                        SoundManager.Instance.PlayOnWorld(
+                            transform.position,
+                            SoundManager.SoundType.MonsterWalk02,
+                            SoundManager.SoundFrom.Monster,
+                            1.0f - dist / clipSpreadLength);
                     }
 
                     animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = normalizedTimeInteger;
+                }
+            }
+        }
+
+        // 위치 체크
+        coordChecker = LevelLoader.Instance.GetMazeCoordinate(Pos);
+        if(CurrentCoord.x != coordChecker.x || CurrentCoord.y != coordChecker.y) {
+            CurrentCoord = coordChecker;
+
+            stuckTimeChecker = 0.0f;
+        }
+        else {
+            if(CurrentState == MonsterState.Move) {
+                stuckTimeChecker += Time.deltaTime;
+                if(stuckTimeChecker >= stuckCheckTime) {
+                    movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
+                        Pos,
+                        Radius,
+                        false,
+                        LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+
+                    stuckTimeChecker = 0.0f;
                 }
             }
         }
@@ -142,6 +163,8 @@ public class Honey : MonsterController, IMove {
 
     #region Action
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
+        if(!IsPlaying) return;
+
         switch(so.Type) {
             //case SoundManager.SoundType.PlayerWalk: {
             //        if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {

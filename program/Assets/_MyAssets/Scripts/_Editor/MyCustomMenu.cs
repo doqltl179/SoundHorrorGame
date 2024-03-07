@@ -8,7 +8,7 @@ using System.Linq;
 
 public class MyCustomMenu : MonoBehaviour
 {
-    private const string MenuName = "My Custom Menu";
+    public const string MenuName = "My Custom Menu";
 
     private const string SymbolsMenuName = MenuName + "/Symbols";
     private const string FuncsMenuName = MenuName + "/Funcs";
@@ -19,6 +19,7 @@ public class MyCustomMenu : MonoBehaviour
     private const string FuncsMenuItemName_ResetAllSymbols = FuncsMenuName + "/Reset All Symbols";
     private const string FuncsMenuItemName_ApplyAllSymbols = FuncsMenuName + "/Apply All Symbols";
     private const string CheatMenuItemName_MoveToItem = CheatMenuName + "/Move To Item";
+    private const string CheatMenuItemName_Clear = CheatMenuName + "/Clear";
 
     private static string def_UNITY_POST_PROCESSING_STACK_V2 = "UNITY_POST_PROCESSING_STACK_V2";
     private static string def_Use_Two_Materials_On_MazeBlock = "Use_Two_Materials_On_MazeBlock";
@@ -140,6 +141,22 @@ public class MyCustomMenu : MonoBehaviour
                 PlayerController.Instance.Pos = LevelLoader.Instance.Items[0].Pos;
             }
         }
+    }
+
+    [MenuItem(CheatMenuItemName_Clear)]
+    private static void Clear() {
+        List<ItemController> items = new List<ItemController>();
+        foreach(ItemController item in LevelLoader.Instance.Items) {
+            items.Add(item);
+        }
+        foreach(ItemController item in items) {
+            LevelLoader.Instance.CollectItem(item);
+        }
+
+        StandingSpaceConrtoller standingspaceController = FindAnyObjectByType<StandingSpaceConrtoller>();
+        Vector2Int teleportCoord = LevelLoader.Instance.GetMazeCoordinate(standingspaceController.transform.position + Vector3.forward);
+        PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(teleportCoord);
+        PlayerController.Instance.Forward = Vector3.back;
     }
     #endregion
 }

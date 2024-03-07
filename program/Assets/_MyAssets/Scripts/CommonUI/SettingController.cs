@@ -96,6 +96,12 @@ public class SettingController : MonoBehaviour {
     public void OnUseMicrophoneChanged(bool value) {
         micDeviceDropdown.enabled = value;
         micDeviceDropdown.image.color = value ? Color.white : Color.gray;
+
+        if(value && Microphone.devices.Length <= 0) {
+            Debug.Log("Microphone not found.");
+
+            UserSettings.UseMicBoolean = false;
+        }
     }
 
     public void OnLanguageChanged(int index) {
@@ -260,8 +266,6 @@ public class SettingController : MonoBehaviour {
     private void InitUseMicToggles() {
         useMicToggleYes.SetIsOnWithoutNotify(UserSettings.UseMic == 1 ? true : false);
         useMicToggleNo.SetIsOnWithoutNotify(!useMicToggleYes.isOn);
-        //useMicToggleYes.isOn = UserSettings.UseMic == 1 ? true : false;
-        //useMicToggleNo.isOn = !useMicToggleYes.isOn;
     }
 
     private void InitMicDeviceOptions() {
@@ -287,6 +291,9 @@ public class SettingController : MonoBehaviour {
             foreach(string d in currentMicDeviceOptions) {
                 micList.Add(new TMP_Dropdown.OptionData(d));
             }
+        }
+        else {
+            UserSettings.UseMicBoolean = false;
         }
         micDeviceDropdown.AddOptions(micList);
         // Dropdown의 value가 기본적으로 0이기 때문에 0은 제외

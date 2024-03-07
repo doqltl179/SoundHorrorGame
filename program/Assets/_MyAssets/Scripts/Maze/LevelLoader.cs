@@ -344,6 +344,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             handlingCubes.Clear();
         }
+
+        playerMaterialPropertiesGroup.ClearArray();
     }
 
     public void LoadLevel(int width, int height, bool createEmpty = false) {
@@ -888,9 +890,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public void AddPlayerPosInMaterialProperty(Vector3 pos) {
         playerMaterialPropertiesGroup.AddPos(new Vector4(pos.x, pos.y, pos.z));
         playerMaterialPropertiesGroup.SetPosArray(blockFloorMaterial);
-#if Use_Two_Materials_On_MazeBlock
-        playerMaterialPropertiesGroup.SetPosArray(blockWallMaterial);
-#endif
+//#if Use_Two_Materials_On_MazeBlock
+//        playerMaterialPropertiesGroup.SetPosArray(blockWallMaterial);
+//#endif
     }
 
     public MazeBlock GetMazeBlock(Vector2Int coord) => GetMazeBlock(coord.x, coord.y);
@@ -902,9 +904,17 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             items.RemoveAt(itemIndex);
         }
 
-        Destroy(collectingItem.gameObject);
+        StartCoroutine(CollectItemAnimation(collectingItem));
 
         OnItemCollected?.Invoke();
+    }
+
+    private IEnumerator CollectItemAnimation(ItemController collectingItem) {
+        collectingItem.Explode(10f);
+
+        yield return new WaitForSeconds(3.0f);
+
+        Destroy(collectingItem.gameObject);
     }
     #endregion
 
@@ -1040,14 +1050,15 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             go.transform.SetParent(transform);
 
             AudioReverbZone r = go.AddComponent<AudioReverbZone>();
-            float mazeLengthW = GetMazeLengthWidth();
-            float mazeLengthH = GetMazeLengthHeight();
-            r.minDistance = (mazeLengthW > mazeLengthH ? mazeLengthW : mazeLengthH) * 0.5f * 1.414f;
-            r.maxDistance = r.minDistance * 2.0f;
             r.reverbPreset = AudioReverbPreset.Cave;
 
             reverbZone = r;
         }
+
+        float mazeLengthW = GetMazeLengthWidth();
+        float mazeLengthH = GetMazeLengthHeight();
+        reverbZone.minDistance = (mazeLengthW > mazeLengthH ? mazeLengthW : mazeLengthH) * 0.5f * 1.414f;
+        reverbZone.maxDistance = reverbZone.minDistance * 2.0f;
 
         reverbZone.transform.position = GetCenterPos();
     }
@@ -1105,6 +1116,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         #region Utility
         #region Player Property Update Func
+        public void ClearArray() {
+            RemovePos(CurrentArrayLength);
+        }
+
         /// <summary>
         /// Array의 마지막 index에 추가됨
         /// </summary>

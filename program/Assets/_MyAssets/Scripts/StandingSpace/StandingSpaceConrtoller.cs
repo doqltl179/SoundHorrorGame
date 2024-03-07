@@ -13,8 +13,8 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     public Quaternion PlayerRotation { get { return playerAnchor.rotation; } }
 
     public bool NPCActive {
-        get => npcAnimator.gameObject.activeSelf;
-        set => npcAnimator.gameObject.SetActive(value);
+        get => npcAnchor.gameObject.activeSelf;
+        set => npcAnchor.gameObject.SetActive(value);
     }
     public Vector3 NPCCameraViewPos { get { return npcCameraView.position; } }
     public Quaternion NPCCameraViewRotation { get { return npcCameraView.rotation; } }
@@ -113,7 +113,7 @@ public class StandingSpaceConrtoller : MonoBehaviour {
         npcAnchor.localPosition = levels[0, 2].transform.localPosition;
         npcAnchor.forward = new Vector3(Mathf.Cos(Mathf.PI * -0.25f), 0.0f, Mathf.Sin(Mathf.PI * -0.25f));
 
-        playerAnchor.localPosition = levels[1, 0].transform.localPosition;
+        playerAnchor.localPosition = levels[1, 1].transform.localPosition;
         playerAnchor.forward = (npcAnchor.localPosition - playerAnchor.localPosition).normalized;
     }
 

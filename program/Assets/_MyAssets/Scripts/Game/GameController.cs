@@ -37,6 +37,50 @@ public class GameController : MonoBehaviour {
                 },
             },
         },
+        new GameLevelSettings() {
+            LevelWidth = 32,
+            LevelHeight = 32,
+
+            Monsters = new GameLevelSettings.MonsterStruct[] {
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Bunny,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Honey,
+                    generateCount = 2,
+                },
+            },
+
+            Items = new GameLevelSettings.ItemStruct[] {
+                new GameLevelSettings.ItemStruct() {
+                    type = LevelLoader.ItemType.Crystal,
+                    generateCount = 1,
+                },
+            },
+        },
+        new GameLevelSettings() {
+            LevelWidth = 64,
+            LevelHeight = 64,
+
+            Monsters = new GameLevelSettings.MonsterStruct[] {
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Bunny,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Honey,
+                    generateCount = 2,
+                },
+            },
+
+            Items = new GameLevelSettings.ItemStruct[] {
+                new GameLevelSettings.ItemStruct() {
+                    type = LevelLoader.ItemType.Crystal,
+                    generateCount = 1,
+                },
+            },
+        },
     };
     public GameLevelSettings CurrentLevelSettings { get; private set; }
 
@@ -48,19 +92,38 @@ public class GameController : MonoBehaviour {
 
     private IEnumerator exitEnterCheckCoroutine = null;
 
+    private IEnumerator onPlayerCatchedCoroutine = null;
+    private IEnumerator onGameEndCoroutine = null;
+
+    private IEnumerator initGameCoroutine = null;
+
 
 
     private void Awake() {
         PlayerController.Instance.OnEnteredNPCArea += OnEnteredNPCArea;
+        PlayerController.Instance.OnPlayerCatched += OnPlayerCatched;
 
         LevelLoader.Instance.OnItemCollected += OnItemCollected;
     }
 
     private void OnDestroy() {
         PlayerController.Instance.OnEnteredNPCArea -= OnEnteredNPCArea;
+        PlayerController.Instance.OnPlayerCatched -= OnPlayerCatched;
 
         LevelLoader.Instance.OnItemCollected -= OnItemCollected;
 
+        if(onGameEndCoroutine != null) {
+            StopCoroutine(onGameEndCoroutine);
+            onGameEndCoroutine = null;
+        }
+        if(onPlayerCatchedCoroutine != null) {
+            StopCoroutine(onPlayerCatchedCoroutine);
+            onPlayerCatchedCoroutine = null;
+        }
+        if(exitEnterCheckCoroutine != null) {
+            StopCoroutine(exitEnterCheckCoroutine);
+            exitEnterCheckCoroutine = null;
+        }
         if(scenarioTextAnimationCoroutine != null) {
             StopCoroutine(scenarioTextAnimationCoroutine);
             scenarioTextAnimationCoroutine = null;
@@ -75,7 +138,18 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    private IEnumerator Start() {
+    private void Start() {
+        if(initGameCoroutine == null) {
+            initGameCoroutine = InitGameCoroutine();
+            StartCoroutine(initGameCoroutine);
+        }
+
+        #region 나중에 삭제하세요
+        SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Game);
+        #endregion
+    }
+
+    private IEnumerator InitGameCoroutine() {
         if(SceneLoader.Instance.Param == null) {
             if(UserSettings.GameLevel >= gameLevels.Length) {
                 Debug.LogError($"GameLevel is out of range. GameLevel: {UserSettings.GameLevel}");
@@ -166,13 +240,14 @@ public class GameController : MonoBehaviour {
 
         // StandingSpace 위치 설정
         standingSpaceCoord = new Vector2Int(Random.Range(1, CurrentLevelSettings.LevelWidth - 2), -1);
-        standingSpaceController.transform.position = 
-            LevelLoader.Instance.GetBlockPos(standingSpaceCoord) + 
+        standingSpaceController.transform.position =
+            LevelLoader.Instance.GetBlockPos(standingSpaceCoord) +
             Vector3.forward * MazeBlock.BlockSize * 0.5f;
 
         // 플레이어 transform 초기화
         PlayerController.Instance.Pos = standingSpaceController.PlayerPos;
         PlayerController.Instance.Rotation = standingSpaceController.PlayerRotation;
+        PlayerController.Instance.ResetCameraAnchor();
 
         PlayerController.Instance.IsPlaying = true;
 
@@ -186,9 +261,7 @@ public class GameController : MonoBehaviour {
         OnScenarioEnd();
 #endif
 
-        #region 나중에 삭제하세요
-        SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Game);
-        #endregion
+        initGameCoroutine = null;
     }
 
     #region Utility
@@ -207,6 +280,28 @@ public class GameController : MonoBehaviour {
     #endregion
 
     #region Action
+    private void OnPlayerCatched(MonsterController monster) {
+        if(onPlayerCatchedCoroutine == null) {
+            onPlayerCatchedCoroutine = OnPlayerCatchedCoroutine(monster);
+            StartCoroutine(onPlayerCatchedCoroutine);
+        }
+    }
+
+    private IEnumerator OnPlayerCatchedCoroutine(MonsterController monster) {
+        LevelLoader.Instance.StopMonsters();
+        LevelLoader.Instance.StopItems();
+        PlayerController.Instance.IsPlaying = false;
+
+        monster.PlayerCatchAnimation();
+        yield return new WaitForSeconds(0.9f);
+
+        yield return UtilObjects.Instance.SetActiveRayBlockAction(true, 0.5f);
+
+        OnGameEnd(false);
+
+        onPlayerCatchedCoroutine = null;
+    }
+
     private void OnItemCollected() {
         int maxItemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
         int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
@@ -227,8 +322,8 @@ public class GameController : MonoBehaviour {
     #endregion
 
     private IEnumerator ExitEnterCheckCoroutine() {
-        standingSpaceController.gameObject.SetActive(true);
         standingSpaceController.NPCActive = false;
+        standingSpaceController.gameObject.SetActive(true);
 
         // StandingSpace 위치 설정
         standingSpaceCoord = new Vector2Int(Random.Range(1, CurrentLevelSettings.LevelWidth - 2), -1);
@@ -273,9 +368,6 @@ public class GameController : MonoBehaviour {
 
         // Remove Head Message
         userInterface.RemoveHeadMessage();
-
-        // Level 증가
-        UserSettings.GameLevel++;
 
         OnExitEntered();
 
@@ -639,8 +731,61 @@ public class GameController : MonoBehaviour {
     }
     #endregion
 
+    private void OnGameEnd(bool isClear) {
+        if(onGameEndCoroutine == null) {
+            onGameEndCoroutine = OnGameEndCoroutine(isClear);
+            StartCoroutine(onGameEndCoroutine);
+        }
+    }
+
+    private IEnumerator OnGameEndCoroutine(bool isClear) {
+        // Exit로 탈출한 경우
+        if(isClear) {
+            // Level 증가
+            UserSettings.GameLevel++;
+
+            // 오브젝트 Stop
+            LevelLoader.Instance.StopMonsters();
+            LevelLoader.Instance.StopItems();
+            PlayerController.Instance.IsPlaying = false;
+
+            // BGM Off
+            SoundManager.Instance.StopBGM(SoundManager.SoundType.Game, 1.0f);
+
+            // Display Fade Out
+            yield return StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 1.0f, Color.white));
+
+            // Display Color to Black
+            StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 0.0f, Color.black));
+
+            // Fake Load Start
+            StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(true, 0.0f));
+
+            // Init Level
+            if(initGameCoroutine == null) {
+                initGameCoroutine = InitGameCoroutine();
+                StartCoroutine(initGameCoroutine);
+            }
+
+            // Fake Load
+            yield return new WaitForSeconds(1.0f);
+
+            // Display Fade In
+            StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(false, 1.0f));
+            yield return StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(false, 1.0f));
+        }
+        // 몬스터에게 잡힌 경우
+        else {
+
+        }
+
+        onGameEndCoroutine = null;
+    }
+
     private void OnExitEntered() {
 
+
+        OnGameEnd(true);
     }
 
     private void OnScenarioEnd() {

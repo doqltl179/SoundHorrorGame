@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Random = UnityEngine.Random;
+
 public class MonsterController : MonoBehaviour {
     public static readonly string TagName = "Monster";
     public static readonly string LayerName = "Monster";
@@ -79,6 +81,7 @@ public class MonsterController : MonoBehaviour {
     protected const string AnimatorLayerName_Motion = "Motion";
     protected const string AnimatorPropertyName_MoveBlend = "MoveBlend";
     protected const string AnimatorPropertyName_MoveSpeed = "MoveSpeed";
+    protected const string AnimatorPropertyName_PlayerCatch = "PlayerCatch";
     
     protected float physicsMoveSpeed = 0.0f;
     protected float physicsMoveSpeedMax = 0.5f;
@@ -89,23 +92,107 @@ public class MonsterController : MonoBehaviour {
     protected List<Vector3> movePath = null;
     protected StuckHelper stuckHelper = null;
 
+    protected IEnumerator playerCatchAnimationCoroutine = null;
+
     public Action<MonsterState> OnCurrentStateChanged;
     public Action OnPathEnd;
 
 
 
     protected virtual void Awake() {
-        // Tag 설정
         gameObject.tag = TagName;
-
-        // Layer 설정
         gameObject.layer = LayerMask.NameToLayer(LayerName);
+
+        for(int i = 0; i < transform.childCount; i++) {
+            transform.GetChild(i).gameObject.tag = gameObject.tag;
+            transform.GetChild(i).gameObject.layer = gameObject.layer;
+        }
     }
 
     #region Virtual
     public virtual void Play() { }
 
     public virtual void Stop() { }
+
+    public virtual void PlayerCatchAnimation() {
+        if(playerCatchAnimationCoroutine == null) {
+            playerCatchAnimationCoroutine = PlayerCatchAnimationCoroutine();
+            StartCoroutine(playerCatchAnimationCoroutine);
+        }
+    }
+
+    protected virtual IEnumerator PlayerCatchAnimationCoroutine() {
+        SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.CatchScream, SoundManager.SoundFrom.Monster, 0.75f);
+        animator.SetTrigger(AnimatorPropertyName_PlayerCatch);
+
+        Vector3 camStartPos = UtilObjects.Instance.CamPos;
+        Vector3 camStartForward = UtilObjects.Instance.CamForward;
+        Vector3 camPos;
+        Vector3 camForward;
+        float cameraDistance = Radius * scaleScalar;
+        float animationTime = 0.5f;
+        float timeChecker = 0.0f;
+        float timeRatio = 0.0f;
+        float lerp;
+
+        // 카메라 마주보기
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            timeRatio = timeChecker / animationTime;
+            lerp = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
+
+            camPos = HeadPos + HeadForward * cameraDistance;
+            UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, camPos, lerp);
+
+            camForward = (HeadPos - UtilObjects.Instance.CamPos).normalized;
+            UtilObjects.Instance.CamForward = Vector3.Lerp(camStartForward, camForward, lerp);
+
+            yield return null;
+        }
+
+        // 딜레이
+        camStartPos = UtilObjects.Instance.CamPos;
+        camStartForward = UtilObjects.Instance.CamForward;
+        const float shakeStrength = 0.1f;
+        Vector3 shake;
+        animationTime = 0.5f;
+        timeChecker = 0.0f;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            timeRatio = timeChecker / animationTime;
+            lerp = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
+
+            camPos = HeadPos + HeadForward * cameraDistance;
+            shake = UtilObjects.Instance.CamRight * Random.Range(-shakeStrength, shakeStrength);
+            shake += UtilObjects.Instance.CamUp * Random.Range(-shakeStrength, shakeStrength);
+            UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, camPos + shake, lerp);
+
+            camForward = (HeadPos - UtilObjects.Instance.CamPos).normalized;
+            UtilObjects.Instance.CamForward = Vector3.Lerp(camStartForward, camForward, lerp);
+
+            yield return null;
+        }
+
+        // 줌 인
+        camStartPos = UtilObjects.Instance.CamPos;
+        camStartForward = UtilObjects.Instance.CamForward;
+        animationTime = 0.5f;
+        timeChecker = 0.0f;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            timeRatio = timeChecker / (animationTime * 1.77f);
+            lerp = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
+
+            UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, HeadPos, lerp);
+
+            camForward = (HeadPos - UtilObjects.Instance.CamPos).normalized;
+            UtilObjects.Instance.CamForward = Vector3.Lerp(camStartForward, camForward, lerp);
+
+            yield return null;
+        }
+
+        playerCatchAnimationCoroutine = null;
+    }
     #endregion
 
     /// <summary>

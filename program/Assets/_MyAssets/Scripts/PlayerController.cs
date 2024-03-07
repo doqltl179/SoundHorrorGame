@@ -120,6 +120,7 @@ public class PlayerController : MonoBehaviour {
     public static KeyCode key_crouch = KeyCode.LeftControl;
 
     public Action<Vector2Int> OnCoordChanged;
+    public Action<MonsterController> OnPlayerCatched;
 
     public Action OnEnteredNPCArea;
 
@@ -255,7 +256,7 @@ public class PlayerController : MonoBehaviour {
         bool currentMouseDown = Input.GetMouseButton(0);
         if(PickUpCube == null) {
             if(!pickUpMouseDown && currentMouseDown) {
-                if(Physics.Raycast(UtilObjects.Instance.CamPos, UtilObjects.Instance.CamForward, out pickUpHit, float.MaxValue, pickUpRayMask)) {
+                if(Physics.Raycast(UtilObjects.Instance.CamPos, UtilObjects.Instance.CamForward, out pickUpHit, HandlingCube.PickUpDistance, pickUpRayMask)) {
                     HandlingCube pickUpObject = pickUpHit.rigidbody?.GetComponent<HandlingCube>();
                     if(pickUpObject != null) {
                         PickUpCube = pickUpObject;
@@ -272,8 +273,8 @@ public class PlayerController : MonoBehaviour {
                 PickUpCube = null;
             }
             else {
-                PickUpCube.Pos = Vector3.Lerp(PickUpCube.Pos, pickUpHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 8));
-                PickUpCube.Forward = Vector3.Lerp(PickUpCube.Forward, pickUpHandAnchor.forward, Time.deltaTime * Mathf.Pow(2, 8));
+                PickUpCube.Pos = Vector3.Lerp(PickUpCube.Pos, pickUpHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
+                PickUpCube.Forward = Vector3.Lerp(PickUpCube.Forward, pickUpHandAnchor.forward, Time.deltaTime * Mathf.Pow(2, 6));
             }
         }
         pickUpMouseDown = currentMouseDown;
@@ -283,6 +284,12 @@ public class PlayerController : MonoBehaviour {
     private void OnTriggerEnter(Collider other) {
         if(other.CompareTag("NPC")) {
             OnEnteredNPCArea?.Invoke();
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision) {
+        if(collision.gameObject.CompareTag(MonsterController.TagName)) {
+            OnPlayerCatched?.Invoke(collision.rigidbody.GetComponent<MonsterController>());
         }
     }
 

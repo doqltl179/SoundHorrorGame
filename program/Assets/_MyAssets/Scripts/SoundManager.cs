@@ -25,7 +25,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
         MonsterWalk06,
 
         Scream, 
-        Whisper, 
+        Whisper,
+        CatchScream, 
 
         // Item
         Crystal, 
@@ -338,12 +339,14 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
     public float[] GetSoundObjectRadiusArray(SoundFrom from, float spreadTime, float spreadLength) {
         float calculateFunc(SoundObject so) {
-            float radius = so.CurrentTime / spreadTime * spreadLength;
+            //float radius = so.CurrentTime / spreadTime * spreadLength;
 
-            float dist = Vector3.Distance(so.Position, UtilObjects.Instance.CamPos);
-            float radiusOffset = Mathf.Clamp01(1.0f - dist / spreadLength);
+            //float dist = Vector3.Distance(so.Position, UtilObjects.Instance.CamPos);
+            //float radiusOffset = Mathf.Clamp01(1.0f - dist / spreadLength);
 
-            return radius * radiusOffset;
+            //return radius * radiusOffset;
+
+            return so.SpreadLength * so.NormalizedTime;
         }
         switch(from) {
             case SoundFrom.None: return noneFromSoundObjectList.Select(t => calculateFunc(t)).ToArray();
@@ -380,6 +383,10 @@ public class SoundManager : GenericSingleton<SoundManager> {
         }
     }
     #endregion
+
+    public float GetSpreadLength(SoundType type) {
+        return GetSfxClip(type).length * LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_TIME;
+    }
     #endregion
 
     private IEnumerator FadeCoroutine(AudioSource source, float fadeTime, float startVolume, float endVolume, Action callback = null) {

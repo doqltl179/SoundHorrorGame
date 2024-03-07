@@ -27,13 +27,21 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         get => Cam.transform.position;
         set => Cam.transform.position = value;
     }
+    public Quaternion CamRotation {
+        get => Cam.transform.rotation;
+        set => Cam.transform.rotation = value;
+    }
     public Vector3 CamForward {
         get => Cam.transform.forward;
         set => Cam.transform.forward = value;
     }
-    public Quaternion CamRotation {
-        get => Cam.transform.rotation;
-        set => Cam.transform.rotation = value;
+    public Vector3 CamRight {
+        get => Cam.transform.right;
+        set => Cam.transform.right = value;
+    }
+    public Vector3 CamUp {
+        get => Cam.transform.up;
+        set => Cam.transform.up = value;
     }
     #endregion
 
@@ -159,6 +167,8 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
 
     private void Update() {
         if(Input.GetKeyDown(Key_Escape)) {
+            if(SceneLoader.Instance.IsLoading) return;
+
             switch(SceneLoader.Instance.CurrentLoadedScene) {
                 case SceneLoader.SceneType.Main: {
                         SetActiveSettings(!currentPages.HasFlag(Page.Settings));
