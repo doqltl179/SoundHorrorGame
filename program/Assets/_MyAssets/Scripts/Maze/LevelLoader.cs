@@ -391,8 +391,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         if(commonPhysicMaterial == null) {
             PhysicMaterial pm = new PhysicMaterial();
-            pm.dynamicFriction = 0.0f;
-            pm.staticFriction = 0.0f;
+            pm.dynamicFriction = 0.2f;
+            pm.staticFriction = 0.2f;
             pm.frictionCombine = PhysicMaterialCombine.Minimum;
 
             commonPhysicMaterial = pm;
@@ -833,8 +833,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             mat.EnableKeyword(MAT_DRAW_RIM_KEY);
             mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
 
-            mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, MazeBlock.BlockSize * 0.0002f);
-            mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 0.75f);
+            mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, 0.1f);
+            mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 1.5f);
 
             handlingCubeMaterial = mat;
         }

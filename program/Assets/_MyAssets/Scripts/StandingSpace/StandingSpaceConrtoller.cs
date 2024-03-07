@@ -12,6 +12,10 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     public Vector3 PlayerPos { get { return playerAnchor.position; } }
     public Quaternion PlayerRotation { get { return playerAnchor.rotation; } }
 
+    public bool NPCActive {
+        get => npcAnimator.gameObject.activeSelf;
+        set => npcAnimator.gameObject.SetActive(value);
+    }
     public Vector3 NPCCameraViewPos { get { return npcCameraView.position; } }
     public Quaternion NPCCameraViewRotation { get { return npcCameraView.rotation; } }
     public Vector3 NPCCameraViewForward { get { return npcCameraView.forward; } }

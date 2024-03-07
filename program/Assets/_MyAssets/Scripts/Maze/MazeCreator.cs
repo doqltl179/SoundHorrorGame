@@ -212,17 +212,17 @@ public static class MazeCreator {
                 nextCoord_B = new Vector2Int(x, y);
 
                 if(!currentInfo.HasFlag(ActiveWall.R)) {
-                    int tempX = x + 1;
+                    int tempX = x;
                     while(true) {
-                        tempInfo = wallInfos[tempX, y];
-                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B)) {
-                            break;
-                        }
-
                         tempX++;
                         if(tempX >= width) {
                             tempX--;
 
+                            break;
+                        }
+
+                        tempInfo = wallInfos[tempX, y];
+                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B)) {
                             break;
                         }
                     }
@@ -230,17 +230,17 @@ public static class MazeCreator {
                     nextCoord_R = new Vector2Int(tempX, y);
                 }
                 if(!currentInfo.HasFlag(ActiveWall.F)) {
-                    int tempY = y + 1;
+                    int tempY = y;
                     while(true) {
-                        tempInfo = wallInfos[x, tempY];
-                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L)) {
-                            break;
-                        }
-
                         tempY++;
                         if(tempY >= height) {
                             tempY--;
 
+                            break;
+                        }
+
+                        tempInfo = wallInfos[x, tempY];
+                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L)) {
                             break;
                         }
                     }
@@ -248,17 +248,17 @@ public static class MazeCreator {
                     nextCoord_F = new Vector2Int(x, tempY);
                 }
                 if(!currentInfo.HasFlag(ActiveWall.L)) {
-                    int tempX = x - 1;
+                    int tempX = x;
                     while(true) {
-                        tempInfo = wallInfos[tempX, y];
-                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B)) {
-                            break;
-                        }
-
                         tempX--;
                         if(tempX < 0) {
                             tempX++;
 
+                            break;
+                        }
+
+                        tempInfo = wallInfos[tempX, y];
+                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B)) {
                             break;
                         }
                     }
@@ -266,17 +266,17 @@ public static class MazeCreator {
                     nextCoord_L = new Vector2Int(tempX, y);
                 }
                 if(!currentInfo.HasFlag(ActiveWall.B)) {
-                    int tempY = y - 1;
+                    int tempY = y;
                     while(true) {
-                        tempInfo = wallInfos[x, tempY];
-                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L)) {
-                            break;
-                        }
-
                         tempY--;
                         if(tempY < 0) {
                             tempY++;
 
+                            break;
+                        }
+
+                        tempInfo = wallInfos[x, tempY];
+                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L)) {
                             break;
                         }
                     }

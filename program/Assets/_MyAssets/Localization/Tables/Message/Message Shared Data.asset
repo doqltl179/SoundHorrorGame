@@ -16,7 +16,7 @@ MonoBehaviour:
   m_TableCollectionNameGuidString: c5881ecb15f732748a3cead6003d3c45
   m_Entries:
   - m_Id: 14894931968
-    m_Key: Run
+    m_Key: ExitOpened
     m_Metadata:
       m_Items: []
   m_Metadata:

@@ -12,11 +12,13 @@ public class MyCustomMenu : MonoBehaviour
 
     private const string SymbolsMenuName = MenuName + "/Symbols";
     private const string FuncsMenuName = MenuName + "/Funcs";
+    private const string CheatMenuName = MenuName + "/Cheat";
 
     private const string SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock = SymbolsMenuName + "/Use Two Materials On MazeBlock";
     private const string SymbolsMenuItemName_SkipScenario = SymbolsMenuName + "/Skip Scenario";
     private const string FuncsMenuItemName_ResetAllSymbols = FuncsMenuName + "/Reset All Symbols";
     private const string FuncsMenuItemName_ApplyAllSymbols = FuncsMenuName + "/Apply All Symbols";
+    private const string CheatMenuItemName_MoveToItem = CheatMenuName + "/Move To Item";
 
     private static string def_UNITY_POST_PROCESSING_STACK_V2 = "UNITY_POST_PROCESSING_STACK_V2";
     private static string def_Use_Two_Materials_On_MazeBlock = "Use_Two_Materials_On_MazeBlock";
@@ -47,6 +49,7 @@ public class MyCustomMenu : MonoBehaviour
         Menu.SetChecked(SymbolsMenuItemName_SkipScenario, skipScenario);
     }
 
+    #region Util Func
     [MenuItem(FuncsMenuItemName_ApplyAllSymbols)]
     private static void ApplyAllSymbols() {
         string[] defines;
@@ -80,7 +83,9 @@ public class MyCustomMenu : MonoBehaviour
             ref skipScenario,
             false);
     }
+    #endregion
 
+    #region Define
     [MenuItem(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock)]
     private static void UseMazeBlockMaterial() {
         SetDefine(
@@ -125,5 +130,17 @@ public class MyCustomMenu : MonoBehaviour
 
         Menu.SetChecked(menuPath, property);
     }
+    #endregion
+
+    #region Cheat
+    [MenuItem(CheatMenuItemName_MoveToItem)]
+    private static void MoveToItem() {
+        if(SceneLoader.Instance.CurrentLoadedScene == SceneLoader.SceneType.Game) {
+            if(LevelLoader.Instance.ItemCount > 0) {
+                PlayerController.Instance.Pos = LevelLoader.Instance.Items[0].Pos;
+            }
+        }
+    }
+    #endregion
 }
 #endif

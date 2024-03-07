@@ -178,6 +178,11 @@ public class Honey : MonsterController, IMove {
             case SoundManager.SoundType.Empty03s:
             case SoundManager.SoundType.Empty04s:
             case SoundManager.SoundType.Empty05s:
+            case SoundManager.SoundType.Mining01:
+            case SoundManager.SoundType.Mining02:
+            case SoundManager.SoundType.Mining03:
+            case SoundManager.SoundType.Mining04:
+            case SoundManager.SoundType.MiningEnd:
             case SoundManager.SoundType.PlayerWalk: {
                     Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
                     if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;

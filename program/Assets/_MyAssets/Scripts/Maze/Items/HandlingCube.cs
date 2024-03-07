@@ -14,6 +14,13 @@ public class HandlingCube : MonoBehaviour {
             collider.enabled = !value;
             rigidbody.useGravity = !value;
 
+            if(value) {
+                posSaver = transform.position;
+            }
+            else {
+                rigidbody.velocity = calculatedVelocity * rigidbody.mass * 10.0f;
+            }
+
             isPickUp = value;
         }
     }
@@ -43,10 +50,16 @@ public class HandlingCube : MonoBehaviour {
         }
     }
 
+    private void Update() {
+        calculatedVelocity = transform.position - posSaver;
+
+        posSaver = transform.position;
+    }
+
     private void OnCollisionEnter(Collision collision) {
         if(collision.collider.CompareTag(MazeBlock.TagName)) {
             // Play Sound
-            Debug.Log("HandlingCube hit on MazeBlock!");
+            SoundManager.Instance.PlayOnWorld(collision.contacts[0].point, SoundManager.SoundType.Empty03s, SoundManager.SoundFrom.None);
         }
     }
 

@@ -12,6 +12,7 @@ using Random = UnityEngine.Random;
 public class GameController : MonoBehaviour {
     [SerializeField] private StandingSpaceConrtoller standingSpaceController;
     [SerializeField] private UserInterface userInterface;
+    [SerializeField] private PathGuide pathGuide;
 
     private GameLevelSettings[] gameLevels = new GameLevelSettings[] {
         new GameLevelSettings() {
@@ -21,18 +22,18 @@ public class GameController : MonoBehaviour {
             Monsters = new GameLevelSettings.MonsterStruct[] {
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Bunny,
-                    generateCount = 3, 
+                    generateCount = 2, 
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Honey,
-                    generateCount = 3,
+                    generateCount = 2,
                 },
             },
 
             Items = new GameLevelSettings.ItemStruct[] {
                 new GameLevelSettings.ItemStruct() {
                     type = LevelLoader.ItemType.Crystal,
-                    generateCount = 3,
+                    generateCount = 1,
                 },
             },
         },
@@ -45,14 +46,20 @@ public class GameController : MonoBehaviour {
     private IEnumerator scenarioCameraAnimationCoroutine = null;
     private IEnumerator scenarioTextAnimationCoroutine = null;
 
+    private IEnumerator exitEnterCheckCoroutine = null;
+
 
 
     private void Awake() {
         PlayerController.Instance.OnEnteredNPCArea += OnEnteredNPCArea;
+
+        LevelLoader.Instance.OnItemCollected += OnItemCollected;
     }
 
     private void OnDestroy() {
         PlayerController.Instance.OnEnteredNPCArea -= OnEnteredNPCArea;
+
+        LevelLoader.Instance.OnItemCollected -= OnItemCollected;
 
         if(scenarioTextAnimationCoroutine != null) {
             StopCoroutine(scenarioTextAnimationCoroutine);
@@ -84,6 +91,9 @@ public class GameController : MonoBehaviour {
 
             CurrentLevelSettings = levelSettings;
         }
+
+        // Component Off
+        pathGuide.gameObject.SetActive(false);
 
         // Level 초기화
         LevelLoader.Instance.ResetLevel();
@@ -138,20 +148,21 @@ public class GameController : MonoBehaviour {
                 coordMoveCount += Random.Range(randomMin, randomMax);
             }
         }
+
         // PickUP 아이템 생성
-        //itemCount = 20;
-        //randomMax = coordCount / itemCount + 1;
-        //randomMin = randomMax / 2;
+        itemCount = calculatedLevelSize.x * calculatedLevelSize.y / 5;
+        randomMax = coordCount / itemCount + 1;
+        randomMin = randomMax / 2;
 
-        //coordMoveCount = 0;
-        //for(int i = 0; i < itemCount; i++) {
-        //    zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
-        //    zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
+        coordMoveCount = 0;
+        for(int i = 0; i < itemCount; i++) {
+            zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
+            zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
 
-        //    LevelLoader.Instance.AddPickUpItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom);
+            LevelLoader.Instance.AddPickUpItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom);
 
-        //    coordMoveCount += Random.Range(randomMin, randomMax);
-        //}
+            coordMoveCount += Random.Range(randomMin, randomMax);
+        }
 
         // StandingSpace 위치 설정
         standingSpaceCoord = new Vector2Int(Random.Range(1, CurrentLevelSettings.LevelWidth - 2), -1);
@@ -172,14 +183,7 @@ public class GameController : MonoBehaviour {
         LevelLoader.Instance.PlayMonsters();
         LevelLoader.Instance.PlayItems();
 
-        userInterface.MessageActive = false;
-        userInterface.MessageAlpha = 0.0f;
-        userInterface.MicGageActive = UserSettings.UseMicBoolean;
-        userInterface.MicGageAlpha = 1.0f;
-        userInterface.CollectItemActive = true;
-        userInterface.CollectItemAlpha = 1.0f;
-        userInterface.RunGageActive = true;
-        userInterface.RunGageAlpha = 0.0f;
+        OnScenarioEnd();
 #endif
 
         #region 나중에 삭제하세요
@@ -203,10 +207,80 @@ public class GameController : MonoBehaviour {
     #endregion
 
     #region Action
+    private void OnItemCollected() {
+        int maxItemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
+        int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
+        userInterface.SetItemCount(maxItemCount, collectItem);
+
+        // Clear
+        if(collectItem >= maxItemCount) {
+            if(exitEnterCheckCoroutine == null) {
+                exitEnterCheckCoroutine = ExitEnterCheckCoroutine();
+                StartCoroutine(exitEnterCheckCoroutine);
+            }
+        }
+    }
+
     private void OnEnteredNPCArea() {
         StartScenario();
     }
     #endregion
+
+    private IEnumerator ExitEnterCheckCoroutine() {
+        standingSpaceController.gameObject.SetActive(true);
+        standingSpaceController.NPCActive = false;
+
+        // StandingSpace 위치 설정
+        standingSpaceCoord = new Vector2Int(Random.Range(1, CurrentLevelSettings.LevelWidth - 2), -1);
+        standingSpaceController.transform.position =
+            LevelLoader.Instance.GetBlockPos(standingSpaceCoord) +
+            Vector3.forward * MazeBlock.BlockSize * 0.5f;
+
+        // Open Door
+        MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
+        MazeBlock animationBlock2 = standingSpaceController.GetOpenCoordBlock();
+
+        const float wallAnimationTime = 3.0f;
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, wallAnimationTime));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, wallAnimationTime));
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
+
+        // Set Head Message
+        userInterface.SetHeadMessage("ExitOpened", 10.0f);
+
+        // Start Guide
+        pathGuide.gameObject.SetActive(true);
+        pathGuide.transform.position = PlayerController.Instance.Pos;
+        pathGuide.Path = LevelLoader.Instance.GetPath(
+            PlayerController.Instance.Pos,
+            LevelLoader.Instance.GetBlockPos(new Vector2Int(standingSpaceCoord.x, standingSpaceCoord.y + 1)),
+            pathGuide.Radius);
+
+        // Wait Player Entered In StandingSpace
+        Vector3 animationWallPos = animationBlock2.GetSidePos(MazeCreator.ActiveWall.F);
+        bool isOutOfMaze = false;
+        float dist = 100.0f;
+        while(true) {
+            isOutOfMaze = !LevelLoader.Instance.IsCoordInLevelSize(PlayerController.Instance.CurrentCoord, 0);
+            dist = Vector3.Distance(animationWallPos, PlayerController.Instance.Pos);
+
+            if(isOutOfMaze && dist > MazeBlock.BlockSize * 0.5f) {
+                break;
+            }
+
+            yield return null;
+        }
+
+        // Remove Head Message
+        userInterface.RemoveHeadMessage();
+
+        // Level 증가
+        UserSettings.GameLevel++;
+
+        OnExitEntered();
+
+        exitEnterCheckCoroutine = null;
+    }
 
     #region Scenario
     private IEnumerator Scenario00() {
@@ -565,11 +639,27 @@ public class GameController : MonoBehaviour {
     }
     #endregion
 
+    private void OnExitEntered() {
+
+    }
+
     private void OnScenarioEnd() {
         SoundManager.Instance.PlayBGM(SoundManager.SoundType.Game, 5.0f, 0.3f);
 
+        standingSpaceController.gameObject.SetActive(false);
+
         LevelLoader.Instance.PlayMonsters();
         LevelLoader.Instance.PlayItems();
+
+        int maxItemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
+        int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
+        userInterface.SetItemCount(maxItemCount, collectItem);
+
+        userInterface.HeadMessageActive = true;
+        userInterface.MessageActive = false;
+        userInterface.MicGageActive = UserSettings.UseMicBoolean;
+        userInterface.CollectItemActive = true;
+        userInterface.RunGageActive = true;
     }
 }
 

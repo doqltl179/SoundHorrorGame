@@ -19,7 +19,7 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
     public SceneType CurrentLoadedScene { get; private set; }
 
     private IEnumerator loadSceneCoroutine = null;
-    private IEnumerator loadingTextAnimationCoroutine = null;
+    //private IEnumerator loadingTextAnimationCoroutine = null;
 
 
 
@@ -42,10 +42,10 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
     #endregion
 
     private IEnumerator LoadSceneCoroutine(SceneType scene) {
-        if(loadingTextAnimationCoroutine == null) {
-            loadingTextAnimationCoroutine = LoadingTextAnimationCoroutine();
-            StartCoroutine(loadingTextAnimationCoroutine);
-        }
+        //if(loadingTextAnimationCoroutine == null) {
+        //    loadingTextAnimationCoroutine = LoadingTextAnimationCoroutine();
+        //    StartCoroutine(loadingTextAnimationCoroutine);
+        //}
 
         StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 0.5f));
         yield return UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f);
@@ -58,8 +58,8 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
         }
         yield return new WaitForSeconds(1.0f); //Fake Wait
 
-        StopCoroutine(loadingTextAnimationCoroutine);
-        UtilObjects.Instance.LoadingText = string.Empty;
+        //StopCoroutine(loadingTextAnimationCoroutine);
+        //UtilObjects.Instance.LoadingText = string.Empty;
 
         StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(false, 0.5f));
         yield return UtilObjects.Instance.SetActiveLoadingAction(false, 0.5f);
@@ -69,38 +69,38 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
         loadSceneCoroutine = null;
     }
 
-    private IEnumerator LoadingTextAnimationCoroutine() {
-        const string loadingText = "Loading";
-        const string addChar = ".";
-        const int addCount = 3;
-        int addCountChecker = 1;
+    //private IEnumerator LoadingTextAnimationCoroutine() {
+    //    const string loadingText = "Loading";
+    //    const string addChar = ".";
+    //    const int addCount = 3;
+    //    int addCountChecker = 1;
 
-        const float textChangeTime = 0.5f;
-        float textChangeTimer = 0.0f;
+    //    const float textChangeTime = 0.5f;
+    //    float textChangeTimer = 0.0f;
 
-        StringBuilder loadingTextBuilder = new StringBuilder();
-        loadingTextBuilder.Append(loadingText).Append(addChar);
-        UtilObjects.Instance.LoadingText = loadingTextBuilder.ToString();
+    //    StringBuilder loadingTextBuilder = new StringBuilder();
+    //    loadingTextBuilder.Append(loadingText).Append(addChar);
+    //    UtilObjects.Instance.LoadingText = loadingTextBuilder.ToString();
 
-        while(true) {
-            textChangeTimer += Time.deltaTime;
-            if(textChangeTimer > textChangeTime) {
-                loadingTextBuilder.Append(addChar);
-                UtilObjects.Instance.LoadingText = loadingTextBuilder.ToString();
+    //    while(true) {
+    //        textChangeTimer += Time.deltaTime;
+    //        if(textChangeTimer > textChangeTime) {
+    //            loadingTextBuilder.Append(addChar);
+    //            UtilObjects.Instance.LoadingText = loadingTextBuilder.ToString();
 
-                addCountChecker++;
-                if(addCountChecker >= addCount) {
-                    loadingTextBuilder.Remove(loadingTextBuilder.Length - addCount, addCount);
+    //            addCountChecker++;
+    //            if(addCountChecker >= addCount) {
+    //                loadingTextBuilder.Remove(loadingTextBuilder.Length - addCount, addCount);
 
-                    addCountChecker = 0;
-                }
+    //                addCountChecker = 0;
+    //            }
 
-                textChangeTimer = 0.0f;
-            }
+    //            textChangeTimer = 0.0f;
+    //        }
 
-            yield return null;
-        }
+    //        yield return null;
+    //    }
 
-        loadingTextAnimationCoroutine = null;
-    }
+    //    loadingTextAnimationCoroutine = null;
+    //}
 }

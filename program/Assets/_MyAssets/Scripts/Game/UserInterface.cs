@@ -66,7 +66,30 @@ public class UserInterface : MonoBehaviour {
         }
     }
 
-    [Header("Message")]
+    [Header("Head Message")]
+    [SerializeField] private CanvasGroup headMessageCanvasGroup;
+    [SerializeField] private TextMeshProUGUI headMessageText;
+    [SerializeField] private LocalizeStringEvent headMessageLocalizeEvent;
+    public bool HeadMessageActive {
+        get => headMessageCanvasGroup.gameObject.activeSelf;
+        set => headMessageCanvasGroup.gameObject.SetActive(value);
+    }
+    public float HeadMessageAlpha {
+        get => headMessageCanvasGroup.alpha;
+        set => headMessageCanvasGroup.alpha = value;
+    }
+    public string HeadMessageText {
+        get => headMessageText.text;
+        set => headMessageText.text = value;
+    }
+    public string HeadMessageKey {
+        get => headMessageLocalizeEvent.StringReference.TableEntryReference.Key;
+        set => headMessageLocalizeEvent.StringReference.TableEntryReference = value;
+    }
+
+    private IEnumerator headMessageFadeAnimationCoroutine = null;
+
+    [Header("Message Box")]
     [SerializeField] private CanvasGroup messageCanvasGroup;
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private LocalizeStringEvent messageLocalizeEvent;
@@ -94,7 +117,7 @@ public class UserInterface : MonoBehaviour {
         set => messageText.color = value;
     }
     public string MessageKey {
-        get => messageLocalizeEvent.StringReference.TableEntryReference;
+        get => messageLocalizeEvent.StringReference.TableEntryReference.Key;
         set => messageLocalizeEvent.StringReference.TableEntryReference = value;
     }
     public Button.ButtonClickedEvent MessageBoxClicked {
@@ -108,14 +131,10 @@ public class UserInterface : MonoBehaviour {
 
     private void Awake() {
         UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
-
-        LevelLoader.Instance.OnItemCollected += OnItemCollected;
     }
 
     private void OnDestroy() {
         UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
-
-        LevelLoader.Instance.OnItemCollected -= OnItemCollected;
     }
 
     private void Start() {
@@ -124,11 +143,6 @@ public class UserInterface : MonoBehaviour {
 
         //itemCountText.text = "x" + LevelLoader.Instance.CollectedItemCount;
         messageText.text = "";
-
-        collectItemCanvasGroup.alpha = 0.0f;
-        runGageCanvasGroup.alpha = 0.0f;
-        messageCanvasGroup.alpha = 0.0f;
-        warningCanvasGroup.alpha = 0.0f;
 
         micGageSliderLimitLine.anchoredPosition =
             Vector2.up *
@@ -183,13 +197,58 @@ public class UserInterface : MonoBehaviour {
     public void OnUseMicrophoneChanged(bool value) {
         micGageRect.gameObject.SetActive(value);
     }
-
-    private void OnItemCollected() {
-
-    }
     #endregion
 
     #region Utility
+    public void SetHeadMessage(string key, float time) {
+        if(headMessageFadeAnimationCoroutine != null) {
+            StopCoroutine(headMessageFadeAnimationCoroutine);
+        }
+
+        headMessageFadeAnimationCoroutine = SetHeadMessageCoroutine(key, time);
+        StartCoroutine(headMessageFadeAnimationCoroutine);
+    }
+
+    public void RemoveHeadMessage() {
+        if(headMessageFadeAnimationCoroutine != null) {
+            StopCoroutine(headMessageFadeAnimationCoroutine);
+
+            headMessageText.text = "";
+        }
+    }
+
+    private IEnumerator SetHeadMessageCoroutine(string key, float time) {
+        HeadMessageKey = key;
+        headMessageCanvasGroup.alpha = 0.0f;
+
+        const float fadeTime = 0.3f;
+        float fadeTimeChecker = 0.0f;
+        while(fadeTimeChecker < fadeTime) {
+            fadeTimeChecker += Time.deltaTime;
+
+            headMessageCanvasGroup.alpha = fadeTimeChecker / fadeTime;
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(time - fadeTime * 2);
+
+        fadeTimeChecker = 0.0f;
+        while(fadeTimeChecker < fadeTime) {
+            fadeTimeChecker += Time.deltaTime;
+
+            headMessageCanvasGroup.alpha = 1.0f - fadeTimeChecker / fadeTime;
+
+            yield return null;
+        }
+
+        headMessageFadeAnimationCoroutine = null;
+    }
+
+    public void SetItemCount(int maxCount, int collectCount) {
+        itemCountText.text = $"({collectCount}/{maxCount})";
+    }
+
     public void SetMessageBoxButton(Action action = null) {
         messageBoxButton.onClick.RemoveAllListeners();
 
