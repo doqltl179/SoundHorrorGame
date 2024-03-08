@@ -187,6 +187,8 @@ public class MazeBlock : MonoBehaviour {
 
             yield return null;
         }
+
+        wall.localPosition = Vector3.up * goalHeight;
     }
 #endregion
 }

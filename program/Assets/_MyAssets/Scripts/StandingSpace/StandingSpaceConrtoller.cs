@@ -16,6 +16,10 @@ public class StandingSpaceConrtoller : MonoBehaviour {
         get => npcAnchor.gameObject.activeSelf;
         set => npcAnchor.gameObject.SetActive(value);
     }
+    public bool NPCModelActive {
+        get => npcAnimator.gameObject.activeSelf;
+        set => npcAnimator.gameObject.SetActive(value);
+    }
     public Vector3 NPCCameraViewPos { get { return npcCameraView.position; } }
     public Quaternion NPCCameraViewRotation { get { return npcCameraView.rotation; } }
     public Vector3 NPCCameraViewForward { get { return npcCameraView.forward; } }
@@ -27,6 +31,16 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     private Material levelFloorMaterial = null;
     private Material levelWallMaterial = null;
     private PhysicMaterial levelPhysicMaterial = null;
+
+    public MazeBlock BlockR => levels[2, 1];
+    public MazeBlock BlockRT => levels[2, 2];
+    public MazeBlock BlockT => levels[1, 2];
+    public MazeBlock BlockLT => levels[0, 2];
+    public MazeBlock BlockL => levels[0, 1];
+    public MazeBlock BlockLB => levels[0, 0];
+    public MazeBlock BlockB => levels[1, 0];
+    public MazeBlock BlockRB => levels[2, 0];
+    public MazeBlock BlockCenter => levels[1, 1];
 
     private const string MAT_BASE_COLOR_NAME = "_BaseColor";
     private const string MAT_MAZEBLOCK_EDGE_COLOR_NAME = "_MazeBlockEdgeColor";
@@ -123,6 +137,9 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     public void SetAnimationTrigger_Surprised() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Surprised);
     public void SetAnimationResetTrigger_Surprised() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Surprised);
 
-    public MazeBlock GetOpenCoordBlock() => levels[1, 2];
+    public void InitializeNPCAnchor(Vector3 pos, Vector3? forward = null) {
+        npcAnchor.position = pos;
+        if(forward != null) npcAnchor.forward = forward.Value;
+    }
     #endregion
 }
