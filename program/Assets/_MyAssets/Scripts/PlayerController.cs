@@ -87,6 +87,7 @@ public class PlayerController : MonoBehaviour {
 
     [SerializeField] private Transform pickUpHandAnchor;
     public HandlingCube PickUpCube { get; private set; } = null;
+    private HandlingCube pickUpCubeChecker = null;
     private RaycastHit pickUpHit;
     private int pickUpRayMask;
     private bool pickUpMouseDown;
@@ -255,14 +256,27 @@ public class PlayerController : MonoBehaviour {
         #region PickUp
         bool currentMouseDown = Input.GetMouseButton(0);
         if(PickUpCube == null) {
-            if(!pickUpMouseDown && currentMouseDown) {
-                if(Physics.Raycast(UtilObjects.Instance.CamPos, UtilObjects.Instance.CamForward, out pickUpHit, HandlingCube.PickUpDistance, pickUpRayMask)) {
-                    HandlingCube pickUpObject = pickUpHit.rigidbody?.GetComponent<HandlingCube>();
-                    if(pickUpObject != null) {
-                        PickUpCube = pickUpObject;
+            if(Physics.Raycast(UtilObjects.Instance.CamPos, UtilObjects.Instance.CamForward, out pickUpHit, HandlingCube.PickUpDistance, pickUpRayMask)) {
+                if(pickUpCubeChecker != null) 
+                    pickUpCubeChecker.ObjectOutlineActive = false;
+
+                pickUpCubeChecker = pickUpHit.rigidbody?.GetComponent<HandlingCube>();
+                if(pickUpCubeChecker != null) {
+                    pickUpCubeChecker.ObjectOutlineActive = true;
+
+                    if(!pickUpMouseDown && currentMouseDown) {
+                        pickUpCubeChecker.ObjectOutlineActive = false;
+                        PickUpCube = pickUpCubeChecker;
 
                         PickUpCube.IsPickUp = true;
+                        pickUpCubeChecker = null;
                     }
+                }
+            }
+            else {
+                if(pickUpCubeChecker != null) {
+                    pickUpCubeChecker.ObjectOutlineActive = false;
+                    pickUpCubeChecker = null;
                 }
             }
         }
@@ -289,6 +303,9 @@ public class PlayerController : MonoBehaviour {
 
     private void OnCollisionEnter(Collision collision) {
         if(collision.gameObject.CompareTag(MonsterController.TagName)) {
+            // 자꾸 걸리니까 테스트가 안되므로 잠깐 꺼둠.
+            return; 
+
             OnPlayerCatched?.Invoke(collision.rigidbody.GetComponent<MonsterController>());
         }
     }

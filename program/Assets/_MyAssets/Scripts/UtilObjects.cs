@@ -124,6 +124,8 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     private KeyCode Key_Escape = KeyCode.Escape;
     #endregion
 
+    public Action<bool> OnGamePaused;
+
 
 
     private void Awake() {
@@ -414,24 +416,24 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
             case Page.PauseMenu: {
                     if(active) {
                         SoundManager.Instance.PauseAllSounds();
-
                         Time.timeScale = 0.0f;
-                        //AudioListener.pause = true;
 
                         rayBlock.gameObject.SetActive(true);
                         rayBlock.Color = new Color(0, 0, 0, 0.85f);
                         rayBlock.Alpha = 1.0f;
                         rayBlock.gameObject.SetActive(true);
                         pauseMenuController.gameObject.SetActive(true);
+
+                        OnGamePaused?.Invoke(true);
                     }
                     else {
                         SoundManager.Instance.UnPauseAllSound();
-
                         Time.timeScale = 1.0f;
-                        //AudioListener.pause = false;
 
                         rayBlock.gameObject.SetActive(false);
                         pauseMenuController.gameObject.SetActive(false);
+
+                        OnGamePaused?.Invoke(false);
                     }
                 }
                 break;

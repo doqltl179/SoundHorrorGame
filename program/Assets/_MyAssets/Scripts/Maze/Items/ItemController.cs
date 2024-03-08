@@ -46,14 +46,14 @@ public class ItemController : MonoBehaviour {
 
         itemSoundPlayTimeChecker += Time.deltaTime;
         if(itemSoundPlayTimeChecker >= ItemSoundPlayTimeInterval) {
-            if(Vector3.Distance(Pos, UtilObjects.Instance.CamPos) < LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
-                float dist = LevelLoader.Instance.GetPathDistance(tempPath);
+            float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
+            float spreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.Crystal);
+            if(dist < spreadLength) {
                 SoundManager.Instance.PlayOnWorld(
                     Pos,
-                    SoundManager.SoundType.Crystal, 
+                    SoundManager.SoundType.Crystal,
                     SoundManager.SoundFrom.Item,
-                    1.0f - dist / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+                    1.0f - dist / spreadLength);
             }
 
             itemSoundPlayTimeChecker -= ItemSoundPlayTimeInterval;

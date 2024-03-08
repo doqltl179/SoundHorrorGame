@@ -33,6 +33,10 @@ Shader "MyCustomShader/Maze" {
         _MonsterOutlineThickness ("Monster Outline Thickness", Range(0.0, 1.0)) = 0.4
         _MonsterOutlineColor("Monster Outline Color", Color) = (1, 1, 1, 1)
 
+        [Header(Object Outline)]
+        _ObjectOutlineThickness ("Object Outline Thickness", Range(0.0, 1.0)) = 0.05
+        _ObjectOutlineColor("Object Outline Color", Color) = (1, 1, 1, 1)
+
         [Header(Util Properties)]
         _ColorStrengthMax ("Color Strength Max", Float) = 1.5
         [Toggle(USE_BASE_COLOR)] _UseBaseColor ("Use Base Color", float) = 1.0
@@ -40,6 +44,7 @@ Shader "MyCustomShader/Maze" {
         [Toggle(DRAW_PLAYER_PAST_POS)] _DrawPlayerPastPos ("Draw Player Past Pos", float) = 0.0
         [Toggle(DRAW_MAZEBLOCK_EDGE)] _DrawMazeBlockEdge ("Draw MazeBlock Edge", float) = 0.0
         [Toggle(DRAW_OUTLINE)] _DrawOutline ("Draw Outline", float) = 0.0
+        [Toggle(DRAW_OBJECT_OUTLINE)] _DrawObjectOutline ("Draw Object Outline", float) = 0.0
 
         [HideInInspector] _RimArrayLength_None ("Rim Array (None) Length", Integer) = 0
         [HideInInspector] _RimArrayLength_Player ("Rim Array Length (Player)", Integer) = 0
@@ -52,6 +57,76 @@ Shader "MyCustomShader/Maze" {
     {
         Tags { "RenderType"="Opaque" }
         LOD 100
+
+        Pass
+        {
+            Cull Front // 뒷면만 그리기
+            ZWrite On
+
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #pragma shader_feature DRAW_OBJECT_OUTLINE
+
+            #include "UnityCG.cginc"
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float3 normal : NORMAL;
+            };
+            
+            struct v2f
+            {
+                float4 vertex : SV_POSITION;
+            };
+
+            float _ObjectOutlineThickness;
+            fixed4 _ObjectOutlineColor;
+
+            v2f vert (appdata v)
+            {
+                v2f o;
+
+                #ifdef DRAW_OBJECT_OUTLINE
+
+                    float4x4 scaleMat;
+				    scaleMat[0][0] = 1.0f + _ObjectOutlineThickness;
+				    scaleMat[0][1] = 0.0f;
+				    scaleMat[0][2] = 0.0f;
+				    scaleMat[0][3] = 0.0f;
+				    scaleMat[1][0] = 0.0f;
+				    scaleMat[1][1] = 1.0f + _ObjectOutlineThickness;
+				    scaleMat[1][2] = 0.0f;
+				    scaleMat[1][3] = 0.0f;
+				    scaleMat[2][0] = 0.0f;
+				    scaleMat[2][1] = 0.0f;
+				    scaleMat[2][2] = 1.0f + _ObjectOutlineThickness;
+				    scaleMat[2][3] = 0.0f;
+				    scaleMat[3][0] = 0.0f;
+				    scaleMat[3][1] = 0.0f;
+				    scaleMat[3][2] = 0.0f;
+				    scaleMat[3][3] = 1.0f;
+				    
+                    o.vertex = UnityObjectToClipPos(mul(scaleMat, v.vertex));
+
+                #else
+
+                    o.vertex = UnityObjectToClipPos(v.vertex);
+
+                #endif
+
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target 
+            {
+                return _ObjectOutlineColor;
+            }
+
+            ENDCG
+        }
 
         Pass
         {

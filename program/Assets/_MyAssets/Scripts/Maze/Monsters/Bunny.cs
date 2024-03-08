@@ -7,8 +7,6 @@ public class Bunny : MonsterController, IMove {
     private const float restTime = 5.0f;
     private float restTimeChecker = 0.0f;
 
-    private const float stuckCheckTime = 10.0f;
-    private float stuckTimeChecker = 0.0f;
     private Vector2Int coordChecker;
 
 
@@ -81,21 +79,7 @@ public class Bunny : MonsterController, IMove {
         if(CurrentCoord.x != coordChecker.x || CurrentCoord.y != coordChecker.y) {
             CurrentCoord = coordChecker;
 
-            stuckTimeChecker = 0.0f;
-        }
-        else {
-            if(CurrentState == MonsterState.Move) {
-                stuckTimeChecker += Time.deltaTime;
-                if(stuckTimeChecker >= stuckCheckTime) {
-                    movePath = LevelLoader.Instance.GetRandomPointPathCompareDistance(
-                        Pos,
-                        Radius,
-                        false,
-                        LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
 
-                    stuckTimeChecker = 0.0f;
-                }
-            }
         }
     }
 
@@ -110,11 +94,11 @@ public class Bunny : MonsterController, IMove {
                 Vector3 hitPosToPathPos = (movePath[0] - stuckHelper.HitPos).normalized;
                 bool isRightSide = Vector3.Cross(stuckHelper.HitNormal, hitPosToPathPos).y > 0;
                 Vector3 lookForward = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
-                transform.forward = Vector3.Lerp(transform.forward, lookForward, Time.deltaTime * rotateSpeed * 2.0f);
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lookForward), Time.deltaTime * rotateSpeed * 2.0f);
             }
             else {
                 Vector3 moveDirection = (movePath[0] - transform.position).normalized;
-                transform.forward = Vector3.Lerp(transform.forward, moveDirection, dt * rotateSpeed);
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(moveDirection), dt * rotateSpeed);
             }
 
             if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
@@ -167,35 +151,6 @@ public class Bunny : MonsterController, IMove {
         if(!IsPlaying) return;
 
         switch(so.Type) {
-            //case SoundManager.SoundType.PlayerWalk: {
-            //        if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-            //            List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
-            //            float dist = LevelLoader.Instance.GetPathDistance(newPath);
-            //            if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
-            //                movePath = newPath;
-
-            //                physicsMoveSpeedMax = 1.0f;
-            //                FollowingSound = so;
-
-            //                CurrentState = MonsterState.Move;
-            //            }
-            //        }
-            //    }
-            //    break;
-            //case SoundManager.SoundType.Empty00_5s: {
-            //        if(FollowingSound == null && 
-            //            from == SoundManager.SoundFrom.Monster && 
-            //            Vector3.Distance(so.Position, Pos) < Froggy.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-            //            movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
-
-            //            physicsMoveSpeedMax = 1.0f;
-            //            FollowingSound = so;
-
-            //            CurrentState = MonsterState.Move;
-            //        }
-            //    }
-            //    break;
-
             case SoundManager.SoundType.Empty00_5s:
             case SoundManager.SoundType.Empty01s:
             case SoundManager.SoundType.Empty02s:
@@ -225,7 +180,6 @@ public class Bunny : MonsterController, IMove {
                     }
                 }
                 break;
-
         }
     }
 

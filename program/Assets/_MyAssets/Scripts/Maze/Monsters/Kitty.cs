@@ -12,7 +12,7 @@ public class Kitty : MonsterController, IMove {
     private const float restTime = 5.0f;
     private float restTimeChecker = 0.0f;
 
-    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 5.0f;
+    private Vector2Int coordChecker;
 
 
 
@@ -66,21 +66,26 @@ public class Kitty : MonsterController, IMove {
                 if(animatorStateInfo[AnimatorLayerName_Motion].CompareInteger < normalizedTimeInteger) {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
-                    if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        List<Vector3> tempPath = LevelLoader.Instance.GetPath(Pos, UtilObjects.Instance.CamPos, Radius);
-                        dist = LevelLoader.Instance.GetPathDistance(tempPath);
-                        if(dist < STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
-                            SoundManager.Instance.PlayOnWorld(
-                                transform.position,
-                                SoundManager.SoundType.MonsterWalk06,
-                                SoundManager.SoundFrom.Monster,
-                                1.0f - dist / STANDARD_RIM_RADIUS_SPREAD_LENGTH);
-                        }
+                    float clipSpreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.MonsterWalk01);
+                    if(dist < clipSpreadLength) {
+                        SoundManager.Instance.PlayOnWorld(
+                            transform.position,
+                            SoundManager.SoundType.MonsterWalk06,
+                            SoundManager.SoundFrom.Monster,
+                            1.0f - dist / clipSpreadLength);
                     }
 
                     animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = normalizedTimeInteger;
                 }
             }
+        }
+
+        // 위치 체크
+        coordChecker = LevelLoader.Instance.GetMazeCoordinate(Pos);
+        if(CurrentCoord.x != coordChecker.x || CurrentCoord.y != coordChecker.y) {
+            CurrentCoord = coordChecker;
+
+
         }
     }
 
@@ -113,11 +118,11 @@ public class Kitty : MonsterController, IMove {
                 Vector3 hitPosToPathPos = (movePath[0] - stuckHelper.HitPos).normalized;
                 bool isRightSide = Vector3.Cross(stuckHelper.HitNormal, hitPosToPathPos).y > 0;
                 Vector3 lookForward = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
-                transform.forward = Vector3.Lerp(transform.forward, lookForward, Time.deltaTime * rotateSpeed * 2.0f);
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lookForward), Time.deltaTime * rotateSpeed * 2.0f);
             }
             else {
                 Vector3 moveDirection = (movePath[0] - transform.position).normalized;
-                transform.forward = Vector3.Lerp(transform.forward, moveDirection, dt * rotateSpeed);
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(moveDirection), dt * rotateSpeed);
             }
 
             if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
@@ -167,12 +172,28 @@ public class Kitty : MonsterController, IMove {
 
     #region Action
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
+        if(!IsPlaying) return;
+
         switch(so.Type) {
+            case SoundManager.SoundType.Empty00_5s:
+            case SoundManager.SoundType.Empty01s:
+            case SoundManager.SoundType.Empty02s:
+            case SoundManager.SoundType.Empty03s:
+            case SoundManager.SoundType.Empty04s:
+            case SoundManager.SoundType.Empty05s:
+            case SoundManager.SoundType.Mining01:
+            case SoundManager.SoundType.Mining02:
+            case SoundManager.SoundType.Mining03:
+            case SoundManager.SoundType.Mining04:
+            case SoundManager.SoundType.MiningEnd:
             case SoundManager.SoundType.PlayerWalk: {
-                    if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+                    Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
+                    if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;
+
+                    if(Vector3.Distance(so.Position, Pos) < so.SpreadLength) {
                         List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
                         float dist = LevelLoader.Instance.GetPathDistance(newPath);
-                        if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+                        if(dist <= so.SpreadLength * 1.5f) {
                             movePath = newPath;
 
                             physicsMoveSpeedMax = 1.0f;
@@ -180,19 +201,6 @@ public class Kitty : MonsterController, IMove {
 
                             CurrentState = MonsterState.Move;
                         }
-                    }
-                }
-                break;
-            case SoundManager.SoundType.Empty00_5s: {
-                    if(FollowingSound == null &&
-                        from == SoundManager.SoundFrom.Monster &&
-                        Vector3.Distance(so.Position, Pos) < Froggy.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
-
-                        physicsMoveSpeedMax = 1.0f;
-                        FollowingSound = so;
-
-                        CurrentState = MonsterState.Move;
                     }
                 }
                 break;

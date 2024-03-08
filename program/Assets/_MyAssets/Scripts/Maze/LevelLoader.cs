@@ -47,7 +47,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private List<HandlingCube> handlingCubes = new List<HandlingCube>();
     public List<HandlingCube> HandlingCubes { get { return handlingCubes; } }
     public int HandlingCubeCount { get { return handlingCubes.Count; } }
-    private Material handlingCubeMaterial = null;
+    //private Material handlingCubeMaterial = null;
     #endregion
 
     #region Maze
@@ -456,6 +456,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
     RaycastHit tempPathHit;
     public List<Vector3> GetPath(Vector3 startPos, Vector3 endPos, float rayRadius) {
+        startPos = new Vector3(startPos.x, 0, startPos.z);
+        endPos = new Vector3(endPos.x, 0, endPos.z);
+
         Vector2Int startCoord = GetMazeCoordinate(startPos);
         Vector2Int endCoord = GetMazeCoordinate(endPos);
         Debug.Log(string.Format("startPos: {0}, endPos: {1}, startCoord: {2}, endCoord: {3}", startPos, endPos, startCoord, endCoord));
@@ -626,8 +629,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             }
         }
 
-        //pathList.Add(endPos); //마지막 위치 설정
-        pathList.Add(new Vector3(endPos.x, 0.0f, endPos.z));
+        pathList.Add(endPos); //마지막 위치 설정
+        //pathList.Add(new Vector3(endPos.x, 0.0f, endPos.z));
         #endregion
 
         // 심층 단순화
@@ -751,6 +754,19 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            // Froggy는 움직이지 않는 몬스터이므로 아이템과 겹치지 않는 위치에 생성한다.
+            if(type == MonsterType.Froggy) {
+                int tempIndex = 0;
+                while(true) {
+                    tempIndex = items.FindIndex(t => IsSameVec2Int(GetMazeCoordinate(t.Pos), randomCoord));
+                    if(tempIndex >= 0) {
+                        randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
             go.transform.position = GetBlockPos(randomCoord);
         }
 
@@ -821,25 +837,25 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             return;
         }
 
-        if(handlingCubeMaterial == null) {
-            Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
+        //if(handlingCubeMaterial == null) {
+        //    Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
 
-            mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
-            mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
-            mat.SetColor("_BaseColor", Color.black);
-            foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
-                mat.SetVector(group.MAT_COLOR_NAME, group.Color);
-            }
+        //    mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
+        //    mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
+        //    mat.SetColor("_BaseColor", Color.black);
+        //    foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
+        //        mat.SetVector(group.MAT_COLOR_NAME, group.Color);
+        //    }
 
-            mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
-            mat.EnableKeyword(MAT_DRAW_RIM_KEY);
-            mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
+        //    mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
+        //    mat.EnableKeyword(MAT_DRAW_RIM_KEY);
+        //    mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
 
-            mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, 0.1f);
-            mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 1.5f);
+        //    mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, 0.1f);
+        //    mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 1.5f);
 
-            handlingCubeMaterial = mat;
-        }
+        //    handlingCubeMaterial = mat;
+        //}
 
         GameObject go = Instantiate(resource, transform);
         if(zoom <= 0) {
@@ -855,7 +871,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
 
         HandlingCube hc = go.GetComponent<HandlingCube>();
-        hc.SetMaterial(handlingCubeMaterial);
+        //hc.SetMaterial(handlingCubeMaterial);
 
         handlingCubes.Add(hc);
     }

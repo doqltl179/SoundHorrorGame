@@ -14,7 +14,7 @@ public class GameController : MonoBehaviour {
     [SerializeField] private UserInterface userInterface;
     [SerializeField] private PathGuide pathGuide;
 
-    private GameLevelSettings[] gameLevels = new GameLevelSettings[] {
+    private readonly GameLevelSettings[] gameLevels = new GameLevelSettings[] {
         new GameLevelSettings() {
             LevelWidth = 16,
             LevelHeight = 16,
@@ -33,7 +33,37 @@ public class GameController : MonoBehaviour {
             Items = new GameLevelSettings.ItemStruct[] {
                 new GameLevelSettings.ItemStruct() {
                     type = LevelLoader.ItemType.Crystal,
-                    generateCount = 1,
+                    generateCount = 3,
+                },
+            },
+        },
+        new GameLevelSettings() {
+            LevelWidth = 24,
+            LevelHeight = 24,
+
+            Monsters = new GameLevelSettings.MonsterStruct[] {
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Bunny,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Honey,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Froggy,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Kitty,
+                    generateCount = 2,
+                },
+            },
+
+            Items = new GameLevelSettings.ItemStruct[] {
+                new GameLevelSettings.ItemStruct() {
+                    type = LevelLoader.ItemType.Crystal,
+                    generateCount = 5,
                 },
             },
         },
@@ -50,26 +80,20 @@ public class GameController : MonoBehaviour {
                     type = LevelLoader.MonsterType.Honey,
                     generateCount = 2,
                 },
-            },
-
-            Items = new GameLevelSettings.ItemStruct[] {
-                new GameLevelSettings.ItemStruct() {
-                    type = LevelLoader.ItemType.Crystal,
-                    generateCount = 1,
-                },
-            },
-        },
-        new GameLevelSettings() {
-            LevelWidth = 64,
-            LevelHeight = 64,
-
-            Monsters = new GameLevelSettings.MonsterStruct[] {
                 new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Bunny,
+                    type = LevelLoader.MonsterType.Froggy,
                     generateCount = 2,
                 },
                 new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Honey,
+                    type = LevelLoader.MonsterType.Kitty,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Cloudy,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Starry,
                     generateCount = 2,
                 },
             },
@@ -77,7 +101,7 @@ public class GameController : MonoBehaviour {
             Items = new GameLevelSettings.ItemStruct[] {
                 new GameLevelSettings.ItemStruct() {
                     type = LevelLoader.ItemType.Crystal,
-                    generateCount = 1,
+                    generateCount = 7,
                 },
             },
         },
@@ -179,35 +203,17 @@ public class GameController : MonoBehaviour {
         // 다른 컴포넌트의 `Start`함수가 끝나기를 기다리기 위함
         yield return null;
 
-        // 몬스터 생성
         const int zoom = 1;
         Vector2Int calculatedLevelSize = LevelLoader.Instance.GetLevelSize(zoom);
+        Vector2Int zoomInCoord = Vector2Int.zero;
         int coordCount = calculatedLevelSize.x * calculatedLevelSize.y;
         int randomMin, randomMax;
-
-        int monsterCount = CurrentLevelSettings.Monsters.Sum(t => t.generateCount);
-        randomMax = coordCount / monsterCount + 1;
-        randomMin = randomMax / 2;
-
-        GameLevelSettings.MonsterStruct monsterStruct;
-        Vector2Int zoomInCoord = Vector2Int.zero;
-        int coordMoveCount = 0;
-        for(int i = 0; i < CurrentLevelSettings.Monsters.Length; i++) {
-            monsterStruct = CurrentLevelSettings.Monsters[i];
-            for(int j = 0; j < monsterStruct.generateCount; j++) {
-                zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
-                zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
-
-                LevelLoader.Instance.AddMonsterOnLevel(monsterStruct.type, zoomInCoord, zoom);
-
-                coordMoveCount += Random.Range(randomMin, randomMax);
-            }
-        }
+        int coordMoveCount;
 
         // 아이템 생성
         int itemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
-        randomMax = coordCount / itemCount + 1;
-        randomMin = randomMax / 2;
+        randomMax = coordCount / itemCount;
+        randomMin = randomMax / 3 * 2;
 
         GameLevelSettings.ItemStruct itemStruct;
         coordMoveCount = 0;
@@ -223,10 +229,30 @@ public class GameController : MonoBehaviour {
             }
         }
 
+        // 몬스터 생성
+        int monsterCount = CurrentLevelSettings.Monsters.Sum(t => t.generateCount);
+        randomMax = coordCount / monsterCount;
+        randomMin = randomMax / 3 * 2;
+
+        GameLevelSettings.MonsterStruct monsterStruct;
+        zoomInCoord = Vector2Int.zero;
+        coordMoveCount = 0;
+        for(int i = 0; i < CurrentLevelSettings.Monsters.Length; i++) {
+            monsterStruct = CurrentLevelSettings.Monsters[i];
+            for(int j = 0; j < monsterStruct.generateCount; j++) {
+                zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
+                zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
+
+                LevelLoader.Instance.AddMonsterOnLevel(monsterStruct.type, zoomInCoord, zoom);
+
+                coordMoveCount += Random.Range(randomMin, randomMax);
+            }
+        }
+
         // PickUP 아이템 생성
         itemCount = calculatedLevelSize.x * calculatedLevelSize.y / 5;
-        randomMax = coordCount / itemCount + 1;
-        randomMin = randomMax / 2;
+        randomMax = coordCount / itemCount;
+        randomMin = randomMax / 3 * 2;
 
         coordMoveCount = 0;
         for(int i = 0; i < itemCount; i++) {

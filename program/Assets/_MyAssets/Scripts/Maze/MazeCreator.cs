@@ -222,7 +222,7 @@ public static class MazeCreator {
                         }
 
                         tempInfo = wallInfos[tempX, y];
-                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B)) {
+                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B) || tempInfo.HasFlag(ActiveWall.R)) {
                             break;
                         }
                     }
@@ -240,7 +240,7 @@ public static class MazeCreator {
                         }
 
                         tempInfo = wallInfos[x, tempY];
-                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L)) {
+                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L) || tempInfo.HasFlag(ActiveWall.F)) {
                             break;
                         }
                     }
@@ -258,7 +258,7 @@ public static class MazeCreator {
                         }
 
                         tempInfo = wallInfos[tempX, y];
-                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B)) {
+                        if(!tempInfo.HasFlag(ActiveWall.F) || !tempInfo.HasFlag(ActiveWall.B) || tempInfo.HasFlag(ActiveWall.L)) {
                             break;
                         }
                     }
@@ -276,7 +276,7 @@ public static class MazeCreator {
                         }
 
                         tempInfo = wallInfos[x, tempY];
-                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L)) {
+                        if(!tempInfo.HasFlag(ActiveWall.R) || !tempInfo.HasFlag(ActiveWall.L) || tempInfo.HasFlag(ActiveWall.B)) {
                             break;
                         }
                     }

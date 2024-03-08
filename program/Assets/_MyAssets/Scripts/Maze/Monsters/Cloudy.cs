@@ -13,13 +13,17 @@ public class Cloudy : MonsterController, IMove {
     [SerializeField] private AudioSource audioSource;
     [SerializeField, Range(0.0f, 1.0f)] private float audioVolumeMax = 0.85f;
 
-    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 5.0f;
+    private Vector2Int coordChecker;
+
+    public static float STANDARD_RIM_RADIUS_SPREAD_LENGTH { get; private set; }
 
 
 
     protected override void Awake() {
         SoundManager.Instance.OnWorldSoundAdded += WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved += WorldSoundRemoved;
+
+        UtilObjects.Instance.OnGamePaused += OnGamePaused;
 
         OnCurrentStateChanged += CurrentStateChanged;
         OnPathEnd += PathEnd;
@@ -30,6 +34,8 @@ public class Cloudy : MonsterController, IMove {
     private void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
+
+        UtilObjects.Instance.OnGamePaused -= OnGamePaused;
 
         OnCurrentStateChanged -= CurrentStateChanged;
         OnPathEnd -= PathEnd;
@@ -42,12 +48,14 @@ public class Cloudy : MonsterController, IMove {
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
 
+        STANDARD_RIM_RADIUS_SPREAD_LENGTH = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.Whisper);
+
         audioSource.clip = SoundManager.Instance.GetSfxClip(SoundManager.SoundType.Whisper);
         audioSource.minDistance = 0.0f;
         audioSource.maxDistance = STANDARD_RIM_RADIUS_SPREAD_LENGTH;
     }
 
-    private void FixedUpdate() {
+    private void Update() {
         if(!IsPlaying) return;
 
         if(CurrentState == MonsterState.Rest) {
@@ -58,15 +66,21 @@ public class Cloudy : MonsterController, IMove {
         }
 
         Move(Time.deltaTime);
-    }
 
-    private void Update() {
         if(CurrentState != MonsterState.None) {
             // Idle Sound
             float cameraDist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
             float normalizedDist = cameraDist / STANDARD_RIM_RADIUS_SPREAD_LENGTH;
             float volume = Mathf.Clamp01(1.0f - normalizedDist) * audioVolumeMax;
             audioSource.volume = Mathf.Lerp(audioSource.volume, volume, Time.deltaTime * 0.4f);
+        }
+
+        // 위치 체크
+        coordChecker = LevelLoader.Instance.GetMazeCoordinate(Pos);
+        if(CurrentCoord.x != coordChecker.x || CurrentCoord.y != coordChecker.y) {
+            CurrentCoord = coordChecker;
+
+
         }
     }
 
@@ -81,11 +95,11 @@ public class Cloudy : MonsterController, IMove {
                 Vector3 hitPosToPathPos = (movePath[0] - stuckHelper.HitPos).normalized;
                 bool isRightSide = Vector3.Cross(stuckHelper.HitNormal, hitPosToPathPos).y > 0;
                 Vector3 lookForward = Quaternion.AngleAxis(isRightSide ? 90 : -90, Vector3.up) * stuckHelper.HitNormal;
-                transform.forward = Vector3.Lerp(transform.forward, lookForward, Time.deltaTime * rotateSpeed * 2.0f);
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lookForward), Time.deltaTime * rotateSpeed * 2.0f);
             }
             else {
                 Vector3 moveDirection = (movePath[0] - transform.position).normalized;
-                transform.forward = Vector3.Lerp(transform.forward, moveDirection, dt * rotateSpeed);
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(moveDirection), dt * rotateSpeed);
             }
 
             if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
@@ -138,13 +152,36 @@ public class Cloudy : MonsterController, IMove {
     #endregion
 
     #region Action
+    private void OnGamePaused(bool isPaused) {
+        if(isPaused) {
+            audioSource.Pause();
+        }
+        else {
+            audioSource.UnPause();
+        }
+    }
+
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         switch(so.Type) {
+            case SoundManager.SoundType.Empty00_5s:
+            case SoundManager.SoundType.Empty01s:
+            case SoundManager.SoundType.Empty02s:
+            case SoundManager.SoundType.Empty03s:
+            case SoundManager.SoundType.Empty04s:
+            case SoundManager.SoundType.Empty05s:
+            case SoundManager.SoundType.Mining01:
+            case SoundManager.SoundType.Mining02:
+            case SoundManager.SoundType.Mining03:
+            case SoundManager.SoundType.Mining04:
+            case SoundManager.SoundType.MiningEnd:
             case SoundManager.SoundType.PlayerWalk: {
-                    if(Vector3.Distance(so.Position, Pos) < STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
+                    Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
+                    if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;
+
+                    if(Vector3.Distance(so.Position, Pos) < so.SpreadLength) {
                         List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
                         float dist = LevelLoader.Instance.GetPathDistance(newPath);
-                        if(dist <= STANDARD_RIM_RADIUS_SPREAD_LENGTH * 2) {
+                        if(dist <= so.SpreadLength * 1.5f) {
                             movePath = newPath;
 
                             physicsMoveSpeedMax = 1.0f;
@@ -152,19 +189,6 @@ public class Cloudy : MonsterController, IMove {
 
                             CurrentState = MonsterState.Move;
                         }
-                    }
-                }
-                break;
-            case SoundManager.SoundType.Empty00_5s: {
-                    if(FollowingSound == null &&
-                        from == SoundManager.SoundFrom.Monster &&
-                        Vector3.Distance(so.Position, Pos) < Froggy.STANDARD_RIM_RADIUS_SPREAD_LENGTH) {
-                        movePath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
-
-                        physicsMoveSpeedMax = 1.0f;
-                        FollowingSound = so;
-
-                        CurrentState = MonsterState.Move;
                     }
                 }
                 break;

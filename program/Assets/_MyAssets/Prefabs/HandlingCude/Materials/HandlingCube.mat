@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - DRAW_MAZEBLOCK_EDGE
+  - DRAW_OBJECT_OUTLINE
   - USE_BASE_COLOR
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -81,6 +82,7 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DrawMazeBlockEdge: 1
+    - _DrawObjectOutline: 1
     - _DrawOutline: 0
     - _DrawPlayerPastPos: 0
     - _DrawRim: 0
@@ -94,6 +96,7 @@ Material:
     - _MetallicStrength: 1
     - _Mode: 0
     - _MonsterOutlineThickness: 0.4
+    - _ObjectOutlineThickness: 0.05
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _PlayerPastPosRadius: 0.3
@@ -111,6 +114,7 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MazeBlockEdgeColor: {r: 1, g: 1, b: 1, a: 1}
     - _MonsterOutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ObjectOutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _PlayerPastPosColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor_Item: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor_Monster: {r: 1, g: 1, b: 1, a: 1}
