@@ -64,7 +64,7 @@ public class Froggy : MonsterController {
         if(!IsPlaying) return;
 
         if(screamActionCoroutine == null && CurrentState != MonsterState.Scream) {
-            if(!isPlayerInsideCheckCoordRange) {
+            //if(!isPlayerInsideCheckCoordRange) {
                 // Fake Item Sound
                 fakeItemSoundPlayTimeChecker += Time.deltaTime;
                 if(fakeItemSoundPlayTimeChecker >= fakeItemSoundPlayTimeInterval) {
@@ -80,7 +80,7 @@ public class Froggy : MonsterController {
 
                     fakeItemSoundPlayTimeChecker -= fakeItemSoundPlayTimeInterval;
                 }
-            }
+            //}
         }
     }
 
@@ -111,7 +111,7 @@ public class Froggy : MonsterController {
 
         switch(so.Type) {
             case SoundManager.SoundType.PlayerWalk: {
-                    if(isPlayerInsideCheckCoordRange) {
+                    if(isPlayerInsideCheckCoordRange && CurrentState != MonsterState.Scream) {
                         if(Physics.Raycast(
                         Pos,
                         (PlayerController.Instance.Pos - Pos).normalized,
@@ -162,21 +162,24 @@ public class Froggy : MonsterController {
         animator.SetTrigger(AnimationTriggerName_Scream);
         yield return null;
 
-        const string animationName_Scream = "Scream";
+        //const string animationName_Scream = "Scream";
         const float screamFakeSoundTimeInterval = 0.5f;
         float screamSoundTimeChecker = 0.0f;
-        while(true) {
-            if(TryGetAnimatorStateInfo(AnimatorLayerName_Motion)) {
-                if(!animatorStateInfo[AnimatorLayerName_Motion].Info.IsName(animationName_Scream)) {
-                    break;
-                }
-            }
+        const int screamCount = 6;
+        int screamCountChecker = 0;
+        while(screamCountChecker < screamCount) {
+            //if(TryGetAnimatorStateInfo(AnimatorLayerName_Motion)) {
+            //    if(!animatorStateInfo[AnimatorLayerName_Motion].Info.IsName(animationName_Scream)) {
+            //        break;
+            //    }
+            //}
 
             screamSoundTimeChecker += Time.deltaTime;
             if(screamSoundTimeChecker >= screamFakeSoundTimeInterval) {
-                SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.Empty00_5s, SoundManager.SoundFrom.Monster, 0.0f);
+                SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.Empty05s, SoundManager.SoundFrom.Monster, 0.0f);
 
                 screamSoundTimeChecker -= screamFakeSoundTimeInterval;
+                screamCountChecker++;
             }
 
             yield return null;

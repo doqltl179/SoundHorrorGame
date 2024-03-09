@@ -20,12 +20,17 @@ public class StandingSpaceConrtoller : MonoBehaviour {
         get => npcAnimator.gameObject.activeSelf;
         set => npcAnimator.gameObject.SetActive(value);
     }
+    public Vector3 NPCPos { get { return npcAnchor.position; } }
+    public Quaternion NPCRotation { get { return npcAnchor.rotation; } }
+    public Vector3 NPCForward { get { return npcAnchor.forward; } }
     public Vector3 NPCCameraViewPos { get { return npcCameraView.position; } }
     public Quaternion NPCCameraViewRotation { get { return npcCameraView.rotation; } }
     public Vector3 NPCCameraViewForward { get { return npcCameraView.forward; } }
+    public Vector3 NPCCameraViewUp { get { return npcCameraView.up; } }
 
     private const string AnimatorTrigger_NPC_Surprised = "Surprised";
     private const string AnimatorTrigger_NPC_Talking = "Talking";
+    private const string AnimatorTrigger_NPC_Throw = "Throw";
 
     private MazeBlock[,] levels = null;
     private Material levelFloorMaterial = null;
@@ -50,7 +55,22 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     private const string MAT_USE_BASE_COLOR_KEY = "USE_BASE_COLOR";
     private const string MAT_DRAW_MAZEBLOCK_EDGE_KEY = "DRAW_MAZEBLOCK_EDGE";
 
+    //private IEnumerator npcMoveAnimationCoroutine = null;
+    //private IEnumerator npcRotateAnimationCoroutine = null;
 
+
+
+    private void OnDisable() {
+        //if(npcMoveAnimationCoroutine != null) {
+        //    StopCoroutine(npcMoveAnimationCoroutine);
+        //    npcMoveAnimationCoroutine = null;
+        //}
+        //if(npcRotateAnimationCoroutine != null) {
+        //    StopCoroutine(npcRotateAnimationCoroutine);
+        //    npcRotateAnimationCoroutine = null;
+        //}
+        StopAllCoroutines();
+    }
 
     private void Start() {
         string componentName = typeof(MazeBlock).Name;
@@ -132,10 +152,66 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     }
 
     #region Utility
+    public void StartNPCRotateAnimation(float animationTime, Quaternion rotateTo, float delay = 0.0f) {
+        //if(npcRotateAnimationCoroutine == null) {
+        //    npcRotateAnimationCoroutine = NPCMoveAnimationCoroutine(animationTime, rotateTo);
+        //    StartCoroutine(npcRotateAnimationCoroutine);
+        //}
+        StartCoroutine(NPCMoveAnimationCoroutine(animationTime, rotateTo, delay));
+    }
+
+    private IEnumerator NPCMoveAnimationCoroutine(float animationTime, Quaternion rotateTo, float delay = 0.0f) {
+        if(delay > 0.0f) {
+            yield return new WaitForSeconds(delay);
+        }
+
+        Quaternion npcStartRotation = npcAnchor.rotation;
+        float timeChecker = 0.0f;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            npcAnchor.rotation = Quaternion.Lerp(npcStartRotation, rotateTo, timeChecker / animationTime);
+
+            yield return null;
+        }
+
+        npcAnchor.rotation = rotateTo;
+
+        //npcMoveAnimationCoroutine = null;
+    }
+
+    public void StartNPCMoveAnimation(float animationTime, Vector3 moveTo, float delay = 0.0f) {
+        //if(npcMoveAnimationCoroutine == null) {
+        //    npcMoveAnimationCoroutine = NPCMoveAnimationCoroutine(animationTime, moveTo);
+        //    StartCoroutine(npcMoveAnimationCoroutine);
+        //}
+        StartCoroutine(NPCMoveAnimationCoroutine(animationTime, moveTo, delay));
+    }
+
+    private IEnumerator NPCMoveAnimationCoroutine(float animationTime, Vector3 moveTo, float delay = 0.0f) {
+        if(delay > 0.0f) {
+            yield return new WaitForSeconds(delay);
+        }
+
+        Vector3 npcStartPos = npcAnchor.position;
+        float timeChecker = 0.0f;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            npcAnchor.position = Vector3.Lerp(npcStartPos, moveTo, timeChecker / animationTime);
+
+            yield return null;
+        }
+
+        npcAnchor.position = moveTo;
+
+        //npcMoveAnimationCoroutine = null;
+    }
+
     public void SetAnimationTrigger_Talking() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Talking);
     public void SetAnimationResetTrigger_Talking() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Talking);
     public void SetAnimationTrigger_Surprised() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Surprised);
     public void SetAnimationResetTrigger_Surprised() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Surprised);
+    public void SetAnimationTrigger_Throw() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Throw);
+    public void SetAnimationResetTrigger_Throw() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Throw);
 
     public void InitializeNPCAnchor(Vector3 pos, Vector3? forward = null) {
         npcAnchor.position = pos;

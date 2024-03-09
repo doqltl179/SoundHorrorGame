@@ -5,6 +5,10 @@ using UnityEngine;
 public class PauseMenuController : MonoBehaviour {
     [SerializeField] private CanvasGroup canvasGroup;
     public CanvasGroup CanvasGroup { get { return canvasGroup; } }
+    public float Alpha {
+        get => canvasGroup.alpha;
+        set => canvasGroup.alpha = value;
+    }
 
 
 

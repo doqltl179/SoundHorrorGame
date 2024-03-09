@@ -385,7 +385,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
     #endregion
 
     public float GetSpreadLength(SoundType type) {
-        return GetSfxClip(type).length * LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_TIME;
+        return LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * Mathf.Clamp01(GetSfxClip(type).length / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_TIME);
     }
     #endregion
 

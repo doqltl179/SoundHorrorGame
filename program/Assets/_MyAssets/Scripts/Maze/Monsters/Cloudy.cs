@@ -162,6 +162,8 @@ public class Cloudy : MonsterController, IMove {
     }
 
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
+        if(!IsPlaying) return;
+
         switch(so.Type) {
             case SoundManager.SoundType.Empty00_5s:
             case SoundManager.SoundType.Empty01s:

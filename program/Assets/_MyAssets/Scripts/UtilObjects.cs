@@ -254,6 +254,29 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         if(active) CurrentPages |= Page.PauseMenu;
         else CurrentPages &= ~Page.PauseMenu;
     }
+
+    private IEnumerator SetActivePauseMenuAction(bool active, float fadeTime = 0.0f) {
+        if(active) {
+            pauseMenuController.gameObject.SetActive(true);
+            if(fadeTime > 0.0f) {
+                pauseMenuController.Alpha = 0.0f;
+                yield return StartCoroutine(FadeIn(pauseMenuController.CanvasGroup, fadeTime));
+            }
+            else {
+                pauseMenuController.Alpha = 1.0f;
+            }
+        }
+        else {
+            if(fadeTime > 0.0f) {
+                yield return StartCoroutine(FadeOut(pauseMenuController.CanvasGroup, fadeTime, false, null, () => {
+                    pauseMenuController.gameObject.SetActive(false);
+                }));
+            }
+            else {
+                pauseMenuController.gameObject.SetActive(false);
+            }
+        }
+    }
     #endregion
 
     #region Settings
@@ -418,11 +441,9 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                         SoundManager.Instance.PauseAllSounds();
                         Time.timeScale = 0.0f;
 
-                        rayBlock.gameObject.SetActive(true);
-                        rayBlock.Color = new Color(0, 0, 0, 0.85f);
-                        rayBlock.Alpha = 1.0f;
-                        rayBlock.gameObject.SetActive(true);
-                        pauseMenuController.gameObject.SetActive(true);
+                        StartCoroutine(SetActiveRayBlockAction(true, 0.0f, new Color(0, 0, 0, 210f / 255f)));
+
+                        StartCoroutine(SetActivePauseMenuAction(true, 0.0f));
 
                         OnGamePaused?.Invoke(true);
                     }
@@ -430,8 +451,9 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                         SoundManager.Instance.UnPauseAllSound();
                         Time.timeScale = 1.0f;
 
-                        rayBlock.gameObject.SetActive(false);
-                        pauseMenuController.gameObject.SetActive(false);
+                        StartCoroutine(SetActiveRayBlockAction(false, 0.0f, new Color(0, 0, 0, 210f / 255f)));
+
+                        StartCoroutine(SetActivePauseMenuAction(false, 0.0f));
 
                         OnGamePaused?.Invoke(false);
                     }
@@ -439,22 +461,26 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                 break;
             case Page.Settings: {
                     if(active) {
-                        pauseMenuController.CanvasGroup.alpha = 0.0f;
+                        StartCoroutine(SetActivePauseMenuAction(false, 0.1f));
+
                         StartCoroutine(SetActiveSettingsAction(true, 0.1f));
                     }
                     else {
-                        pauseMenuController.CanvasGroup.alpha = 1.0f;
+                        StartCoroutine(SetActivePauseMenuAction(true, 0.1f));
+
                         StartCoroutine(SetActiveSettingsAction(false, 0.1f));
                     }
                 }
                 break;
             case Page.KeyGuide: {
                     if(active) {
-                        pauseMenuController.CanvasGroup.alpha = 0.0f;
+                        StartCoroutine(SetActivePauseMenuAction(false, 0.1f));
+
                         StartCoroutine(SetActiveKeyGuideAction(true, 0.1f));
                     }
                     else {
-                        pauseMenuController.CanvasGroup.alpha = 1.0f;
+                        StartCoroutine(SetActivePauseMenuAction(true, 0.1f));
+
                         StartCoroutine(SetActiveKeyGuideAction(false, 0.1f));
                     }
                 }

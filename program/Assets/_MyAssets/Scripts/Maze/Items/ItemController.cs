@@ -33,6 +33,8 @@ public class ItemController : MonoBehaviour {
 
 
     private void Start() {
+        collider.radius = PlayerController.PlayerHeight * 2.0f;
+
         itemSoundPlayTimeChecker = Random.Range(0.0f, ItemSoundPlayTimeInterval);
 
         pickaxe.SetActive(false);

@@ -158,6 +158,14 @@ MonoBehaviour:
       \uBE4C\uC5B4."
     m_Metadata:
       m_Items: []
+  - m_Id: 1437146696032256
+    m_Localized: test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1437186755829760
+    m_Localized: test2
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

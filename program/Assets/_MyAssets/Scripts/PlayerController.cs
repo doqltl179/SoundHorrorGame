@@ -296,15 +296,19 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
+        if(!IsPlaying) return;
+
         if(other.CompareTag("NPC")) {
             OnEnteredNPCArea?.Invoke();
         }
     }
 
     private void OnCollisionEnter(Collision collision) {
+        if(!IsPlaying) return;
+
         if(collision.gameObject.CompareTag(MonsterController.TagName)) {
             // 자꾸 걸리니까 테스트가 안되므로 잠깐 꺼둠.
-            return; 
+            //return; 
 
             OnPlayerCatched?.Invoke(collision.rigidbody.GetComponent<MonsterController>());
         }
