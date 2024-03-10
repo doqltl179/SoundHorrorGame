@@ -65,7 +65,7 @@ public static class UserSettings {
     #region Sound
     public static Action<float> OnMasterVolumeChanged;
     private static readonly string m_masterVolume_pref = "MasterVolume";
-    private static readonly float m_standardMasterVolume = 100.0f;
+    private static readonly float m_standardMasterVolume = 70.0f;
     private static readonly float m_masterVolumeMin = 0.0f;
     private static readonly float m_masterVolumeMax = 100.0f;
     public static float MasterVolume {

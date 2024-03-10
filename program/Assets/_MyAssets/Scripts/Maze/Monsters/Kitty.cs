@@ -174,36 +174,22 @@ public class Kitty : MonsterController, IMove {
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         if(!IsPlaying) return;
 
-        switch(so.Type) {
-            case SoundManager.SoundType.Empty00_5s:
-            case SoundManager.SoundType.Empty01s:
-            case SoundManager.SoundType.Empty02s:
-            case SoundManager.SoundType.Empty03s:
-            case SoundManager.SoundType.Empty04s:
-            case SoundManager.SoundType.Empty05s:
-            case SoundManager.SoundType.Mining01:
-            case SoundManager.SoundType.Mining02:
-            case SoundManager.SoundType.Mining03:
-            case SoundManager.SoundType.Mining04:
-            case SoundManager.SoundType.MiningEnd:
-            case SoundManager.SoundType.PlayerWalk: {
-                    Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
-                    if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;
+        if(from == SoundManager.SoundFrom.Player || so.Type == SoundManager.SoundType.Scream) {
+            Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
+            if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;
 
-                    if(Vector3.Distance(so.Position, Pos) < so.SpreadLength) {
-                        List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
-                        float dist = LevelLoader.Instance.GetPathDistance(newPath);
-                        if(dist <= so.SpreadLength * 1.5f) {
-                            movePath = newPath;
+            if(Vector3.Distance(so.Position, Pos) < so.SpreadLength) {
+                List<Vector3> newPath = LevelLoader.Instance.GetPath(Pos, so.Position, Radius);
+                float dist = LevelLoader.Instance.GetPathDistance(newPath);
+                if(dist <= so.SpreadLength * 1.5f) {
+                    movePath = newPath;
 
-                            physicsMoveSpeedMax = 1.0f;
-                            FollowingSound = so;
+                    physicsMoveSpeedMax = 1.0f;
+                    FollowingSound = so;
 
-                            CurrentState = MonsterState.Move;
-                        }
-                    }
+                    CurrentState = MonsterState.Move;
                 }
-                break;
+            }
         }
     }
 

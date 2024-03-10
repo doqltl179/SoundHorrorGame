@@ -308,7 +308,7 @@ public class PlayerController : MonoBehaviour {
 
         if(collision.gameObject.CompareTag(MonsterController.TagName)) {
             // 자꾸 걸리니까 테스트가 안되므로 잠깐 꺼둠.
-            //return; 
+            return; 
 
             OnPlayerCatched?.Invoke(collision.rigidbody.GetComponent<MonsterController>());
         }

@@ -31,11 +31,19 @@ public class SoundManager : GenericSingleton<SoundManager> {
         // Item
         Crystal, 
 
+        Teleport, 
+
         Mining01,
         Mining02,
         Mining03,
         Mining04,
         MiningEnd,
+
+        ObjectHit01,
+        ObjectHit02,
+        ObjectHit03,
+        ObjectHit04,
+        ObjectHit05,
 
         // Player
         PlayerWalk,

@@ -47,7 +47,7 @@ public class HandlingCube : MonoBehaviour {
                 posSaver = transform.position;
             }
             else {
-                rigidbody.velocity = calculatedVelocity * rigidbody.mass * 10.0f;
+                rigidbody.velocity = calculatedVelocity * rigidbody.mass * 5.0f;
             }
 
             isPickUp = value;
@@ -133,7 +133,17 @@ public class HandlingCube : MonoBehaviour {
     private void OnCollisionEnter(Collision collision) {
         if(collision.collider.CompareTag(MazeBlock.TagName)) {
             // Play Sound
-            SoundManager.Instance.PlayOnWorld(collision.contacts[0].point, SoundManager.SoundType.Empty03s, SoundManager.SoundFrom.None);
+            float mag = rigidbody.velocity.magnitude * rigidbody.mass;
+            float normalizedStrength = Mathf.Clamp01(mag / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH);
+            Debug.Log(rigidbody.velocity.magnitude);
+            int sound = (int)(normalizedStrength / 0.2f);
+            switch(sound) {
+                case 0: SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.ObjectHit01, SoundManager.SoundFrom.Player); break;
+                case 1: SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.ObjectHit02, SoundManager.SoundFrom.Player); break;
+                case 2: SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.ObjectHit03, SoundManager.SoundFrom.Player); break;
+                case 3: SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.ObjectHit04, SoundManager.SoundFrom.Player); break;
+                default: SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.ObjectHit05, SoundManager.SoundFrom.Player); break;
+            }
         }
     }
 

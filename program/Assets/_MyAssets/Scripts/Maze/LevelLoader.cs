@@ -793,6 +793,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         mc.Material.EnableKeyword(MAT_DRAW_RIM_KEY);
         mc.Material.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
 
+        if(type == MonsterType.Cloudy) mc.Material.SetColor("_BaseColor", Color.white * 50f / 255f);
+
         monsters.Add(mc);
     }
 
@@ -914,7 +916,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             Vector2Int[] pickUpCoords = handlingCubes.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any() &&
+                if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any() ||
                     pickUpCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }

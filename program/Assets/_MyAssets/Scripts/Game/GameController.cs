@@ -38,8 +38,8 @@ public class GameController : MonoBehaviour {
             },
         },
         new GameLevelSettings() {
-            LevelWidth = 24,
-            LevelHeight = 24,
+            LevelWidth = 16,
+            LevelHeight = 16,
 
             Monsters = new GameLevelSettings.MonsterStruct[] {
                 new GameLevelSettings.MonsterStruct() {
@@ -68,8 +68,8 @@ public class GameController : MonoBehaviour {
             },
         },
         new GameLevelSettings() {
-            LevelWidth = 32,
-            LevelHeight = 32,
+            LevelWidth = 16,
+            LevelHeight = 16,
 
             Monsters = new GameLevelSettings.MonsterStruct[] {
                 new GameLevelSettings.MonsterStruct() {
@@ -203,81 +203,90 @@ public class GameController : MonoBehaviour {
         // 다른 컴포넌트의 `Start`함수가 끝나기를 기다리기 위함
         yield return null;
 
-        const int zoom = 1;
+        //const int zoom = 1;
+        const int zoom = 2;
         Vector2Int calculatedLevelSize = LevelLoader.Instance.GetLevelSize(zoom);
         Vector2Int zoomInCoord = Vector2Int.zero;
         int coordCount = calculatedLevelSize.x * calculatedLevelSize.y;
         int randomMin, randomMax;
-        int coordMoveCount;
+        int zoomInCoordIndex;
 
         // 아이템 생성
         int itemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
         randomMax = coordCount / itemCount;
-        randomMin = randomMax / 3 * 2;
+        randomMin = randomMax / 2;
 
         GameLevelSettings.ItemStruct itemStruct;
-        coordMoveCount = 0;
+        zoomInCoordIndex = 0;
         for(int i = 0; i < CurrentLevelSettings.Items.Length; i++) {
             itemStruct = CurrentLevelSettings.Items[i];
             for(int j = 0; j < itemStruct.generateCount; j++) {
-                zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
-                zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
 
                 LevelLoader.Instance.AddItemOnLevel(itemStruct.type, zoomInCoord, zoom);
 
-                coordMoveCount += Random.Range(randomMin, randomMax);
+                zoomInCoordIndex++;
             }
         }
 
         // 몬스터 생성
         int monsterCount = CurrentLevelSettings.Monsters.Sum(t => t.generateCount);
         randomMax = coordCount / monsterCount;
-        randomMin = randomMax / 3 * 2;
+        randomMin = randomMax / 2;
 
         GameLevelSettings.MonsterStruct monsterStruct;
         zoomInCoord = Vector2Int.zero;
-        coordMoveCount = 0;
+        zoomInCoordIndex = 0;
         for(int i = 0; i < CurrentLevelSettings.Monsters.Length; i++) {
             monsterStruct = CurrentLevelSettings.Monsters[i];
             for(int j = 0; j < monsterStruct.generateCount; j++) {
-                zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
-                zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
 
                 LevelLoader.Instance.AddMonsterOnLevel(monsterStruct.type, zoomInCoord, zoom);
 
-                coordMoveCount += Random.Range(randomMin, randomMax);
+                zoomInCoordIndex++;
             }
         }
 
         // PickUP 아이템 생성
         itemCount = calculatedLevelSize.x * calculatedLevelSize.y / 5;
         randomMax = coordCount / itemCount;
-        randomMin = randomMax / 3 * 2;
+        randomMin = randomMax / 2;
 
-        coordMoveCount = 0;
+        zoomInCoordIndex = 0;
         for(int i = 0; i < itemCount; i++) {
-            zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
-            zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
+            zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
 
             LevelLoader.Instance.AddPickUpItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom);
 
-            coordMoveCount += Random.Range(randomMin, randomMax);
+            zoomInCoordIndex++;
         }
 
         // Teleport 생성
         if(UserSettings.GameLevel != 0) {
             itemCount = (UserSettings.GameLevel + 1) * 2;
             randomMax = coordCount / itemCount;
-            randomMin = randomMax / 3 * 2;
+            randomMin = randomMax / 2;
 
-            coordMoveCount = 0;
+            zoomInCoordIndex = 0;
             for(int i = 0; i < itemCount; i++) {
-                zoomInCoord.y = calculatedLevelSize.y - (coordMoveCount / calculatedLevelSize.x + 1);
-                zoomInCoord.x = coordMoveCount % calculatedLevelSize.x;
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
 
                 LevelLoader.Instance.AddTeleportOnLevel(LevelLoader.ItemType.Teleport, zoomInCoord, zoom);
 
-                coordMoveCount += Random.Range(randomMin, randomMax);
+                zoomInCoordIndex++;
             }
         }
 

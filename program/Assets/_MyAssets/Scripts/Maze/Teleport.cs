@@ -27,6 +27,8 @@ public class Teleport : MonoBehaviour {
     }
 
     private IEnumerator TeleportAnimationCoroutine() {
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.Teleport, 0.85f);
+
         const float fadeTime = 0.2f;
 
         // 플레이어 정지
