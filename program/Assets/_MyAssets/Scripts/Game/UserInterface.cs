@@ -126,14 +126,27 @@ public class UserInterface : MonoBehaviour {
 
     [Header("Warning")]
     [SerializeField] private CanvasGroup warningCanvasGroup;
+    [SerializeField, Range(0.0f, 1.0f)] private float warningAlphaMax = 0.5f;
+    public bool WarningActive {
+        get => warningCanvasGroup.gameObject.activeSelf;
+        set => warningCanvasGroup.gameObject.SetActive(value);
+    }
+    public float WarningAlpha {
+        get => warningCanvasGroup.alpha;
+        set => warningCanvasGroup.alpha = value;
+    }
 
 
 
     private void Awake() {
+        PlayerController.Instance.OnOverHitChanged += OnOverHitChanged;
+
         UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
     }
 
     private void OnDestroy() {
+        PlayerController.Instance.OnOverHitChanged -= OnOverHitChanged;
+
         UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
     }
 
@@ -190,10 +203,23 @@ public class UserInterface : MonoBehaviour {
                 image.color = runGageColor;
             }
         }
+        else {
+            // 정규화 * RunGage * AlphaMax 
+            float warningAlpha = (Mathf.Cos(Mathf.Lerp(Mathf.PI * 10, 0.0f, RunGage)) + 1) * 0.5f * RunGage * warningAlphaMax;
+            warningCanvasGroup.alpha = Mathf.Lerp(warningCanvasGroup.alpha, warningAlpha, Time.deltaTime * 4);
+        }
         #endregion
     }
 
     #region Action
+    public void OnOverHitChanged(bool value) {
+        warningCanvasGroup.gameObject.SetActive(value);
+
+        if(value) {
+            warningCanvasGroup.alpha = 0.0f;
+        }
+    }
+
     public void OnUseMicrophoneChanged(bool value) {
         micGageRect.gameObject.SetActive(value);
     }

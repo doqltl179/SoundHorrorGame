@@ -58,7 +58,15 @@ public class PlayerController : MonoBehaviour {
     /// <summary>
     /// runTimeChecker가 runTimeMax보다 높아지면 runTimeMax의 값만큼 run상태가 될 수 없음.
     /// </summary>
-    public bool OverHit { get; private set; }
+    private bool overHit;
+    public bool OverHit {
+        get => overHit;
+        private set {
+            overHit = value;
+
+            OnOverHitChanged?.Invoke(value);
+        }
+    }
     [SerializeField, Range(0.0f, 10.0f)] private float moveBoost = 0.4f;
     private float physicsMoveSpeed = 0.0f;
     private float physicsMoveSpeedMax = 1.0f;
@@ -121,6 +129,7 @@ public class PlayerController : MonoBehaviour {
     public static KeyCode key_crouch = KeyCode.LeftControl;
 
     public Action<Vector2Int> OnCoordChanged;
+    public Action<bool> OnOverHitChanged;
     public Action<MonsterController> OnPlayerCatched;
 
     public Action OnEnteredNPCArea;

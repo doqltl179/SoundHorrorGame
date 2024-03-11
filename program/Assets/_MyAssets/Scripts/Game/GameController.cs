@@ -63,7 +63,7 @@ public class GameController : MonoBehaviour {
             Items = new GameLevelSettings.ItemStruct[] {
                 new GameLevelSettings.ItemStruct() {
                     type = LevelLoader.ItemType.Crystal,
-                    generateCount = 5,
+                    generateCount = 3,
                 },
             },
         },
@@ -101,7 +101,7 @@ public class GameController : MonoBehaviour {
             Items = new GameLevelSettings.ItemStruct[] {
                 new GameLevelSettings.ItemStruct() {
                     type = LevelLoader.ItemType.Crystal,
-                    generateCount = 7,
+                    generateCount = 3,
                 },
             },
         },
@@ -272,22 +272,21 @@ public class GameController : MonoBehaviour {
         }
 
         // Teleport 생성
-        if(UserSettings.GameLevel != 0) {
-            itemCount = (UserSettings.GameLevel + 1) * 2;
-            randomMax = coordCount / itemCount;
-            randomMin = randomMax / 2;
+        //itemCount = (UserSettings.GameLevel + 1) * 2;
+        itemCount = monsterCount / 2;
+        randomMax = coordCount / itemCount;
+        randomMin = randomMax / 2;
 
-            zoomInCoordIndex = 0;
-            for(int i = 0; i < itemCount; i++) {
-                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+        zoomInCoordIndex = 0;
+        for(int i = 0; i < itemCount; i++) {
+            zoomInCoordIndex += Random.Range(randomMin, randomMax);
 
-                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
 
-                LevelLoader.Instance.AddTeleportOnLevel(LevelLoader.ItemType.Teleport, zoomInCoord, zoom);
+            LevelLoader.Instance.AddTeleportOnLevel(LevelLoader.ItemType.Teleport, zoomInCoord, zoom);
 
-                zoomInCoordIndex++;
-            }
+            zoomInCoordIndex++;
         }
 
         // StandingSpace 위치 설정
@@ -341,11 +340,14 @@ public class GameController : MonoBehaviour {
         PlayerController.Instance.IsPlaying = true;
 
 #if Skip_Scenario
+        yield return null;
+
         PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(new Vector2Int(standingSpaceCoord.x, standingSpaceCoord.y + 1));
         PlayerController.Instance.Forward = Vector3.forward;
 
         LevelLoader.Instance.PlayMonsters();
         LevelLoader.Instance.PlayItems();
+        LevelLoader.Instance.PlayPickUpItems();
 
         OnScenarioEnd();
 #endif
@@ -379,6 +381,7 @@ public class GameController : MonoBehaviour {
     private IEnumerator OnPlayerCatchedCoroutine(MonsterController monster) {
         LevelLoader.Instance.StopMonsters();
         LevelLoader.Instance.StopItems();
+        LevelLoader.Instance.StopPickUpItems();
         PlayerController.Instance.IsPlaying = false;
 
         monster.PlayerCatchAnimation();
@@ -1234,6 +1237,7 @@ public class GameController : MonoBehaviour {
             // 오브젝트 Stop
             LevelLoader.Instance.StopMonsters();
             LevelLoader.Instance.StopItems();
+            LevelLoader.Instance.StopPickUpItems();
             PlayerController.Instance.IsPlaying = false;
 
             // BGM Off
@@ -1282,6 +1286,7 @@ public class GameController : MonoBehaviour {
 
         LevelLoader.Instance.PlayMonsters();
         LevelLoader.Instance.PlayItems();
+        LevelLoader.Instance.PlayPickUpItems();
 
         int maxItemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
         int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;

@@ -159,14 +159,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private const string MAT_MONSTER_OUTLINE_COLOR_NAME = "_MonsterOutlineColor";
     #endregion
 
-    /// <summary>
-    /// zoom 1당 10개의 블록을 포함
-    /// </summary>
-    private const int ZoomIncludeMazeBlockCount = 10;
-
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 5.0f;
-    // SpreadTime 동안 MazeBlock을 10칸 이동하기 위해 10을 곱함
-    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 10;
+    // SpreadTime 동안 MazeBlock을 8칸 이동하기 위해 10을 곱함
+    public static readonly float STANDARD_RIM_RADIUS_SPREAD_LENGTH = MazeBlock.BlockSize * 8;
     #endregion
 
     private float[] noneFromRimRadiusArray;
@@ -410,8 +405,10 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         if(commonPhysicMaterial == null) {
             PhysicMaterial pm = new PhysicMaterial();
-            pm.dynamicFriction = 0.2f;
-            pm.staticFriction = 0.2f;
+            //pm.dynamicFriction = 0.2f;
+            pm.dynamicFriction = 0.01f;
+            //pm.staticFriction = 0.2f;
+            pm.staticFriction = 0.01f;
             pm.frictionCombine = PhysicMaterialCombine.Minimum;
 
             commonPhysicMaterial = pm;
@@ -793,7 +790,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         mc.Material.EnableKeyword(MAT_DRAW_RIM_KEY);
         mc.Material.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
 
-        if(type == MonsterType.Cloudy) mc.Material.SetColor("_BaseColor", Color.white * 50f / 255f);
+        if(type == MonsterType.Cloudy) mc.Material.SetColor("_BaseColor", Color.white * 30f / 255f);
 
         monsters.Add(mc);
     }
@@ -933,6 +930,18 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         teleports.Add(t);
     }
 
+    public void PlayPickUpItems() {
+        foreach(HandlingCube hc in handlingCubes) {
+            hc.Play();
+        }
+    }
+
+    public void StopPickUpItems() {
+        foreach(HandlingCube hc in handlingCubes) {
+            hc.Stop();
+        }
+    }
+
     public void PlayItems() {
         foreach(ItemController ic in items) {
             ic.Play();
@@ -1064,6 +1073,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
     #endregion
+
+    public Vector2Int[] GetAllCoordsOfTeleports(int zoom = 0) => teleports.Select(t => GetMazeCoordinate(t.Pos, zoom)).ToArray();
 
     public List<Vector2Int> GetAllCoordsNotExistMonsters(int zoom = 0) {
         List<Vector2Int> coords = new List<Vector2Int>();

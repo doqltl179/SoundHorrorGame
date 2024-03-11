@@ -36,6 +36,8 @@ public class HandlingCube : MonoBehaviour {
         }
     }
 
+    public bool IsPlaying { get; private set; }
+
     private bool isPickUp = false;
     public bool IsPickUp {
         get => isPickUp;
@@ -110,6 +112,8 @@ public class HandlingCube : MonoBehaviour {
     }
 
     private void Update() {
+        if(!IsPlaying) return;
+
         if(isPickUp) {
             if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
 
@@ -131,6 +135,8 @@ public class HandlingCube : MonoBehaviour {
     }
 
     private void OnCollisionEnter(Collision collision) {
+        if(!IsPlaying) return;
+
         if(collision.collider.CompareTag(MazeBlock.TagName)) {
             // Play Sound
             float mag = rigidbody.velocity.magnitude * rigidbody.mass;
@@ -148,7 +154,13 @@ public class HandlingCube : MonoBehaviour {
     }
 
     #region Utility
+    public void Play() {
+        IsPlaying = true;
+    }
 
+    public void Stop() {
+        IsPlaying = false;
+    }
 
     //public void SetMaterial(Material mat) {
     //    meshRenderer.material = mat;

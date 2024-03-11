@@ -1407,7 +1407,7 @@ Rigidbody:
   serializedVersion: 4
   m_Mass: 1
   m_Drag: 0.2
-  m_AngularDrag: 0.2
+  m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -4055,14 +4055,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.735849, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6f865245259c0fd488d33809ba0fe66f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4cf59bf9fc315b84994b6432d2115a6b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4415,7 +4415,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2019256565
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4444,7 +4444,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2019256564}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
@@ -4629,6 +4629,7 @@ MonoBehaviour:
   - {fileID: 1349374219}
   messageBoxButton: {fileID: 1584949483}
   warningCanvasGroup: {fileID: 2019256566}
+  warningAlphaMax: 0.5
 --- !u!1001 &809593463206786806
 PrefabInstance:
   m_ObjectHideFlags: 0

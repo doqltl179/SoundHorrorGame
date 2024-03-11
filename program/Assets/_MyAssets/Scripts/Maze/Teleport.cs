@@ -1,10 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Teleport : MonoBehaviour {
     [SerializeField] private ParticleSystem potal;
     [SerializeField] private CapsuleCollider collider;
+
+    public Vector3 Pos {
+        get => transform.position;
+        set => transform.position = value;
+    }
 
     private IEnumerator teleportAnimationCoroutine = null;
 
@@ -41,9 +47,18 @@ public class Teleport : MonoBehaviour {
         // Set player to random pos
         const int zoom = 2;
         List<Vector2Int> emptyCoords = LevelLoader.Instance.GetAllCoordsNotExistMonsters(zoom);
+        Vector2Int[] teleportCoords = LevelLoader.Instance.GetAllCoordsOfTeleports();
         if(emptyCoords.Count > 0) {
             Vector2Int randomZoomInCoord = emptyCoords[Random.Range(0, emptyCoords.Count)];
             Vector2Int randomCoord = LevelLoader.Instance.GetRandomCoordOnZoomInCoordArea(randomZoomInCoord, zoom);
+            while(true) {
+                if(teleportCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = LevelLoader.Instance.GetRandomCoordOnZoomInCoordArea(randomZoomInCoord, zoom);
+                }
+                else {
+                    break;
+                }
+            }
             PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(randomCoord);
         }
 
