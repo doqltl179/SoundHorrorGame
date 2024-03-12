@@ -178,7 +178,8 @@ public class GameController : MonoBehaviour {
             if(UserSettings.GameLevel >= gameLevels.Length) {
                 Debug.LogError($"GameLevel is out of range. GameLevel: {UserSettings.GameLevel}");
 
-                yield break;
+                //yield break;
+                UserSettings.GameLevel = 0;
             }
 
             CurrentLevelSettings = gameLevels[UserSettings.GameLevel];
@@ -225,7 +226,6 @@ public class GameController : MonoBehaviour {
 
                 zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
                 zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-
                 LevelLoader.Instance.AddItemOnLevel(itemStruct.type, zoomInCoord, zoom);
 
                 zoomInCoordIndex++;
@@ -238,7 +238,6 @@ public class GameController : MonoBehaviour {
         randomMin = randomMax / 2;
 
         GameLevelSettings.MonsterStruct monsterStruct;
-        zoomInCoord = Vector2Int.zero;
         zoomInCoordIndex = 0;
         for(int i = 0; i < CurrentLevelSettings.Monsters.Length; i++) {
             monsterStruct = CurrentLevelSettings.Monsters[i];
@@ -247,7 +246,6 @@ public class GameController : MonoBehaviour {
 
                 zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
                 zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-
                 LevelLoader.Instance.AddMonsterOnLevel(monsterStruct.type, zoomInCoord, zoom);
 
                 zoomInCoordIndex++;
@@ -265,8 +263,7 @@ public class GameController : MonoBehaviour {
 
             zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
             zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-
-            LevelLoader.Instance.AddPickUpItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom);
+            LevelLoader.Instance.AddPickupItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom);
 
             zoomInCoordIndex++;
         }
@@ -283,7 +280,6 @@ public class GameController : MonoBehaviour {
 
             zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
             zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-
             LevelLoader.Instance.AddTeleportOnLevel(LevelLoader.ItemType.Teleport, zoomInCoord, zoom);
 
             zoomInCoordIndex++;
@@ -337,6 +333,7 @@ public class GameController : MonoBehaviour {
                 break;
         }
 
+        yield return null;
         PlayerController.Instance.IsPlaying = true;
 
 #if Skip_Scenario
@@ -347,10 +344,121 @@ public class GameController : MonoBehaviour {
 
         LevelLoader.Instance.PlayMonsters();
         LevelLoader.Instance.PlayItems();
-        LevelLoader.Instance.PlayPickUpItems();
+        LevelLoader.Instance.PlayPickupItems();
 
         OnScenarioEnd();
 #endif
+
+        initGameCoroutine = null;
+    }
+
+    private IEnumerator RestartGameCoroutine() {
+        // Stop Objects
+        LevelLoader.Instance.StopMonsters();
+        LevelLoader.Instance.StopItems();
+        LevelLoader.Instance.StopPickupItems();
+
+        // Component Off
+        pathGuide.gameObject.SetActive(false);
+
+        // Sound 초기화
+        SoundManager.Instance.ResetAllSoundObjects();
+
+        yield return null;
+
+        //const int zoom = 1;
+        const int zoom = 2;
+        Vector2Int calculatedLevelSize = LevelLoader.Instance.GetLevelSize(zoom);
+        Vector2Int zoomInCoord = Vector2Int.zero;
+        int coordCount = calculatedLevelSize.x * calculatedLevelSize.y;
+        int randomMin, randomMax;
+        int zoomInCoordIndex;
+
+        // 아이템 재배치
+        int itemCount = LevelLoader.Instance.ItemCount;
+        //randomMax = coordCount / itemCount;
+        //randomMin = randomMax / 2;
+
+        //zoomInCoordIndex = 0;
+        //for(int i = 0; i < itemCount; i++) {
+        //    zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+        //    zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+        //    zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+        //    LevelLoader.Instance.ResetItemOnLevel(i, zoomInCoord, zoom);
+
+        //    zoomInCoordIndex++;
+        //}
+
+        // 몬스터 재배치
+        int monsterCount = LevelLoader.Instance.MonsterCount;
+        randomMax = coordCount / monsterCount;
+        randomMin = randomMax / 2;
+
+        zoomInCoordIndex = 0;
+        for(int i = 0; i < monsterCount; i++) {
+            zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+            LevelLoader.Instance.ResetMonsterOnLevel(i, zoomInCoord, zoom);
+
+            zoomInCoordIndex++;
+        }
+
+        // PickUP 아이템 재배치
+        itemCount = LevelLoader.Instance.HandlingCubeCount;
+        randomMax = coordCount / itemCount;
+        randomMin = randomMax / 2;
+
+        zoomInCoordIndex = 0;
+        for(int i = 0; i < itemCount; i++) {
+            zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+            LevelLoader.Instance.ResetPickupItemOnLevel(i, zoomInCoord, zoom);
+
+            zoomInCoordIndex++;
+        }
+
+        // Teleport 재배치
+        itemCount = LevelLoader.Instance.TeleportCount;
+        randomMax = coordCount / itemCount;
+        randomMin = randomMax / 2;
+
+        zoomInCoordIndex = 0;
+        for(int i = 0; i < itemCount; i++) {
+            zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+            LevelLoader.Instance.ResetTeleportOnLevel(i, zoomInCoord, zoom);
+
+            zoomInCoordIndex++;
+        }
+
+        // StandingSpace 위치 설정
+        //standingSpaceCoord = new Vector2Int(Random.Range(1, CurrentLevelSettings.LevelWidth - 2), -1);
+        //standingSpaceController.transform.position =
+        //    LevelLoader.Instance.GetBlockPos(standingSpaceCoord) +
+        //    Vector3.forward * MazeBlock.BlockSize * 0.5f;
+
+        // 플레이어 초기화
+        PlayerController.Instance.Pos = standingSpaceController.BlockT.transform.position + Vector3.forward * MazeBlock.BlockSize;
+        PlayerController.Instance.Forward = Vector3.forward;
+        PlayerController.Instance.ResetCameraAnchor();
+        PlayerController.Instance.ResetPlayerStatus();
+
+        yield return StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f));
+        yield return new WaitForSeconds(1.0f);
+        yield return StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(false, 0.5f));
+
+        PlayerController.Instance.IsPlaying = true;
+
+        yield return StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(false, 2.0f));
+
+        OnScenarioEnd();
 
         initGameCoroutine = null;
     }
@@ -381,7 +489,7 @@ public class GameController : MonoBehaviour {
     private IEnumerator OnPlayerCatchedCoroutine(MonsterController monster) {
         LevelLoader.Instance.StopMonsters();
         LevelLoader.Instance.StopItems();
-        LevelLoader.Instance.StopPickUpItems();
+        LevelLoader.Instance.StopPickupItems();
         PlayerController.Instance.IsPlaying = false;
 
         monster.PlayerCatchAnimation();
@@ -1237,7 +1345,7 @@ public class GameController : MonoBehaviour {
             // 오브젝트 Stop
             LevelLoader.Instance.StopMonsters();
             LevelLoader.Instance.StopItems();
-            LevelLoader.Instance.StopPickUpItems();
+            LevelLoader.Instance.StopPickupItems();
             PlayerController.Instance.IsPlaying = false;
 
             // BGM Off
@@ -1267,7 +1375,10 @@ public class GameController : MonoBehaviour {
         }
         // 몬스터에게 잡힌 경우
         else {
-
+            if(initGameCoroutine == null) {
+                initGameCoroutine = RestartGameCoroutine();
+                StartCoroutine(initGameCoroutine);
+            }
         }
 
         onGameEndCoroutine = null;
@@ -1286,7 +1397,7 @@ public class GameController : MonoBehaviour {
 
         LevelLoader.Instance.PlayMonsters();
         LevelLoader.Instance.PlayItems();
-        LevelLoader.Instance.PlayPickUpItems();
+        LevelLoader.Instance.PlayPickupItems();
 
         int maxItemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
         int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;

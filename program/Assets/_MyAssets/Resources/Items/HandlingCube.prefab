@@ -166,7 +166,7 @@ GameObject:
   - component: {fileID: 4906458101746837157}
   m_Layer: 22
   m_Name: Scaler
-  m_TagString: HandlingCube
+  m_TagString: PickupItem
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -437,7 +437,7 @@ GameObject:
   - component: {fileID: 507462740914726468}
   m_Layer: 22
   m_Name: HandlingCube
-  m_TagString: HandlingCube
+  m_TagString: PickupItem
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -472,9 +472,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rigidbody: {fileID: 507462740914726468}
+  guideAnchor: {fileID: 2506448040354707649}
+  autoPickup: 0
   collider: {fileID: 4365077924622882889}
   meshRenderer: {fileID: 2923535833013967901}
-  guideAnchor: {fileID: 2506448040354707649}
 --- !u!54 &507462740914726468
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -724,7 +725,7 @@ GameObject:
   - component: {fileID: 4365077924622882889}
   m_Layer: 22
   m_Name: Collider
-  m_TagString: HandlingCube
+  m_TagString: PickupItem
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -831,7 +832,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: a6c86e99e64d49d4b965e46d47a2c7f6, type: 3}
       propertyPath: m_TagString
-      value: HandlingCube
+      value: PickupItem
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

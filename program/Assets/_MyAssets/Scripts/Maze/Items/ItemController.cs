@@ -20,7 +20,10 @@ public class ItemController : MonoBehaviour {
     [HideInInspector] public bool IsPlaying = false;
     public bool PlayerEnter { get; private set; } = false;
 
-    public Vector3 Pos { get { return transform.position; } }
+    public Vector3 Pos { 
+        get => transform.position; 
+        set => transform.position = value;
+    }
     public float Radius { get { return collider.radius * transform.localScale.x; } }
 
     public static KeyCode key_interact = KeyCode.E;

@@ -1447,7 +1447,7 @@ MonoBehaviour:
   moveBoost: 1.4
   cameraVerticalAngleLimit: 60
   IsPlaying: 0
-  pickUpHandAnchor: {fileID: 115551363}
+  pickupHandAnchor: {fileID: 0}
 --- !u!4 &501637380
 Transform:
   m_ObjectHideFlags: 0

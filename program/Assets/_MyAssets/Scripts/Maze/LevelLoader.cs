@@ -35,6 +35,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         // Pick Up
         HandlingCube, 
+        ToyHammer, 
 
         // Trigger Enter
         Teleport, 
@@ -750,6 +751,39 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return (startCoord.x <= coord.x && coord.x < endCoord.x && startCoord.y <= coord.y && coord.y < endCoord.y);
     }
 
+    public void ResetMonsterOnLevel(int monsterIndex, Vector2Int coord, int zoom = 0) {
+        MonsterController mc = monsters[monsterIndex];
+        if(mc == null) {
+            Debug.LogWarning($"Monster not exist. index: {monsterIndex}");
+
+            return;
+        }
+
+        if(zoom <= 0) {
+            mc.Pos = GetBlockPos(coord);
+        }
+        else {
+            Vector2Int startCoord;
+            Vector2Int endCoord;
+            GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
+
+            Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            // Froggy는 움직이지 않는 몬스터이므로 아이템과 겹치지 않는 위치에 생성한다.
+            if(mc.Type == MonsterType.Froggy) {
+                Vector2Int[] itemCoords = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+                while(true) {
+                    if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                        randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+            mc.Pos = GetBlockPos(randomCoord);
+        }
+    }
+
     public void AddMonsterOnLevel(MonsterType type, Vector2Int coord, int zoom = 0) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_MONSTERS, type.ToString()));
         if(resource == null) {
@@ -805,6 +839,27 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
     }
 
+    public void ResetItemOnLevel(int itemIndex, Vector2Int coord, int zoom = 0) {
+        ItemController ic = items[itemIndex];
+        if(ic == null) {
+            Debug.LogWarning($"Item not exist. index: {itemIndex}");
+
+            return;
+        }
+
+        if(zoom <= 0) {
+            ic.Pos = GetBlockPos(coord);
+        }
+        else {
+            Vector2Int startCoord;
+            Vector2Int endCoord;
+            GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
+
+            Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            ic.Pos = GetBlockPos(randomCoord);
+        }
+    }
+
     public void AddItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
         if(resource == null) {
@@ -844,33 +899,34 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         items.Add(ic);
     }
 
-    public void AddPickUpItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
+    public void ResetPickupItemOnLevel(int itemIndex, Vector2Int coord, int zoom = 0) {
+        HandlingCube hc = handlingCubes[itemIndex];
+        if(hc == null) {
+            Debug.LogWarning($"Pickup Item not found. index: ${itemIndex}");
+
+            return;
+        }
+
+        if(zoom <= 0) {
+            hc.Pos = GetBlockPos(coord);
+        }
+        else {
+            Vector2Int startCoord;
+            Vector2Int endCoord;
+            GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
+
+            Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            hc.Pos = GetBlockPos(randomCoord);
+        }
+    }
+
+    public void AddPickupItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
         if(resource == null) {
             Debug.LogError($"Monster Resource not found. type: {type}");
 
             return;
         }
-
-        //if(handlingCubeMaterial == null) {
-        //    Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
-
-        //    mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
-        //    mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
-        //    mat.SetColor("_BaseColor", Color.black);
-        //    foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
-        //        mat.SetVector(group.MAT_COLOR_NAME, group.Color);
-        //    }
-
-        //    mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
-        //    mat.EnableKeyword(MAT_DRAW_RIM_KEY);
-        //    mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
-
-        //    mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, 0.1f);
-        //    mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, MazeBlock.BlockSize * 1.5f);
-
-        //    handlingCubeMaterial = mat;
-        //}
 
         GameObject go = Instantiate(resource, transform);
         if(zoom <= 0) {
@@ -889,6 +945,39 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         //hc.SetMaterial(handlingCubeMaterial);
 
         handlingCubes.Add(hc);
+    }
+
+    public void ResetTeleportOnLevel(int index, Vector2Int coord, int zoom = 0) {
+        Teleport t = teleports[index];
+        if(t == null) {
+            Debug.LogWarning($"Teleport not exist. index: {index}");
+
+            return;
+        }
+
+        if(zoom <= 0) {
+            t.Pos = GetBlockPos(coord);
+        }
+        else {
+            Vector2Int startCoord;
+            Vector2Int endCoord;
+            GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
+
+            // Item과 겹치지 않게 생성
+            Vector2Int[] itemCoords = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+            Vector2Int[] pickUpCoords = handlingCubes.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+            Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            while(true) {
+                if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any() ||
+                    pickUpCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                }
+                else {
+                    break;
+                }
+            }
+            t.Pos = GetBlockPos(randomCoord);
+        }
     }
 
     public void AddTeleportOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
@@ -930,13 +1019,13 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         teleports.Add(t);
     }
 
-    public void PlayPickUpItems() {
+    public void PlayPickupItems() {
         foreach(HandlingCube hc in handlingCubes) {
             hc.Play();
         }
     }
 
-    public void StopPickUpItems() {
+    public void StopPickupItems() {
         foreach(HandlingCube hc in handlingCubes) {
             hc.Stop();
         }

@@ -6,6 +6,8 @@ using UnityEditor;
 using System;
 using System.Linq;
 
+using Random = UnityEngine.Random;
+
 public class MyCustomMenu : MonoBehaviour
 {
     public const string MenuName = "My Custom Menu";
@@ -20,6 +22,7 @@ public class MyCustomMenu : MonoBehaviour
     private const string FuncsMenuItemName_ApplyAllSymbols = FuncsMenuName + "/Apply All Symbols";
     private const string CheatMenuItemName_MoveToItem = CheatMenuName + "/Move To Item";
     private const string CheatMenuItemName_Clear = CheatMenuName + "/Clear";
+    private const string CheatMenuItemName_CatchedMonster = CheatMenuName + "/Catched Monster";
 
     private static string def_UNITY_POST_PROCESSING_STACK_V2 = "UNITY_POST_PROCESSING_STACK_V2";
     private static string def_Use_Two_Materials_On_MazeBlock = "Use_Two_Materials_On_MazeBlock";
@@ -27,7 +30,6 @@ public class MyCustomMenu : MonoBehaviour
 
     private static bool useTwoMaterialsOnMazeBlock = false;
     private static bool skipScenario = false;
-
 
 
 
@@ -157,6 +159,12 @@ public class MyCustomMenu : MonoBehaviour
         Vector2Int teleportCoord = LevelLoader.Instance.GetMazeCoordinate(standingspaceController.transform.position + Vector3.forward);
         PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(teleportCoord);
         PlayerController.Instance.Forward = Vector3.back;
+    }
+
+    [MenuItem(CheatMenuItemName_CatchedMonster)]
+    private static void CatchedMonster() {
+        List<MonsterController> monsters = LevelLoader.Instance.Monsters;
+        PlayerController.Instance.Pos = monsters[Random.Range(0, monsters.Count)].Pos;
     }
     #endregion
 }

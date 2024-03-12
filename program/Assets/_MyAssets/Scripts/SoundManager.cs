@@ -157,6 +157,17 @@ public class SoundManager : GenericSingleton<SoundManager> {
         if(listChanged) OnWorldSoundRemoved?.Invoke(from);
     }
 
+    private void DestroyAllSoundObjectImmediately(ref List<SoundObject> list, SoundFrom from) {
+        for(int i = 0; i < list.Count; i++) {
+            Destroy(list[i].Source.gameObject);
+
+            list.RemoveAt(i);
+            i--;
+
+            OnWorldSoundRemoved?.Invoke(from);
+        }
+    }
+
     private IEnumerator StopAsync(SoundObject so) {
         so.Stop();
         yield return null;
@@ -177,23 +188,10 @@ public class SoundManager : GenericSingleton<SoundManager> {
 
     #region Utility
     public void ResetAllSoundObjects() {
-        foreach(SoundObject so in noneFromSoundObjectList) {
-            Destroy(so.Source.gameObject);
-        }
-        foreach(SoundObject so in playerSoundObjectList) {
-            Destroy(so.Source.gameObject);
-        }
-        foreach(SoundObject so in monsterSoundObjectList) {
-            Destroy(so.Source.gameObject);
-        }
-        foreach(SoundObject so in itemSoundObjectList) {
-            Destroy(so.Source.gameObject);
-        }
-
-        noneFromSoundObjectList.Clear();
-        playerSoundObjectList.Clear();
-        monsterSoundObjectList.Clear();
-        itemSoundObjectList.Clear();
+        if(noneFromSoundObjectList.Count > 0) DestroyAllSoundObjectImmediately(ref noneFromSoundObjectList, SoundFrom.None);
+        if(playerSoundObjectList.Count > 0) DestroyAllSoundObjectImmediately(ref playerSoundObjectList, SoundFrom.Player);
+        if(monsterSoundObjectList.Count > 0) DestroyAllSoundObjectImmediately(ref monsterSoundObjectList, SoundFrom.Monster);
+        if(itemSoundObjectList.Count > 0) DestroyAllSoundObjectImmediately(ref itemSoundObjectList, SoundFrom.Item);
     }
 
     public void UnPauseAllSound() {

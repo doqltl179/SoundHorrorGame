@@ -93,12 +93,12 @@ public class PlayerController : MonoBehaviour {
 
     public Vector3 HeadForward { get { return transform.forward; } }
 
-    [SerializeField] private Transform pickUpHandAnchor;
-    public HandlingCube PickUpCube { get; private set; } = null;
-    private HandlingCube pickUpCubeChecker = null;
-    private RaycastHit pickUpHit;
-    private int pickUpRayMask;
-    private bool pickUpMouseDown;
+    [SerializeField] private Transform pickupHandAnchor;
+    public PickupItem PickupItem { get; private set; } = null;
+    private PickupItem pickupCubeChecker = null;
+    private RaycastHit pickupHit;
+    private int pickupRayMask;
+    private bool pickupMouseDown;
 
     [Flags]
     public enum PlayerState {
@@ -166,7 +166,7 @@ public class PlayerController : MonoBehaviour {
 
         cameraAnchor.localPosition = Vector3.up * PlayerHeight;
 
-        pickUpRayMask = ~(1 << LayerMask.NameToLayer("Player"));
+        pickupRayMask = ~(1 << LayerMask.NameToLayer("Player"));
     }
 
     private void Update() {
@@ -262,45 +262,45 @@ public class PlayerController : MonoBehaviour {
 
         CurrentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
 
-        #region PickUp
+        #region Pickup
         bool currentMouseDown = Input.GetMouseButton(0);
-        if(PickUpCube == null) {
-            if(Physics.Raycast(UtilObjects.Instance.CamPos, UtilObjects.Instance.CamForward, out pickUpHit, HandlingCube.PickUpDistance, pickUpRayMask)) {
-                if(pickUpCubeChecker != null) 
-                    pickUpCubeChecker.ObjectOutlineActive = false;
+        if(PickupItem == null) {
+            if(Physics.Raycast(UtilObjects.Instance.CamPos, UtilObjects.Instance.CamForward, out pickupHit, PickupItem.PickupDistance, pickupRayMask)) {
+                if(pickupCubeChecker != null) 
+                    pickupCubeChecker.ObjectOutlineActive = false;
 
-                pickUpCubeChecker = pickUpHit.rigidbody?.GetComponent<HandlingCube>();
-                if(pickUpCubeChecker != null) {
-                    pickUpCubeChecker.ObjectOutlineActive = true;
+                pickupCubeChecker = pickupHit.rigidbody?.GetComponent<PickupItem>();
+                if(pickupCubeChecker != null && !pickupCubeChecker.AutoPickup) {
+                    pickupCubeChecker.ObjectOutlineActive = true;
 
-                    if(!pickUpMouseDown && currentMouseDown) {
-                        pickUpCubeChecker.ObjectOutlineActive = false;
-                        PickUpCube = pickUpCubeChecker;
+                    if(!pickupMouseDown && currentMouseDown) {
+                        pickupCubeChecker.ObjectOutlineActive = false;
+                        PickupItem = pickupCubeChecker;
 
-                        PickUpCube.IsPickUp = true;
-                        pickUpCubeChecker = null;
+                        PickupItem.IsPickup = true;
+                        pickupCubeChecker = null;
                     }
                 }
             }
             else {
-                if(pickUpCubeChecker != null) {
-                    pickUpCubeChecker.ObjectOutlineActive = false;
-                    pickUpCubeChecker = null;
+                if(pickupCubeChecker != null && !pickupCubeChecker.AutoPickup) {
+                    pickupCubeChecker.ObjectOutlineActive = false;
+                    pickupCubeChecker = null;
                 }
             }
         }
         else {
-            if(pickUpMouseDown && !currentMouseDown) {
-                PickUpCube.IsPickUp = false;
+            if(!PickupItem.AutoPickup && pickupMouseDown && !currentMouseDown) {
+                PickupItem.IsPickup = false;
 
-                PickUpCube = null;
+                PickupItem = null;
             }
             else {
-                PickUpCube.Pos = Vector3.Lerp(PickUpCube.Pos, pickUpHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
-                PickUpCube.Forward = Vector3.Lerp(PickUpCube.Forward, pickUpHandAnchor.forward, Time.deltaTime * Mathf.Pow(2, 6));
+                PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
+                PickupItem.Rotation = Quaternion.Lerp(PickupItem.Rotation, pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset), Time.deltaTime * Mathf.Pow(2, 6));
             }
         }
-        pickUpMouseDown = currentMouseDown;
+        pickupMouseDown = currentMouseDown;
         #endregion
     }
 
@@ -317,13 +317,29 @@ public class PlayerController : MonoBehaviour {
 
         if(collision.gameObject.CompareTag(MonsterController.TagName)) {
             // 자꾸 걸리니까 테스트가 안되므로 잠깐 꺼둠.
-            return; 
+            //return; 
 
             OnPlayerCatched?.Invoke(collision.rigidbody.GetComponent<MonsterController>());
         }
     }
 
     #region Utility
+    public void ResetPlayerStatus() {
+        if(PickupItem != null) {
+            PickupItem.IsPickup = false;
+
+            PickupItem = null;
+        }
+
+        OverHit = false;
+        runTimeChecker = 0.0f;
+
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.angularVelocity = Vector3.zero;
+
+        CurrentState = PlayerState.None;
+    }
+
     public void ResetCameraAnchor() {
         cameraVerticalAngleLimitChecker = 0.0f;
         cameraAnchor.localPosition = Vector3.up * PlayerHeight;

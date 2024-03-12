@@ -9,6 +9,7 @@ Shader "MyCustomShader/Maze" {
         _MetallicMap ("Metallic", 2D) = "white" {}
         _MetallicStrength ("Metallic Strength", Range(0.0, 1.0)) = 1.0
         _NormalMap ("Normal Map", 2D) = "bump" {}
+        _NormalStrength ("Normal Strength", Range(0.0, 10.0)) = 1.0
         _OcclusionMap ("Occlusion", 2D) = "white" {}
         _OcclusionStrength ("Occlusion Strength", Range(0.0, 1.0)) = 1.0
 
@@ -175,6 +176,7 @@ Shader "MyCustomShader/Maze" {
             sampler2D _OcclusionMap;
 
             float _MetallicStrength;
+            float _NormalStrength;
             float _OcclusionStrength;
 
             fixed4 _BaseColor;
@@ -352,12 +354,12 @@ Shader "MyCustomShader/Maze" {
 
             float3 getTexColor(v2f i) {
                 fixed3 albedo = tex2D(_MainTex, i.uv).rgb;
-                float3 normal = normalize(UnpackNormal(tex2D(_NormalMap, i.uv))); // 정확한 방향을 유지
+                float3 normal = normalize(UnpackNormal(tex2D(_NormalMap, i.uv))) * _NormalStrength; // 정확한 방향을 유지
                 float metallic = tex2D(_MetallicMap, i.uv).a * _MetallicStrength; // 금속성 값을 조절
                 float occlusion = tex2D(_OcclusionMap, i.uv).r * _OcclusionStrength; // 가려짐 처리
                 
                 float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
-                float3 lightDir = normalize(float3(0.5, 0.5, 1.0));
+                float3 lightDir = normalize(float3(0.0, 0.0, 1.0));
                 float diff = max(dot(normal, lightDir), 0.0);
                 
                 float3 halfwayDir = normalize(lightDir + viewDir);
@@ -415,7 +417,7 @@ Shader "MyCustomShader/Maze" {
 
                     #else
 
-                        c = fixed4(getTexColor(i), 1.0);
+                        c = fixed4(getTexColor(i), 1.0) * _BaseColor;
 
                     #endif
 

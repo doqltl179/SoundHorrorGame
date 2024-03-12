@@ -133,6 +133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f50bf37db339974a940ed926cbfa3d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  type: 1
   animator: {fileID: 8978537464769315106}
   rigidbody: {fileID: 6204383258893231526}
   collider: {fileID: 5764638596849845893}

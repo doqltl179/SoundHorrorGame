@@ -7,8 +7,9 @@ TagManager:
   - MazeBlock
   - Monster
   - NPC
-  - HandlingCube
   - Teleport
+  - PickupItem
+  - HandlingCube
   layers:
   - Default
   - TransparentFX
@@ -32,7 +33,7 @@ TagManager:
   - Wall
   - Monster
   - 
-  - HandlingCube
+  - PickupItem
   - ItemParts
   - 
   - Player

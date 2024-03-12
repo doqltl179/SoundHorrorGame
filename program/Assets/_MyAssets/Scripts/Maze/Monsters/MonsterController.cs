@@ -9,7 +9,8 @@ public class MonsterController : MonoBehaviour {
     public static readonly string TagName = "Monster";
     public static readonly string LayerName = "Monster";
 
-    public bool IsPlaying { get { return CurrentState != MonsterState.None; } }
+    [SerializeField] private LevelLoader.MonsterType type;
+    public LevelLoader.MonsterType Type { get { return type; } }
 
     public enum MonsterState {
         None, // ==> IsPlaying to false
@@ -27,6 +28,8 @@ public class MonsterController : MonoBehaviour {
             OnCurrentStateChanged?.Invoke(value);
         }
     }
+
+    public bool IsPlaying { get { return CurrentState != MonsterState.None; } }
 
     public Vector2Int CurrentCoord { get; protected set; }
 

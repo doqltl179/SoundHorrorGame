@@ -2,15 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HandlingCube : MonoBehaviour {
-    [SerializeField] private Rigidbody rigidbody;
+public class HandlingCube : PickupItem {
     [SerializeField] private BoxCollider collider;
-    [SerializeField] private MeshRenderer meshRenderer;
+    [SerializeField] protected MeshRenderer meshRenderer;
 
-    [SerializeField] private GameObject guideAnchor;
-
-    private Material material = null;
-    public Material Material {
+    public override Material Material {
         get {
             if(material == null) {
                 Material mat = new Material(Shader.Find("MyCustomShader/Maze"));
@@ -36,11 +32,8 @@ public class HandlingCube : MonoBehaviour {
         }
     }
 
-    public bool IsPlaying { get; private set; }
-
-    private bool isPickUp = false;
-    public bool IsPickUp {
-        get => isPickUp;
+    public override bool IsPickup {
+        get => isPickup;
         set {
             collider.enabled = !value;
             rigidbody.useGravity = !value;
@@ -52,12 +45,11 @@ public class HandlingCube : MonoBehaviour {
                 rigidbody.velocity = calculatedVelocity * rigidbody.mass * 5.0f;
             }
 
-            isPickUp = value;
+            isPickup = value;
         }
     }
 
-    private bool objectOutlineActive;
-    public bool ObjectOutlineActive {
+    public override bool ObjectOutlineActive {
         get => objectOutlineActive;
         set {
             if(value) {
@@ -71,50 +63,15 @@ public class HandlingCube : MonoBehaviour {
         }
     }
 
-    public Vector3 Pos {
-        get => transform.position;
-        set => transform.position = value;
-    }
-    public Vector3 Forward {
-        get => transform.forward;
-        set => transform.forward = value;
-    }
-
-    public static readonly float PickUpDistance = PlayerController.PlayerHeight * 2.0f;
-
     private Vector3 posSaver;
     private Vector3 calculatedVelocity;
 
-    public const string TagName = "HandlingCube";
-    public const string LayerName = "HandlingCube";
 
-    private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
-    private const string MAT_RIM_THICKNESS_OFFSET_NAME = "_RimThicknessOffset";
-    private const string MAT_MAZEBLOCK_EDGE_THICKNESS_NAME = "_MazeBlockEdgeThickness";
-    private const string MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME = "_MazeBlockEdgeShowDistance";
-    private const string MAT_OBJECT_OUTLINE_THICKNESS_NAME = "_ObjectOutlineThickness";
-    private const string MAT_OBJECT_OUTLINE_COLOR_NAME = "_ObjectOutlineColor";
-
-    private const string MAT_USE_BASE_COLOR_KEY = "USE_BASE_COLOR";
-    private const string MAT_DRAW_MAZEBLOCK_EDGE_KEY = "DRAW_MAZEBLOCK_EDGE";
-    private const string MAT_DRAW_OBJECT_OUTLINE_KEY = "DRAW_OBJECT_OUTLINE";
-
-
-
-    private void Start() {
-        Transform[] child = GetComponentsInChildren<Transform>();
-        foreach(Transform t in child) {
-            t.tag = TagName;
-            t.gameObject.layer = LayerMask.NameToLayer(LayerName);
-        }
-
-        ObjectOutlineActive = false;
-    }
 
     private void Update() {
         if(!IsPlaying) return;
 
-        if(isPickUp) {
+        if(isPickup) {
             if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
 
             calculatedVelocity = transform.position - posSaver;
@@ -122,7 +79,7 @@ public class HandlingCube : MonoBehaviour {
             posSaver = transform.position;
         }
         else {
-            if(Vector3.Distance(UtilObjects.Instance.CamPos, Pos) < PickUpDistance) {
+            if(Vector3.Distance(UtilObjects.Instance.CamPos, Pos) < PickupDistance) {
                 if(!guideAnchor.activeSelf) guideAnchor.SetActive(true);
 
                 guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
@@ -154,16 +111,15 @@ public class HandlingCube : MonoBehaviour {
     }
 
     #region Utility
-    public void Play() {
+    public override void Play() {
         IsPlaying = true;
     }
 
-    public void Stop() {
+    public override void Stop() {
         IsPlaying = false;
-    }
 
-    //public void SetMaterial(Material mat) {
-    //    meshRenderer.material = mat;
-    //}
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.angularVelocity = Vector3.zero;
+    }
     #endregion
 }
