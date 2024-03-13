@@ -39,6 +39,8 @@ public class MonsterController : MonoBehaviour {
     [SerializeField] protected CapsuleCollider collider;
     [SerializeField] protected Material material;
 
+    public Rigidbody Rigidbody { get { return rigidbody; } }
+
     [Header("Properties")]
     [SerializeField] private Transform headPos;
     [SerializeField, Range(0.1f, 5.0f)] protected float scaleScalar = 1.0f;
@@ -85,6 +87,7 @@ public class MonsterController : MonoBehaviour {
     protected const string AnimatorPropertyName_MoveBlend = "MoveBlend";
     protected const string AnimatorPropertyName_MoveSpeed = "MoveSpeed";
     protected const string AnimatorPropertyName_PlayerCatch = "PlayerCatch";
+    protected const string AnimatorPropertyName_TPos = "T-Pos";
     
     protected float physicsMoveSpeed = 0.0f;
     protected float physicsMoveSpeedMax = 0.5f;
@@ -96,6 +99,7 @@ public class MonsterController : MonoBehaviour {
     protected StuckHelper stuckHelper = null;
 
     protected IEnumerator playerCatchAnimationCoroutine = null;
+    protected IEnumerator throwAwayAnimationCoroutine = null;
 
     public Action<MonsterState> OnCurrentStateChanged;
     public Action OnPathEnd;
@@ -109,6 +113,17 @@ public class MonsterController : MonoBehaviour {
         for(int i = 0; i < transform.childCount; i++) {
             transform.GetChild(i).gameObject.tag = gameObject.tag;
             transform.GetChild(i).gameObject.layer = gameObject.layer;
+        }
+    }
+
+    protected virtual void OnDestroy() {
+        if(playerCatchAnimationCoroutine != null) {
+            StopCoroutine(playerCatchAnimationCoroutine);
+            playerCatchAnimationCoroutine = null;
+        }
+        if(throwAwayAnimationCoroutine != null) {
+            StopCoroutine(throwAwayAnimationCoroutine);
+            throwAwayAnimationCoroutine = null;
         }
     }
 
@@ -195,6 +210,32 @@ public class MonsterController : MonoBehaviour {
         }
 
         playerCatchAnimationCoroutine = null;
+    }
+    #endregion
+
+    #region Utility
+    public void ThrowArray(Vector3 dir) {
+        if(throwAwayAnimationCoroutine == null) {
+            throwAwayAnimationCoroutine = ThrowArrayAnimationCoroutine(dir);
+            StartCoroutine(throwAwayAnimationCoroutine);
+        }
+    }
+
+    private IEnumerator ThrowArrayAnimationCoroutine(Vector3 dir) {
+        Stop();
+
+
+
+        yield return null;
+
+        throwAwayAnimationCoroutine = null;
+    }
+
+    public void TPos() => animator.SetTrigger(AnimatorPropertyName_TPos);
+
+    public void ResetAnimator() {
+        animator.enabled = false;
+        animator.enabled = true;
     }
     #endregion
 

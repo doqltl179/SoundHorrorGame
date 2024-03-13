@@ -31,7 +31,7 @@ public class Cloudy : MonsterController, IMove {
         base.Awake();
     }
 
-    private void OnDestroy() {
+    protected override void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
 
@@ -39,6 +39,8 @@ public class Cloudy : MonsterController, IMove {
 
         OnCurrentStateChanged -= CurrentStateChanged;
         OnPathEnd -= PathEnd;
+
+        base.OnDestroy();
     }
 
     private void Start() {
@@ -109,7 +111,7 @@ public class Cloudy : MonsterController, IMove {
             }
         }
         else {
-            physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - dt * moveBoost, 0.0f, physicsMoveSpeedMax);
+            physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - dt, 0.0f, physicsMoveSpeedMax);
         }
 
         // 위치 이동

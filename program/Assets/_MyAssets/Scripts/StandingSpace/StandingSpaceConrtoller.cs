@@ -152,6 +152,31 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     }
 
     #region Utility
+    public void SetColor(Color color, float time = 0.0f) {
+        if(time > 0) {
+            StartCoroutine(SetColorCoroutine(color, time));
+        }
+        else {
+            levelWallMaterial.SetColor(MAT_BASE_COLOR_NAME, color);
+            levelFloorMaterial.SetColor(MAT_BASE_COLOR_NAME, color);
+        }
+    }
+
+    private IEnumerator SetColorCoroutine(Color color, float time) {
+        Color startColor = levelWallMaterial.GetColor(MAT_BASE_COLOR_NAME);
+
+        float timeChecker = 0.0f;
+        Color lerpColor;
+        while(timeChecker < time) {
+            timeChecker += Time.deltaTime;
+            lerpColor = Color.Lerp(startColor, color, timeChecker / time);
+            levelWallMaterial.SetColor(MAT_BASE_COLOR_NAME, lerpColor);
+            levelFloorMaterial.SetColor(MAT_BASE_COLOR_NAME, lerpColor);
+
+            yield return null;
+        }
+    }
+
     public void StartNPCRotateAnimation(float animationTime, Quaternion rotateTo, float delay = 0.0f) {
         //if(npcRotateAnimationCoroutine == null) {
         //    npcRotateAnimationCoroutine = NPCMoveAnimationCoroutine(animationTime, rotateTo);

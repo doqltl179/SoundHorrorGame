@@ -26,8 +26,8 @@ Shader "MyCustomShader/Maze" {
         _PlayerPastPosRadius ("Player Past Pos Radius", float) = 0.3
 
         [Header(Edge)]
-        _MazeBlockEdgeThickness ("MazeBlock Edge Thickness", Range(0.0, 1.0)) = 0.01
         _MazeBlockEdgeColor ("MazeBlock Edge Color", Color) = (1, 1, 1, 1)
+        _MazeBlockEdgeThickness ("MazeBlock Edge Thickness", Range(0.0, 1.0)) = 0.01
         _MazeBlockEdgeShowDistance ("MazeBlock Edge Show Distance", float) = 10
 
         [Header(Outline)]

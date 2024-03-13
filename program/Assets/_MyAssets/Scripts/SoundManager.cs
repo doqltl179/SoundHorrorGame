@@ -45,6 +45,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
         ObjectHit04,
         ObjectHit05,
 
+        ToyHammerHit, 
+
         // Player
         PlayerWalk,
 
@@ -56,9 +58,12 @@ public class SoundManager : GenericSingleton<SoundManager> {
         // Etc
         MouseClick, 
         ButtonClick, 
+
         GameEnter, 
 
         WallAnimation, 
+
+        PathGuide, 
     }
 
     public enum SoundFrom {

@@ -19,10 +19,12 @@ public class GameController : MonoBehaviour {
             LevelWidth = 16,
             LevelHeight = 16,
 
+            IsEmpty = false,
+
             Monsters = new GameLevelSettings.MonsterStruct[] {
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Bunny,
-                    generateCount = 2, 
+                    generateCount = 2,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Honey,
@@ -36,10 +38,15 @@ public class GameController : MonoBehaviour {
                     generateCount = 3,
                 },
             },
+
+            HandlingCubeCount = 8, 
+            TeleportCount = 0, 
         },
         new GameLevelSettings() {
             LevelWidth = 16,
             LevelHeight = 16,
+
+            IsEmpty = false,
 
             Monsters = new GameLevelSettings.MonsterStruct[] {
                 new GameLevelSettings.MonsterStruct() {
@@ -66,10 +73,15 @@ public class GameController : MonoBehaviour {
                     generateCount = 3,
                 },
             },
+
+            HandlingCubeCount = 8,
+            TeleportCount = 2,
         },
         new GameLevelSettings() {
             LevelWidth = 16,
             LevelHeight = 16,
+
+            IsEmpty = false,
 
             Monsters = new GameLevelSettings.MonsterStruct[] {
                 new GameLevelSettings.MonsterStruct() {
@@ -101,12 +113,59 @@ public class GameController : MonoBehaviour {
             Items = new GameLevelSettings.ItemStruct[] {
                 new GameLevelSettings.ItemStruct() {
                     type = LevelLoader.ItemType.Crystal,
+                    generateCount = 5,
+                },
+            },
+
+            HandlingCubeCount = 8,
+            TeleportCount = 4,
+        },
+        new GameLevelSettings() {
+            LevelWidth = 16,
+            LevelHeight = 16,
+
+            IsEmpty = false,
+
+            Monsters = new GameLevelSettings.MonsterStruct[] {
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Bunny,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Honey,
+                    generateCount = 3,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Froggy,
+                    generateCount = 2,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Kitty,
+                    generateCount = 3,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Cloudy,
+                    generateCount = 3,
+                },
+                new GameLevelSettings.MonsterStruct() {
+                    type = LevelLoader.MonsterType.Starry,
                     generateCount = 3,
                 },
             },
+
+            Items = new GameLevelSettings.ItemStruct[] {
+                new GameLevelSettings.ItemStruct() {
+                    type = LevelLoader.ItemType.Crystal,
+                    generateCount = 3,
+                },
+            },
+
+            HandlingCubeCount = 0,
+            TeleportCount = 4,
         },
     };
     public GameLevelSettings CurrentLevelSettings { get; private set; }
+    private ToyHammer toyHammer = null;
 
     private Vector2Int standingSpaceCoord;
 
@@ -196,7 +255,7 @@ public class GameController : MonoBehaviour {
 
         // Level 초기화
         LevelLoader.Instance.ResetLevel();
-        LevelLoader.Instance.LoadLevel(CurrentLevelSettings.LevelWidth, CurrentLevelSettings.LevelHeight);
+        LevelLoader.Instance.LoadLevel(CurrentLevelSettings.LevelWidth, CurrentLevelSettings.LevelHeight, CurrentLevelSettings.IsEmpty);
 
         // Sound 초기화
         SoundManager.Instance.ResetAllSoundObjects();
@@ -204,7 +263,6 @@ public class GameController : MonoBehaviour {
         // 다른 컴포넌트의 `Start`함수가 끝나기를 기다리기 위함
         yield return null;
 
-        //const int zoom = 1;
         const int zoom = 2;
         Vector2Int calculatedLevelSize = LevelLoader.Instance.GetLevelSize(zoom);
         Vector2Int zoomInCoord = Vector2Int.zero;
@@ -212,77 +270,100 @@ public class GameController : MonoBehaviour {
         int randomMin, randomMax;
         int zoomInCoordIndex;
 
+        // 미로의 가장 밑 줄(플레이어가 시작하는 곳)에는 아무것도 놓지 못하게 함.
+        Vector2Int[] ignoreCoords = new Vector2Int[LevelLoader.Instance.LevelWidth];
+        for(int i = 0; i < ignoreCoords.Length; i++) {
+            ignoreCoords[i] = new Vector2Int(i, 0);
+        }
+        int ignoreCoordsCopyStartIndex = ignoreCoords.Length;
+
         // 아이템 생성
-        int itemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
-        randomMax = coordCount / itemCount;
-        randomMin = randomMax / 2;
+        int itemCount = CurrentLevelSettings.Items != null ? CurrentLevelSettings.Items.Sum(t => t.generateCount) : 0;
+        if(itemCount > 0) {
+            randomMax = coordCount / itemCount;
+            randomMin = randomMax / 2;
 
-        GameLevelSettings.ItemStruct itemStruct;
-        zoomInCoordIndex = 0;
-        for(int i = 0; i < CurrentLevelSettings.Items.Length; i++) {
-            itemStruct = CurrentLevelSettings.Items[i];
-            for(int j = 0; j < itemStruct.generateCount; j++) {
-                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+            GameLevelSettings.ItemStruct itemStruct;
+            zoomInCoordIndex = 0;
+            for(int i = 0; i < CurrentLevelSettings.Items.Length; i++) {
+                itemStruct = CurrentLevelSettings.Items[i];
+                for(int j = 0; j < itemStruct.generateCount; j++) {
+                    zoomInCoordIndex += Random.Range(randomMin, randomMax);
 
-                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-                LevelLoader.Instance.AddItemOnLevel(itemStruct.type, zoomInCoord, zoom);
+                    zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                    zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+                    LevelLoader.Instance.AddItemOnLevel(itemStruct.type, zoomInCoord, zoom, ignoreCoords);
 
-                zoomInCoordIndex++;
+                    zoomInCoordIndex++;
+                }
             }
         }
-
-        // 몬스터 생성
-        int monsterCount = CurrentLevelSettings.Monsters.Sum(t => t.generateCount);
-        randomMax = coordCount / monsterCount;
-        randomMin = randomMax / 2;
-
-        GameLevelSettings.MonsterStruct monsterStruct;
-        zoomInCoordIndex = 0;
-        for(int i = 0; i < CurrentLevelSettings.Monsters.Length; i++) {
-            monsterStruct = CurrentLevelSettings.Monsters[i];
-            for(int j = 0; j < monsterStruct.generateCount; j++) {
-                zoomInCoordIndex += Random.Range(randomMin, randomMax);
-
-                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-                LevelLoader.Instance.AddMonsterOnLevel(monsterStruct.type, zoomInCoord, zoom);
-
-                zoomInCoordIndex++;
-            }
-        }
-
-        // PickUP 아이템 생성
-        itemCount = calculatedLevelSize.x * calculatedLevelSize.y / 5;
-        randomMax = coordCount / itemCount;
-        randomMin = randomMax / 2;
-
-        zoomInCoordIndex = 0;
-        for(int i = 0; i < itemCount; i++) {
-            zoomInCoordIndex += Random.Range(randomMin, randomMax);
-
-            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-            LevelLoader.Instance.AddPickupItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom);
-
-            zoomInCoordIndex++;
-        }
+        Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.ItemCount);
+        Array.Copy(LevelLoader.Instance.GetAllItemCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.ItemCount);
+        ignoreCoordsCopyStartIndex = ignoreCoords.Length;
 
         // Teleport 생성
-        //itemCount = (UserSettings.GameLevel + 1) * 2;
-        itemCount = monsterCount / 2;
-        randomMax = coordCount / itemCount;
-        randomMin = randomMax / 2;
+        itemCount = CurrentLevelSettings.TeleportCount;
+        if(itemCount > 0) {
+            randomMax = coordCount / itemCount;
+            randomMin = randomMax / 2;
 
-        zoomInCoordIndex = 0;
-        for(int i = 0; i < itemCount; i++) {
-            zoomInCoordIndex += Random.Range(randomMin, randomMax);
+            zoomInCoordIndex = 0;
+            for(int i = 0; i < itemCount; i++) {
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
 
-            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-            LevelLoader.Instance.AddTeleportOnLevel(LevelLoader.ItemType.Teleport, zoomInCoord, zoom);
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+                LevelLoader.Instance.AddTeleportOnLevel(LevelLoader.ItemType.Teleport, zoomInCoord, zoom, ignoreCoords);
 
-            zoomInCoordIndex++;
+                zoomInCoordIndex++;
+            }
+        }
+        Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.TeleportCount);
+        Array.Copy(LevelLoader.Instance.GetAllTeleportCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.TeleportCount);
+        ignoreCoordsCopyStartIndex = ignoreCoords.Length;
+
+        // PickUP 아이템 생성
+        itemCount = CurrentLevelSettings.HandlingCubeCount;
+        if(itemCount > 0) {
+            randomMax = coordCount / itemCount;
+            randomMin = randomMax / 2;
+
+            zoomInCoordIndex = 0;
+            for(int i = 0; i < itemCount; i++) {
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+                LevelLoader.Instance.AddPickupItemOnLevel(LevelLoader.ItemType.HandlingCube, zoomInCoord, zoom, ignoreCoords);
+
+                zoomInCoordIndex++;
+            }
+        }
+        Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.HandlingCubeCount);
+        Array.Copy(LevelLoader.Instance.GetAllPickupItemCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.HandlingCubeCount);
+        ignoreCoordsCopyStartIndex = ignoreCoords.Length;
+
+        // 몬스터 생성
+        int monsterCount = CurrentLevelSettings.Monsters != null ? CurrentLevelSettings.Monsters.Sum(t => t.generateCount) : 0;
+        if(monsterCount > 0) {
+            randomMax = coordCount / monsterCount;
+            randomMin = randomMax / 2;
+
+            GameLevelSettings.MonsterStruct monsterStruct;
+            zoomInCoordIndex = 0;
+            for(int i = 0; i < CurrentLevelSettings.Monsters.Length; i++) {
+                monsterStruct = CurrentLevelSettings.Monsters[i];
+                for(int j = 0; j < monsterStruct.generateCount; j++) {
+                    zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+                    zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                    zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+                    LevelLoader.Instance.AddMonsterOnLevel(monsterStruct.type, zoomInCoord, zoom, ignoreCoords);
+
+                    zoomInCoordIndex++;
+                }
+            }
         }
 
         // StandingSpace 위치 설정
@@ -295,8 +376,9 @@ public class GameController : MonoBehaviour {
         PlayerController.Instance.Pos = standingSpaceController.BlockCenter.transform.position;
         PlayerController.Instance.Forward = Vector3.forward;
         PlayerController.Instance.ResetCameraAnchor();
+        PlayerController.Instance.ResetPlayerStatus();
 
-        // GameLevel 별로 위치 선정
+        // GameLevel 별로 세팅
         switch(UserSettings.GameLevel) {
             case 0: {
                     Vector3 npcPos = standingSpaceController.BlockLT.transform.position;
@@ -304,6 +386,16 @@ public class GameController : MonoBehaviour {
                     standingSpaceController.InitializeNPCAnchor(npcPos, npcForward);
                     standingSpaceController.NPCActive = true;
                     standingSpaceController.NPCModelActive = true;
+
+                    standingSpaceController.SetColor(Color.white * 0.85f, 5.0f);
+
+                    if(toyHammer != null) {
+                        Destroy(toyHammer.gameObject);
+                        toyHammer = null;
+                    }
+
+                    yield return null;
+                    PlayerController.Instance.IsPlaying = true;
                 }
                 break;
             case 1: {
@@ -316,6 +408,16 @@ public class GameController : MonoBehaviour {
                     MazeBlock animationBlock2 = standingSpaceController.BlockT;
                     StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, 0.0f));
                     StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, 0.0f));
+
+                    standingSpaceController.SetColor(Color.white * 0.85f, 5.0f);
+
+                    if(toyHammer != null) {
+                        Destroy(toyHammer.gameObject);
+                        toyHammer = null;
+                    }
+
+                    yield return null;
+                    PlayerController.Instance.IsPlaying = true;
                 }
                 break;
             case 2: {
@@ -329,12 +431,40 @@ public class GameController : MonoBehaviour {
                     MazeBlock animationBlock2 = standingSpaceController.BlockT;
                     StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, 0.0f));
                     StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, 0.0f));
+
+                    standingSpaceController.SetColor(Color.white * 0.85f, 5.0f);
+
+                    if(toyHammer != null) {
+                        Destroy(toyHammer.gameObject);
+                        toyHammer = null;
+                    }
+
+                    yield return null;
+                    PlayerController.Instance.IsPlaying = true;
+                }
+                break;
+            case 3: {
+                    Vector3 npcPos = standingSpaceController.BlockCenter.GetSidePos(MazeCreator.ActiveWall.F);
+                    Vector3 npcForward = (PlayerController.Instance.Pos - npcPos).normalized;
+                    standingSpaceController.InitializeNPCAnchor(npcPos, npcForward);
+                    standingSpaceController.NPCActive = true;
+                    standingSpaceController.NPCModelActive = true;
+
+                    MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
+                    MazeBlock animationBlock2 = standingSpaceController.BlockT;
+                    StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, 0.0f));
+                    StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, 0.0f));
+
+                    standingSpaceController.SetColor(new Color(1.0f, 0.15f, 0.15f), 5.0f);
+
+                    yield return null;
+                    PlayerController.Instance.IsPlaying = true;
+
+                    yield return new WaitForSeconds(0.2f);
+                    PlayerController.Instance.OnEnteredNPCArea?.Invoke();
                 }
                 break;
         }
-
-        yield return null;
-        PlayerController.Instance.IsPlaying = true;
 
 #if Skip_Scenario
         yield return null;
@@ -366,7 +496,6 @@ public class GameController : MonoBehaviour {
 
         yield return null;
 
-        //const int zoom = 1;
         const int zoom = 2;
         Vector2Int calculatedLevelSize = LevelLoader.Instance.GetLevelSize(zoom);
         Vector2Int zoomInCoord = Vector2Int.zero;
@@ -374,68 +503,92 @@ public class GameController : MonoBehaviour {
         int randomMin, randomMax;
         int zoomInCoordIndex;
 
+        // 미로의 가장 밑 줄(플레이어가 시작하는 곳)에는 아무것도 놓지 못하게 함.
+        Vector2Int[] ignoreCoords = new Vector2Int[LevelLoader.Instance.LevelWidth];
+        for(int i = 0; i < ignoreCoords.Length; i++) {
+            ignoreCoords[i] = new Vector2Int(i, 0);
+        }
+        int ignoreCoordsCopyStartIndex = ignoreCoords.Length;
+
         // 아이템 재배치
         int itemCount = LevelLoader.Instance.ItemCount;
-        //randomMax = coordCount / itemCount;
-        //randomMin = randomMax / 2;
+        //if(itemCount > 0) {
+        //    randomMax = coordCount / itemCount;
+        //    randomMin = randomMax / 2;
 
-        //zoomInCoordIndex = 0;
-        //for(int i = 0; i < itemCount; i++) {
-        //    zoomInCoordIndex += Random.Range(randomMin, randomMax);
+        //    zoomInCoordIndex = 0;
+        //    for(int i = 0; i < itemCount; i++) {
+        //        zoomInCoordIndex += Random.Range(randomMin, randomMax);
 
-        //    zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-        //    zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-        //    LevelLoader.Instance.ResetItemOnLevel(i, zoomInCoord, zoom);
+        //        zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+        //        zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+        //        LevelLoader.Instance.ResetItemOnLevel(i, zoomInCoord, zoom, ignoreCoords);
 
-        //    zoomInCoordIndex++;
+        //        zoomInCoordIndex++;
+        //    }
         //}
-
-        // 몬스터 재배치
-        int monsterCount = LevelLoader.Instance.MonsterCount;
-        randomMax = coordCount / monsterCount;
-        randomMin = randomMax / 2;
-
-        zoomInCoordIndex = 0;
-        for(int i = 0; i < monsterCount; i++) {
-            zoomInCoordIndex += Random.Range(randomMin, randomMax);
-
-            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-            LevelLoader.Instance.ResetMonsterOnLevel(i, zoomInCoord, zoom);
-
-            zoomInCoordIndex++;
-        }
-
-        // PickUP 아이템 재배치
-        itemCount = LevelLoader.Instance.HandlingCubeCount;
-        randomMax = coordCount / itemCount;
-        randomMin = randomMax / 2;
-
-        zoomInCoordIndex = 0;
-        for(int i = 0; i < itemCount; i++) {
-            zoomInCoordIndex += Random.Range(randomMin, randomMax);
-
-            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-            LevelLoader.Instance.ResetPickupItemOnLevel(i, zoomInCoord, zoom);
-
-            zoomInCoordIndex++;
-        }
+        //Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.ItemCount);
+        //Array.Copy(LevelLoader.Instance.GetAllItemCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.ItemCount);
+        //ignoreCoordsCopyStartIndex = ignoreCoords.Length;
 
         // Teleport 재배치
         itemCount = LevelLoader.Instance.TeleportCount;
-        randomMax = coordCount / itemCount;
-        randomMin = randomMax / 2;
+        if(itemCount > 0) {
+            randomMax = coordCount / itemCount;
+            randomMin = randomMax / 2;
 
-        zoomInCoordIndex = 0;
-        for(int i = 0; i < itemCount; i++) {
-            zoomInCoordIndex += Random.Range(randomMin, randomMax);
+            zoomInCoordIndex = 0;
+            for(int i = 0; i < itemCount; i++) {
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
 
-            zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
-            zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
-            LevelLoader.Instance.ResetTeleportOnLevel(i, zoomInCoord, zoom);
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+                LevelLoader.Instance.ResetTeleportOnLevel(i, zoomInCoord, zoom, ignoreCoords);
 
-            zoomInCoordIndex++;
+                zoomInCoordIndex++;
+            }
+        }
+        Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.TeleportCount);
+        Array.Copy(LevelLoader.Instance.GetAllTeleportCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.TeleportCount);
+        ignoreCoordsCopyStartIndex = ignoreCoords.Length;
+
+        // PickUP 아이템 재배치
+        itemCount = LevelLoader.Instance.HandlingCubeCount;
+        if(itemCount > 0) {
+            randomMax = coordCount / itemCount;
+            randomMin = randomMax / 2;
+
+            zoomInCoordIndex = 0;
+            for(int i = 0; i < itemCount; i++) {
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+                LevelLoader.Instance.ResetPickupItemOnLevel(i, zoomInCoord, zoom, ignoreCoords);
+
+                zoomInCoordIndex++;
+            }
+        }
+        Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.HandlingCubeCount);
+        Array.Copy(LevelLoader.Instance.GetAllPickupItemCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.HandlingCubeCount);
+        ignoreCoordsCopyStartIndex = ignoreCoords.Length;
+
+        // 몬스터 재배치
+        int monsterCount = LevelLoader.Instance.MonsterCount;
+        if(monsterCount > 0) {
+            randomMax = coordCount / monsterCount;
+            randomMin = randomMax / 2;
+
+            zoomInCoordIndex = 0;
+            for(int i = 0; i < monsterCount; i++) {
+                zoomInCoordIndex += Random.Range(randomMin, randomMax);
+
+                zoomInCoord.y = calculatedLevelSize.y - (zoomInCoordIndex / calculatedLevelSize.x + 1);
+                zoomInCoord.x = zoomInCoordIndex % calculatedLevelSize.x;
+                LevelLoader.Instance.ResetMonsterOnLevel(i, zoomInCoord, zoom, ignoreCoords);
+
+                zoomInCoordIndex++;
+            }
         }
 
         // StandingSpace 위치 설정
@@ -449,6 +602,10 @@ public class GameController : MonoBehaviour {
         PlayerController.Instance.Forward = Vector3.forward;
         PlayerController.Instance.ResetCameraAnchor();
         PlayerController.Instance.ResetPlayerStatus();
+        if(toyHammer != null) {
+            PlayerController.Instance.SetPickupItem(toyHammer);
+            toyHammer.gameObject.SetActive(true);
+        }
 
         yield return StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f));
         yield return new WaitForSeconds(1.0f);
@@ -470,10 +627,10 @@ public class GameController : MonoBehaviour {
                 case 0: scenarioCoroutine = Scenario00(); break;
                 case 1: scenarioCoroutine = Scenario01(); break;
                 case 2: scenarioCoroutine = Scenario02(); break;
-                default: scenarioCoroutine = ScenarioDefault(); break;
+                case 3: scenarioCoroutine = Scenario03(); break;
             }
 
-            StartCoroutine(scenarioCoroutine);
+            if(scenarioCoroutine != null) StartCoroutine(scenarioCoroutine);
         }
     }
     #endregion
@@ -490,6 +647,8 @@ public class GameController : MonoBehaviour {
         LevelLoader.Instance.StopMonsters();
         LevelLoader.Instance.StopItems();
         LevelLoader.Instance.StopPickupItems();
+
+        PlayerController.Instance.DropPickupItem();
         PlayerController.Instance.IsPlaying = false;
 
         monster.PlayerCatchAnimation();
@@ -535,9 +694,9 @@ public class GameController : MonoBehaviour {
         MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
         MazeBlock animationBlock2 = standingSpaceController.BlockT;
 
-        const float wallAnimationTime = 3.0f;
-        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, wallAnimationTime));
-        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, wallAnimationTime));
+        const float m_standardWallAnimationTime = 3.0f;
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, m_standardWallAnimationTime));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, m_standardWallAnimationTime));
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
 
         // Set Head Message
@@ -546,10 +705,7 @@ public class GameController : MonoBehaviour {
         // Start Guide
         pathGuide.gameObject.SetActive(true);
         pathGuide.transform.position = PlayerController.Instance.Pos;
-        pathGuide.Path = LevelLoader.Instance.GetPath(
-            PlayerController.Instance.Pos,
-            LevelLoader.Instance.GetBlockPos(new Vector2Int(standingSpaceCoord.x, standingSpaceCoord.y + 1)),
-            pathGuide.Radius);
+        pathGuide.GuideStart(LevelLoader.Instance.GetBlockPos(new Vector2Int(standingSpaceCoord.x, standingSpaceCoord.y + 1)));
 
         // Wait Player Entered In StandingSpace
         Vector3 animationWallPos = animationBlock2.GetSidePos(MazeCreator.ActiveWall.F);
@@ -579,57 +735,11 @@ public class GameController : MonoBehaviour {
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
-        #region Util Func
-        const float wallAnimationTime = 3.0f;
-        const float cameraMoveTime = 3.0f;
-
-        Vector3 camStartPos, camEndPos;
-        Vector3 camLookAtStartPos, camLookAtEndPos;
-        Quaternion camStartRotation, camEndRotation;
-
-        IEnumerator CameraMoveRotateAnimationCoroutine() {
-            float timeChecker = 0.0f;
-            float timeRatio = 0.0f;
-            float lerpRatio = 0.0f;
-            while(timeChecker < cameraMoveTime) {
-                timeChecker += Time.deltaTime;
-                timeRatio = timeChecker / cameraMoveTime;
-                lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
-                UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, camEndPos, lerpRatio);
-                UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
-
-                yield return null;
-            }
-
-            scenarioCameraAnimationCoroutine = null;
-        }
-
-        IEnumerator CameraLookAtAnimationCoroutine() {
-            Vector3 lookAtPos;
-
-            float timeChecker = 0.0f;
-            float timeRatio = 0.0f;
-            float lerpRatio = 0.0f;
-            while(timeChecker < cameraMoveTime) {
-                timeChecker += Time.deltaTime;
-                timeRatio = timeChecker / cameraMoveTime;
-                lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
-                lookAtPos = Vector3.Lerp(camLookAtStartPos, camLookAtEndPos, lerpRatio);
-                camEndRotation = Quaternion.LookRotation((lookAtPos - UtilObjects.Instance.CamPos).normalized);
-                UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
-
-                yield return null;
-            }
-
-            scenarioCameraAnimationCoroutine = null;
-        }
-        #endregion
-
         // Camera Move
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = standingSpaceController.NPCCameraViewPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = standingSpaceController.NPCCameraViewRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = standingSpaceController.NPCCameraViewPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = standingSpaceController.NPCCameraViewRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -728,8 +838,8 @@ public class GameController : MonoBehaviour {
         MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
         MazeBlock animationBlock2 = standingSpaceController.BlockT;
 
-        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, wallAnimationTime));
-        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, wallAnimationTime));
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, m_standardWallAnimationTime));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, m_standardWallAnimationTime));
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
 
         // Camera Rotation ==> Show Door Opening
@@ -737,9 +847,9 @@ public class GameController : MonoBehaviour {
         float cameraLookEndHeight = 1.0f;
         Vector3 animationWallPos = animationBlock2.GetSidePos(MazeCreator.ActiveWall.F);
 
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camLookAtStartPos = animationWallPos + Vector3.up * cameraLookStartHeight;
-        camLookAtEndPos = animationWallPos + Vector3.up * cameraLookEndHeight;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camLookAtStartPos = animationWallPos + Vector3.up * cameraLookStartHeight;
+        m_camLookAtEndPos = animationWallPos + Vector3.up * cameraLookEndHeight;
         scenarioCameraAnimationCoroutine = CameraLookAtAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -747,10 +857,10 @@ public class GameController : MonoBehaviour {
         yield return new WaitForSeconds(1.0f);
 
         // Camera View 복구
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = UtilObjects.Instance.CamPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = standingSpaceController.NPCCameraViewRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = UtilObjects.Instance.CamPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = standingSpaceController.NPCCameraViewRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
         #endregion
@@ -803,10 +913,10 @@ public class GameController : MonoBehaviour {
         PlayerController.Instance.Forward = Vector3.forward;
         PlayerController.Instance.ResetCameraAnchor();
 
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = PlayerController.Instance.CamPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = PlayerController.Instance.CamRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = PlayerController.Instance.CamPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = PlayerController.Instance.CamRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -833,25 +943,25 @@ public class GameController : MonoBehaviour {
         // 진입 애니메이션 시작
         PlayerController.Instance.IsPlaying = false;
 
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = normalCheckPos + Vector3.forward * MazeBlock.BlockSize;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = Quaternion.LookRotation((normalCheckPos - camEndPos).normalized);
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = normalCheckPos + Vector3.forward * MazeBlock.BlockSize;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = Quaternion.LookRotation((normalCheckPos - m_camEndPos).normalized);
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
         // Wall Animation
-        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, wallAnimationTime));
-        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, wallAnimationTime));
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, m_standardWallAnimationTime));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, m_standardWallAnimationTime));
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
 
         // Camera Animation
         cameraLookStartHeight = 1.0f;
         cameraLookEndHeight = MazeBlock.WallHeight - 1.0f;
 
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camLookAtStartPos = animationWallPos + Vector3.up * cameraLookStartHeight;
-        camLookAtEndPos = animationWallPos + Vector3.up * cameraLookEndHeight;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camLookAtStartPos = animationWallPos + Vector3.up * cameraLookStartHeight;
+        m_camLookAtEndPos = animationWallPos + Vector3.up * cameraLookEndHeight;
         scenarioCameraAnimationCoroutine = CameraLookAtAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -859,10 +969,10 @@ public class GameController : MonoBehaviour {
         yield return new WaitForSeconds(1.0f);
 
         // Camera 복구
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = PlayerController.Instance.CamPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = PlayerController.Instance.CamRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = PlayerController.Instance.CamPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = PlayerController.Instance.CamRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -878,62 +988,16 @@ public class GameController : MonoBehaviour {
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
-        #region Util Func
-        const float wallAnimationTime = 3.0f;
-        const float cameraMoveTime = 1.0f;
-
-        Vector3 camStartPos, camEndPos;
-        Vector3 camLookAtStartPos, camLookAtEndPos;
-        Quaternion camStartRotation, camEndRotation;
-
-        IEnumerator CameraMoveRotateAnimationCoroutine() {
-            float timeChecker = 0.0f;
-            float timeRatio = 0.0f;
-            float lerpRatio = 0.0f;
-            while(timeChecker < cameraMoveTime) {
-                timeChecker += Time.deltaTime;
-                timeRatio = timeChecker / cameraMoveTime;
-                lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
-                UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, camEndPos, lerpRatio);
-                UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
-
-                yield return null;
-            }
-
-            scenarioCameraAnimationCoroutine = null;
-        }
-
-        IEnumerator CameraLookAtAnimationCoroutine() {
-            Vector3 lookAtPos;
-
-            float timeChecker = 0.0f;
-            float timeRatio = 0.0f;
-            float lerpRatio = 0.0f;
-            while(timeChecker < cameraMoveTime) {
-                timeChecker += Time.deltaTime;
-                timeRatio = timeChecker / cameraMoveTime;
-                lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
-                lookAtPos = Vector3.Lerp(camLookAtStartPos, camLookAtEndPos, lerpRatio);
-                camEndRotation = Quaternion.LookRotation((lookAtPos - UtilObjects.Instance.CamPos).normalized);
-                UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
-
-                yield return null;
-            }
-
-            scenarioCameraAnimationCoroutine = null;
-        }
-        #endregion
-
         // Set NPC Pos
         Vector3 npcPos = standingSpaceController.BlockCenter.transform.position;
         standingSpaceController.InitializeNPCAnchor(npcPos, Vector3.forward);
         standingSpaceController.NPCModelActive = true;
 
         // Camera Move
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = standingSpaceController.NPCCameraViewPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = standingSpaceController.NPCCameraViewRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = standingSpaceController.NPCCameraViewPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = standingSpaceController.NPCCameraViewRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -1011,10 +1075,10 @@ public class GameController : MonoBehaviour {
         PlayerController.Instance.ResetCameraAnchor();
 
         // Camera Move
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = PlayerController.Instance.CamPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = PlayerController.Instance.CamRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = PlayerController.Instance.CamPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = PlayerController.Instance.CamRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -1045,11 +1109,11 @@ public class GameController : MonoBehaviour {
         // Wall Animation
         MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
         MazeBlock animationBlock2 = standingSpaceController.BlockT;
-        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, wallAnimationTime));
-        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, wallAnimationTime));
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, m_standardWallAnimationTime));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, m_standardWallAnimationTime));
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
 
-        yield return new WaitForSeconds(wallAnimationTime);
+        yield return new WaitForSeconds(m_standardWallAnimationTime);
 
         OnScenarioEnd();
 
@@ -1060,57 +1124,11 @@ public class GameController : MonoBehaviour {
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
-        #region Util Func
-        const float wallAnimationTime = 3.0f;
-        const float cameraMoveTime = 3.0f;
-
-        Vector3 camStartPos, camEndPos;
-        Vector3 camLookAtStartPos, camLookAtEndPos;
-        Quaternion camStartRotation, camEndRotation;
-
-        IEnumerator CameraMoveRotateAnimationCoroutine(float animationTime = cameraMoveTime) {
-            float timeChecker = 0.0f;
-            float timeRatio = 0.0f;
-            float lerpRatio = 0.0f;
-            while(timeChecker < animationTime) {
-                timeChecker += Time.deltaTime;
-                timeRatio = timeChecker / animationTime;
-                lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
-                UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, camEndPos, lerpRatio);
-                UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
-
-                yield return null;
-            }
-
-            scenarioCameraAnimationCoroutine = null;
-        }
-
-        IEnumerator CameraLookAtAnimationCoroutine(float animationTime = cameraMoveTime) {
-            Vector3 lookAtPos;
-
-            float timeChecker = 0.0f;
-            float timeRatio = 0.0f;
-            float lerpRatio = 0.0f;
-            while(timeChecker < animationTime) {
-                timeChecker += Time.deltaTime;
-                timeRatio = timeChecker / animationTime;
-                lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
-                lookAtPos = Vector3.Lerp(camLookAtStartPos, camLookAtEndPos, lerpRatio);
-                camEndRotation = Quaternion.LookRotation((lookAtPos - UtilObjects.Instance.CamPos).normalized);
-                UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
-
-                yield return null;
-            }
-
-            scenarioCameraAnimationCoroutine = null;
-        }
-        #endregion
-
         // Camera Move
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = standingSpaceController.NPCCameraViewPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = standingSpaceController.NPCCameraViewRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = standingSpaceController.NPCCameraViewPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = standingSpaceController.NPCCameraViewRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine(1.5f);
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -1129,7 +1147,7 @@ public class GameController : MonoBehaviour {
         }
 
         int scenarioIndex = 0;
-        const int turningPointIndex = 2;
+        const int turningPointIndex = 3;
 
         // 0: 대기
         // -1: 이전으로
@@ -1204,65 +1222,65 @@ public class GameController : MonoBehaviour {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
 
         // Camera Move
-        camStartPos = UtilObjects.Instance.CamPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = standingSpaceController.NPCCameraViewRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = standingSpaceController.NPCCameraViewRotation;
         float timeChecker = 0.0f;
         float lerpRatio;
         while(timeChecker < throwStartTime) {
             timeChecker += Time.deltaTime;
             lerpRatio = Time.deltaTime * 4;
 
-            camStartPos = UtilObjects.Instance.CamPos;
-            camEndPos = standingSpaceController.NPCCameraViewPos + 
+            m_camStartPos = UtilObjects.Instance.CamPos;
+            m_camEndPos = standingSpaceController.NPCCameraViewPos + 
                 standingSpaceController.NPCCameraViewForward +
                 standingSpaceController.NPCCameraViewUp * 0.5f;
-            UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, camEndPos, lerpRatio);
+            UtilObjects.Instance.CamPos = Vector3.Lerp(m_camStartPos, m_camEndPos, lerpRatio);
 
-            camStartRotation = UtilObjects.Instance.CamRotation;
-            camEndRotation = Quaternion.LookRotation(standingSpaceController.NPCCameraViewForward);
-            UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
+            m_camStartRotation = UtilObjects.Instance.CamRotation;
+            m_camEndRotation = Quaternion.LookRotation(standingSpaceController.NPCCameraViewForward);
+            UtilObjects.Instance.CamRotation = Quaternion.Lerp(m_camStartRotation, m_camEndRotation, lerpRatio);
 
             yield return null;
         }
 
         // Throw Camera Animation
         Vector3 animationWallPos = standingSpaceController.BlockT.GetSidePos(MazeCreator.ActiveWall.F);
-        camEndPos = animationWallPos + Vector3.forward * MazeBlock.BlockSize * 0.5f + Vector3.up * 0.1f;
+        m_camEndPos = animationWallPos + Vector3.forward * MazeBlock.BlockSize * 0.5f + Vector3.up * 0.1f;
         timeChecker = 0.0f;
         while(timeChecker < animationEndTime - throwStartTime) {
             timeChecker += Time.deltaTime;
             lerpRatio = Time.deltaTime * 4;
 
-            camStartPos = UtilObjects.Instance.CamPos;
-            UtilObjects.Instance.CamPos = Vector3.Lerp(camStartPos, camEndPos, lerpRatio);
+            m_camStartPos = UtilObjects.Instance.CamPos;
+            UtilObjects.Instance.CamPos = Vector3.Lerp(m_camStartPos, m_camEndPos, lerpRatio);
 
-            camStartRotation = UtilObjects.Instance.CamRotation;
-            camLookAtEndPos = standingSpaceController.NPCPos + Vector3.up * 2;
-            camEndRotation = Quaternion.LookRotation((camLookAtEndPos - UtilObjects.Instance.CamPos).normalized);
-            UtilObjects.Instance.CamRotation = Quaternion.Lerp(camStartRotation, camEndRotation, lerpRatio);
+            m_camStartRotation = UtilObjects.Instance.CamRotation;
+            m_camLookAtEndPos = standingSpaceController.NPCPos + Vector3.up * 2;
+            m_camEndRotation = Quaternion.LookRotation((m_camLookAtEndPos - UtilObjects.Instance.CamPos).normalized);
+            UtilObjects.Instance.CamRotation = Quaternion.Lerp(m_camStartRotation, m_camEndRotation, lerpRatio);
 
             yield return null;
         }
 
         // Set Player
         PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(standingSpaceCoord.x, standingSpaceCoord.y + 1);
-        PlayerController.Instance.Forward = (standingSpaceController.NPCPos - camEndPos).normalized;
+        PlayerController.Instance.Forward = (standingSpaceController.NPCPos - m_camEndPos).normalized;
         PlayerController.Instance.ResetCameraAnchor();
 
         // Delay
         yield return new WaitForSeconds(0.2f);
 
         // Wall Animation
-        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, wallAnimationTime));
-        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, wallAnimationTime));
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, m_standardWallAnimationTime));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, m_standardWallAnimationTime));
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
 
         // Camera Animation
-        camStartPos = UtilObjects.Instance.CamPos;
-        camEndPos = PlayerController.Instance.CamPos;
-        camStartRotation = UtilObjects.Instance.CamRotation;
-        camEndRotation = PlayerController.Instance.CamRotation;
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = PlayerController.Instance.CamPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = PlayerController.Instance.CamRotation;
         scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
         yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -1270,9 +1288,9 @@ public class GameController : MonoBehaviour {
         //float cameraLookStartHeight = 1.0f;
         //float cameraLookEndHeight = MazeBlock.WallHeight - 1.0f;
 
-        //camStartRotation = UtilObjects.Instance.CamRotation;
-        //camLookAtStartPos = animationWallPos + Vector3.up * cameraLookStartHeight;
-        //camLookAtEndPos = animationWallPos + Vector3.up * cameraLookEndHeight;
+        //m_camStartRotation = UtilObjects.Instance.CamRotation;
+        //m_camLookAtStartPos = animationWallPos + Vector3.up * cameraLookStartHeight;
+        //m_camLookAtEndPos = animationWallPos + Vector3.up * cameraLookEndHeight;
         //scenarioCameraAnimationCoroutine = CameraLookAtAnimationCoroutine();
         //yield return StartCoroutine(scenarioCameraAnimationCoroutine);
 
@@ -1284,10 +1302,243 @@ public class GameController : MonoBehaviour {
         scenarioCoroutine = null;
     }
 
-    private IEnumerator ScenarioDefault() {
-        yield return null;
+    private IEnumerator Scenario03() {
+        // Stop Player
+        PlayerController.Instance.IsPlaying = false;
+
+        // Camera Move
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = standingSpaceController.NPCCameraViewPos + standingSpaceController.NPCCameraViewForward;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = standingSpaceController.NPCCameraViewRotation;
+        scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine(1.5f);
+        yield return StartCoroutine(scenarioCameraAnimationCoroutine);
+
+        // Active MessageBox
+        userInterface.MessageActive = true;
+        userInterface.MessageAlpha = 1.0f;
+
+        // Scenario Start
+        const string ScenarioStandardKeyString = "LevelStart03";
+        string key = "";
+        void OnLocaleChanged(string languageCode) {
+            Locale currentLocale = LocalizationSettings.AvailableLocales.GetLocale(languageCode);
+            StringTable currentTable = LocalizationSettings.StringDatabase.GetTable("Scenario", currentLocale);
+            StringTableEntry currentTableEntry = currentTable.GetEntry(key);
+            userInterface.MessageText = currentTableEntry.Value;
+        }
+
+        int scenarioIndex = 0;
+        const int turningPointIndex = 7;
+
+        // 0: 대기
+        // -1: 이전으로
+        // 1: 다음으로
+        int moveScenario = 0;
+        while(scenarioIndex < turningPointIndex) {
+            // Reset Buttons
+            userInterface.SetMessageButtons();
+            userInterface.SetScenarioButtons();
+
+            // 추임새
+            standingSpaceController.SetAnimationTrigger_Talking();
+
+            // String Animation
+            key = ScenarioStandardKeyString + scenarioIndex.ToString().PadLeft(2, '0');
+            scenarioTextAnimationCoroutine = ScenarioTextAnimationCoroutine(key, 0.02f);
+            yield return StartCoroutine(scenarioTextAnimationCoroutine);
+
+            // 추임새 제한
+            // 완벽하지는 않지만 이거라도 하는게 좋아 보인다.
+            standingSpaceController.SetAnimationResetTrigger_Talking();
+
+            moveScenario = 0;
+            switch(scenarioIndex) {
+                case 0: userInterface.SetScenarioButtons(null, () => { moveScenario = 1; }); break;
+                //case turningPointIndex - 1: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, null); break;
+                default: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, () => { moveScenario = 1; }); break;
+            }
+            UserSettings.OnLocaleChanged += OnLocaleChanged;
+            while(moveScenario == 0) {
+                yield return null;
+            }
+            UserSettings.OnLocaleChanged -= OnLocaleChanged;
+
+            scenarioIndex += moveScenario;
+        }
+
+        #region Start Turning Point
+        // Reset Buttons
+        userInterface.SetMessageButtons();
+        userInterface.SetScenarioButtons();
+
+        // 추임새
+        standingSpaceController.SetAnimationTrigger_Talking();
+
+        // String Animation
+        key = ScenarioStandardKeyString + scenarioIndex.ToString().PadLeft(2, '0');
+        scenarioTextAnimationCoroutine = ScenarioTextAnimationCoroutine(key);
+        yield return StartCoroutine(scenarioTextAnimationCoroutine);
+
+        // 0: 대기
+        // -1: Special Scenario 진입
+        // 1: 통상 궤도 진입
+        moveScenario = 0;
+        userInterface.SetMessageButtons(
+            "Resist",
+            () => { moveScenario = 1; },
+            "Accept",
+            () => { moveScenario = -1; });
+        UserSettings.OnLocaleChanged += OnLocaleChanged;
+        while(moveScenario == 0) {
+            yield return null;
+        }
+        UserSettings.OnLocaleChanged -= OnLocaleChanged;
+        #endregion
+
+        // Turning Point Setting
+        bool isBadEnding = moveScenario == -1;
+        string NewScenarioStandardKeyString = ScenarioStandardKeyString + (isBadEnding ? "_Accept" : "_Resist");
+        int scenarioEndIndex = isBadEnding ? 3 : 4;
+
+        // 0: 대기
+        // -1: 이전으로
+        // 1: 다음으로
+        moveScenario = 0;
+        scenarioIndex = 0;
+        while(scenarioIndex < scenarioEndIndex) {
+            // Reset Buttons
+            userInterface.SetMessageButtons();
+            userInterface.SetScenarioButtons();
+
+            // 추임새
+            standingSpaceController.SetAnimationTrigger_Talking();
+
+            // String Animation
+            key = NewScenarioStandardKeyString + scenarioIndex.ToString().PadLeft(2, '0');
+            scenarioTextAnimationCoroutine = ScenarioTextAnimationCoroutine(key, 0.02f);
+            yield return StartCoroutine(scenarioTextAnimationCoroutine);
+
+            // 추임새 제한
+            // 완벽하지는 않지만 이거라도 하는게 좋아 보인다.
+            standingSpaceController.SetAnimationResetTrigger_Talking();
+
+            moveScenario = 0;
+            switch(scenarioIndex) {
+                case 0: userInterface.SetScenarioButtons(null, () => { moveScenario = 1; }); break;
+                //case turningPointIndex - 1: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, null); break;
+                default: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, () => { moveScenario = 1; }); break;
+            }
+            UserSettings.OnLocaleChanged += OnLocaleChanged;
+            while(moveScenario == 0) {
+                yield return null;
+            }
+            UserSettings.OnLocaleChanged -= OnLocaleChanged;
+
+            scenarioIndex += moveScenario;
+        }
+
+        // Fade Out
+        yield return StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 2.0f));
+
+        // Hide MessageBox
+        userInterface.MessageAlpha = 0.0f;// Close MessageBox
+
+        // Player Setting
+        PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(standingSpaceCoord.x, standingSpaceCoord.y + 1);
+        PlayerController.Instance.Forward = Vector3.forward;
+        PlayerController.Instance.ResetCameraAnchor();
+        PlayerController.Instance.CheatMode = !isBadEnding;
+
+        // Camera Setting
+        UtilObjects.Instance.CamPos = PlayerController.Instance.CamPos;
+        UtilObjects.Instance.CamForward = PlayerController.Instance.CamForward;
+
+        // Close Door
+        MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
+        MazeBlock animationBlock2 = standingSpaceController.BlockT;
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, 0.0f));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, 0.0f));
+
+        // Delay
+        yield return new WaitForSeconds(1.0f);
+
+        // 플레이어 움직임 복구
+        PlayerController.Instance.IsPlaying = true;
+
+        OnScenarioEnd();
+
+        // Happy Ending
+        if(!isBadEnding) {
+            if(toyHammer == null) {
+                GameObject resource = ResourceLoader.GetResource<GameObject>(LevelLoader.ROOT_PATH_OF_ITEMS + "/ToyHammer");
+                GameObject go = Instantiate(resource, PlayerController.Instance.PickupHandAnchor);
+
+                ToyHammer th = go.GetComponent<ToyHammer>();
+                th.Stop();
+
+                toyHammer = th;
+            }
+
+            PlayerController.Instance.SetPickupItem(toyHammer);
+            toyHammer.gameObject.SetActive(true);
+        }
+        // Bad Ending
+        else {
+            if(toyHammer != null) {
+                toyHammer.gameObject.SetActive(false);
+            }
+        }
+
+        // Fade In
+        yield return UtilObjects.Instance.SetActiveRayBlockAction(false, 1.0f);
 
         scenarioCoroutine = null;
+    }
+
+    #region Help Func
+    const float m_standardWallAnimationTime = 3.0f;
+    const float m_standardCameraMoveTime = 3.0f;
+
+    Vector3 m_camStartPos, m_camEndPos;
+    Vector3 m_camLookAtStartPos, m_camLookAtEndPos;
+    Quaternion m_camStartRotation, m_camEndRotation;
+
+    IEnumerator CameraMoveRotateAnimationCoroutine(float animationTime = m_standardCameraMoveTime) {
+        float timeChecker = 0.0f;
+        float timeRatio = 0.0f;
+        float lerpRatio = 0.0f;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            timeRatio = timeChecker / animationTime;
+            lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
+            UtilObjects.Instance.CamPos = Vector3.Lerp(m_camStartPos, m_camEndPos, lerpRatio);
+            UtilObjects.Instance.CamRotation = Quaternion.Lerp(m_camStartRotation, m_camEndRotation, lerpRatio);
+
+            yield return null;
+        }
+
+        scenarioCameraAnimationCoroutine = null;
+    }
+
+    IEnumerator CameraLookAtAnimationCoroutine(float animationTime = m_standardCameraMoveTime) {
+        Vector3 lookAtPos;
+
+        float timeChecker = 0.0f;
+        float timeRatio = 0.0f;
+        float lerpRatio = 0.0f;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            timeRatio = timeChecker / animationTime;
+            lerpRatio = Mathf.Sin(Mathf.PI * 0.5f * timeRatio);
+            lookAtPos = Vector3.Lerp(m_camLookAtStartPos, m_camLookAtEndPos, lerpRatio);
+            m_camEndRotation = Quaternion.LookRotation((lookAtPos - UtilObjects.Instance.CamPos).normalized);
+            UtilObjects.Instance.CamRotation = Quaternion.Lerp(m_camStartRotation, m_camEndRotation, lerpRatio);
+
+            yield return null;
+        }
+
+        scenarioCameraAnimationCoroutine = null;
     }
 
     private IEnumerator ScenarioTextAnimationCoroutine(string key, float waitTime = 0.05f) {
@@ -1325,8 +1576,10 @@ public class GameController : MonoBehaviour {
 
         userInterface.SetMessageBoxButton();
         UserSettings.OnLocaleChanged -= OnLocaleChanged;
+
         scenarioTextAnimationCoroutine = null;
     }
+    #endregion
     #endregion
 
     private void OnGameEnd(bool isClear) {
@@ -1399,14 +1652,14 @@ public class GameController : MonoBehaviour {
         LevelLoader.Instance.PlayItems();
         LevelLoader.Instance.PlayPickupItems();
 
-        int maxItemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
+        int maxItemCount = CurrentLevelSettings.Items != null ? CurrentLevelSettings.Items.Sum(t => t.generateCount) : 0;
         int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
         userInterface.SetItemCount(maxItemCount, collectItem);
 
         userInterface.HeadMessageActive = true;
         userInterface.MessageActive = false;
         userInterface.MicGageActive = UserSettings.UseMicBoolean;
-        userInterface.CollectItemActive = true;
+        userInterface.CollectItemActive = maxItemCount > 0;
         userInterface.RunGageActive = true;
     }
 }
@@ -1414,6 +1667,8 @@ public class GameController : MonoBehaviour {
 public class GameLevelSettings {
     public int LevelWidth;
     public int LevelHeight;
+
+    public bool IsEmpty;
 
     public struct MonsterStruct {
         public LevelLoader.MonsterType type;
@@ -1426,4 +1681,7 @@ public class GameLevelSettings {
         public int generateCount;
     }
     public ItemStruct[] Items;
+
+    public int HandlingCubeCount;
+    public int TeleportCount;
 }

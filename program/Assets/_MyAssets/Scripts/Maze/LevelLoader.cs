@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 using Random = UnityEngine.Random;
@@ -41,8 +42,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         Teleport, 
     }
 
-    private const string ROOT_PATH_OF_ITEMS = "Items";
-    private const string ROOT_PATH_OF_MATERIALS = "Materials";
+    public const string ROOT_PATH_OF_ITEMS = "Items";
+    public const string ROOT_PATH_OF_MATERIALS = "Materials";
 
     private List<ItemController> items = new List<ItemController>();
     public List<ItemController> Items { get { return items; } }
@@ -148,16 +149,21 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     private const string MAT_DRAW_PLAYER_PAST_POSITION_KEY = "DRAW_PLAYER_PAST_POS";
     private const string MAT_DRAW_MAZEBLOCK_EDGE_KEY = "DRAW_MAZEBLOCK_EDGE";
     private const string MAT_DRAW_MONSTER_OUTLINE_KEY = "DRAW_OUTLINE";
+    protected const string MAT_DRAW_OBJECT_OUTLINE_KEY = "DRAW_OBJECT_OUTLINE";
     #endregion
 
+    private const string MAT_BASE_COLOR_NAME = "_BaseColor";
     private const string MAT_COLOR_STRENGTH_MAX_NAME = "_ColorStrengthMax";
     private const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
     private const string MAT_RIM_THICKNESS_OFFSET_NAME = "_RimThicknessOffset";
     private const string MAT_PLAYER_PAST_POSITION_RADIUS_NAME = "_PlayerPastPosRadius";
+    private const string MAT_MAZEBLOCK_EDGE_COLOR_NAME = "_MazeBlockEdgeColor";
     private const string MAT_MAZEBLOCK_EDGE_THICKNESS_NAME = "_MazeBlockEdgeThickness";
     private const string MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME = "_MazeBlockEdgeShowDistance";
     private const string MAT_MONSTER_OUTLINE_THICKNESS_NAME = "_MonsterOutlineThickness";
     private const string MAT_MONSTER_OUTLINE_COLOR_NAME = "_MonsterOutlineColor";
+    private const string MAT_OBJECT_OUTLINE_THICKNESS_NAME = "_ObjectOutlineThickness";
+    private const string MAT_OBJECT_OUTLINE_COLOR_NAME = "_ObjectOutlineColor";
     #endregion
 
     public static readonly float STANDARD_RIM_RADIUS_SPREAD_TIME = 5.0f;
@@ -361,6 +367,22 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         playerMaterialPropertiesGroup.ClearArray();
     }
 
+    public void LevelToEmpty() {
+        if(mazeBlocks == null) {
+            Debug.Log("Maze not exist.");
+
+            return;
+        }
+
+        MazeCreator.CreateEmptyMaze(LevelWidth, LevelHeight);
+
+        for(int x = 0; x < LevelWidth; x++) {
+            for(int y = 0; y < LevelHeight; y++) {
+                mazeBlocks[x, y].WallInfo = MazeCreator.Maze[x, y].WallInfo;
+            }
+        }
+    }
+
     public void LoadLevel(int width, int height, bool createEmpty = false) {
         if(createEmpty) MazeCreator.CreateEmptyMaze(width, height);
         else MazeCreator.CreateMaze(width, height);
@@ -388,7 +410,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             mat.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 0.2f);
             mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 1.0f);
-            mat.SetColor("_BaseColor", Color.black);
+            mat.SetColor(MAT_BASE_COLOR_NAME, Color.black);
             foreach(MaterialPropertiesGroup group in rimMaterialPropertiesGroups) {
                 mat.SetVector(group.MAT_COLOR_NAME, group.Color);
             }
@@ -473,6 +495,22 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public List<Vector3> GetPath(Vector3 startPos, Vector3 endPos, float rayRadius) {
         startPos = new Vector3(startPos.x, 0, startPos.z);
         endPos = new Vector3(endPos.x, 0, endPos.z);
+
+        #region Check Straight Path
+        int rayMask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName)) +
+            (1 << LayerMask.NameToLayer(MazeBlock.EdgeLayerName)) +
+            (1 << LayerMask.NameToLayer(PlayerController.LayerName));
+        Vector3 p1 = startPos;
+        Vector3 p2 = startPos + Vector3.up * PlayerController.PlayerHeight;
+        Vector3 rayDirection = (endPos - startPos).normalized;
+        if(Physics.CapsuleCast(p1, p2, rayRadius, rayDirection, out tempPathHit, float.MaxValue, rayMask)) {
+            if(tempPathHit.rigidbody != null && tempPathHit.rigidbody.CompareTag(PlayerController.TagName)) {
+                Debug.Log("Hit Player");
+
+                return new List<Vector3>() { startPos, new Vector3(endPos.x, 0.0f, endPos.z) };
+            }
+        }
+        #endregion
 
         Vector2Int startCoord = GetMazeCoordinate(startPos);
         Vector2Int endCoord = GetMazeCoordinate(endPos);
@@ -751,7 +789,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return (startCoord.x <= coord.x && coord.x < endCoord.x && startCoord.y <= coord.y && coord.y < endCoord.y);
     }
 
-    public void ResetMonsterOnLevel(int monsterIndex, Vector2Int coord, int zoom = 0) {
+    public void ResetMonsterOnLevel(int monsterIndex, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         MonsterController mc = monsters[monsterIndex];
         if(mc == null) {
             Debug.LogWarning($"Monster not exist. index: {monsterIndex}");
@@ -768,23 +806,19 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
-            // Froggy는 움직이지 않는 몬스터이므로 아이템과 겹치지 않는 위치에 생성한다.
-            if(mc.Type == MonsterType.Froggy) {
-                Vector2Int[] itemCoords = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
-                while(true) {
-                    if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
-                        randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
-                    }
-                    else {
-                        break;
-                    }
+            while(true) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                }
+                else {
+                    break;
                 }
             }
             mc.Pos = GetBlockPos(randomCoord);
         }
     }
 
-    public void AddMonsterOnLevel(MonsterType type, Vector2Int coord, int zoom = 0) {
+    public void AddMonsterOnLevel(MonsterType type, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_MONSTERS, type.ToString()));
         if(resource == null) {
             Debug.LogError($"Monster Resource not found. type: {type}");
@@ -802,16 +836,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
-            // Froggy는 움직이지 않는 몬스터이므로 아이템과 겹치지 않는 위치에 생성한다.
-            if(type == MonsterType.Froggy) {
-                Vector2Int[] itemCoords = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
-                while(true) {
-                    if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
-                        randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
-                    }
-                    else {
-                        break;
-                    }
+            while(true) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                }
+                else {
+                    break;
                 }
             }
             go.transform.position = GetBlockPos(randomCoord);
@@ -824,7 +854,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         mc.Material.EnableKeyword(MAT_DRAW_RIM_KEY);
         mc.Material.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
 
-        if(type == MonsterType.Cloudy) mc.Material.SetColor("_BaseColor", Color.white * 30f / 255f);
+        if(type == MonsterType.Cloudy) mc.Material.SetColor(MAT_BASE_COLOR_NAME, Color.white * 30f / 255f);
 
         monsters.Add(mc);
     }
@@ -839,7 +869,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return GetPath(currentPos, GetBlockPos(endpoint), rayRadius);
     }
 
-    public void ResetItemOnLevel(int itemIndex, Vector2Int coord, int zoom = 0) {
+    public void ResetItemOnLevel(int itemIndex, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         ItemController ic = items[itemIndex];
         if(ic == null) {
             Debug.LogWarning($"Item not exist. index: {itemIndex}");
@@ -856,11 +886,19 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            while(true) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                }
+                else {
+                    break;
+                }
+            }
             ic.Pos = GetBlockPos(randomCoord);
         }
     }
 
-    public void AddItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
+    public void AddItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
         if(resource == null) {
             Debug.LogError($"Monster Resource not found. type: {type}");
@@ -890,6 +928,14 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            while(true) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                }
+                else {
+                    break;
+                }
+            }
             go.transform.position = GetBlockPos(randomCoord);
         }
 
@@ -899,7 +945,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         items.Add(ic);
     }
 
-    public void ResetPickupItemOnLevel(int itemIndex, Vector2Int coord, int zoom = 0) {
+    public void ResetPickupItemOnLevel(int itemIndex, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         HandlingCube hc = handlingCubes[itemIndex];
         if(hc == null) {
             Debug.LogWarning($"Pickup Item not found. index: ${itemIndex}");
@@ -916,11 +962,19 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            while(true) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                }
+                else {
+                    break;
+                }
+            }
             hc.Pos = GetBlockPos(randomCoord);
         }
     }
 
-    public void AddPickupItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
+    public void AddPickupItemOnLevel(ItemType type, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
         if(resource == null) {
             Debug.LogError($"Monster Resource not found. type: {type}");
@@ -938,6 +992,14 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+            while(true) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                    randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
+                }
+                else {
+                    break;
+                }
+            }
             go.transform.position = GetBlockPos(randomCoord);
         }
 
@@ -947,7 +1009,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         handlingCubes.Add(hc);
     }
 
-    public void ResetTeleportOnLevel(int index, Vector2Int coord, int zoom = 0) {
+    public void ResetTeleportOnLevel(int index, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         Teleport t = teleports[index];
         if(t == null) {
             Debug.LogWarning($"Teleport not exist. index: {index}");
@@ -964,12 +1026,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             // Item과 겹치지 않게 생성
-            Vector2Int[] itemCoords = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
-            Vector2Int[] pickUpCoords = handlingCubes.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any() ||
-                    pickUpCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -980,7 +1039,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
 
-    public void AddTeleportOnLevel(ItemType type, Vector2Int coord, int zoom = 0) {
+    public void AddTeleportOnLevel(ItemType type, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         GameObject resource = ResourceLoader.GetResource<GameObject>(Path.Combine(ROOT_PATH_OF_ITEMS, type.ToString()));
         if(resource == null) {
             Debug.LogError($"Monster Resource not found. type: {type}");
@@ -998,12 +1057,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             GetStartEndCoordOnZoomInCoord(coord, zoom, out startCoord, out endCoord);
 
             // Item과 겹치지 않게 생성
-            Vector2Int[] itemCoords = items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
-            Vector2Int[] pickUpCoords = handlingCubes.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(itemCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any() ||
-                    pickUpCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -1058,6 +1114,14 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         }
     }
 
+    public Vector2Int[] GetAllMonsterCoords() => monsters.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+
+    public Vector2Int[] GetAllItemCoords() => items.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+
+    public Vector2Int[] GetAllPickupItemCoords() => handlingCubes.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+
+    public Vector2Int[] GetAllTeleportCoords() => teleports.Select(t => GetMazeCoordinate(t.Pos)).ToArray();
+
     public void AddPlayerPosInMaterialProperty(Vector3 pos) {
         playerMaterialPropertiesGroup.AddPos(new Vector4(pos.x, pos.y, pos.z));
         playerMaterialPropertiesGroup.SetPosArray(blockFloorMaterial);
@@ -1087,6 +1151,45 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         Destroy(collectingItem.gameObject);
     }
+
+    #region Material Property Setting Func
+    public void SetUseBaseColor(Material mat, bool value) {
+        if(value) mat.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
+        else mat.DisableKeyword(MAT_USE_BASE_COLOR_KEY);
+    }
+    public void SetDrawRim(Material mat, bool value) {
+        if(value) mat.EnableKeyword(MAT_DRAW_RIM_KEY);
+        else mat.DisableKeyword(MAT_DRAW_RIM_KEY);
+    }
+    public void SetDrawPlayerPastPos(Material mat, bool value) {
+        if(value) mat.EnableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
+        else mat.DisableKeyword(MAT_DRAW_PLAYER_PAST_POSITION_KEY);
+    }
+    public void SetDrawMazeBlockEdge(Material mat, bool value) {
+        if(value) mat.EnableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
+        else mat.DisableKeyword(MAT_DRAW_MAZEBLOCK_EDGE_KEY);
+    }
+    public void SetDrawMonsterOutline(Material mat, bool value) {
+        if(value) mat.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
+        else mat.DisableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
+    }
+    public void SetDrawObjectOutline(Material mat, bool value) {
+        if(value) mat.EnableKeyword(MAT_DRAW_OBJECT_OUTLINE_KEY);
+        else mat.DisableKeyword(MAT_DRAW_OBJECT_OUTLINE_KEY);
+    }
+
+    public void SetBaseColor(Material mat, Color color) => mat.SetColor(MAT_BASE_COLOR_NAME, color);
+
+    public void SetMazeBlockEdgeColor(Material mat, Color color) => mat.SetColor(MAT_MAZEBLOCK_EDGE_COLOR_NAME, color);
+    public void SetMazeBlockEdgeThickness(Material mat, float value) => mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, value);
+    public void SetMazeBlockEdgeShowDistance(Material mat, float value) => mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, value);
+
+    public void SetMonsterOutlineColor(Material mat, Color color) => mat.SetColor(MAT_MONSTER_OUTLINE_COLOR_NAME, color);
+    public void SetMonsterOutlineThickness(Material mat, float value) => mat.SetFloat(MAT_MONSTER_OUTLINE_THICKNESS_NAME, value);
+
+    public void SetObjectOutlineColor(Material mat, Color color) => mat.SetColor(MAT_OBJECT_OUTLINE_COLOR_NAME, color);
+    public void SetObjectOutlineThickness(Material mat, float value) => mat.SetFloat(MAT_OBJECT_OUTLINE_THICKNESS_NAME, value);
+    #endregion
     #endregion
 
     #region Action
@@ -1308,7 +1411,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         #region Utility
         #region Player Property Update Func
         public void ClearArray() {
-            RemovePos(CurrentArrayLength);
+            if(CurrentArrayLength > 0) {
+                RemovePos(CurrentArrayLength);
+            }
         }
 
         /// <summary>

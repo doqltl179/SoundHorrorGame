@@ -38,12 +38,14 @@ public class Froggy : MonsterController {
         base.Awake();
     }
 
-    private void OnDestroy() {
+    protected override void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
 
         PlayerController.Instance.OnCoordChanged -= PlayerCoordChanged;
 
         OnCurrentStateChanged -= CurrentStateChanged;
+
+        base.OnDestroy();
     }
 
     private void Start() {

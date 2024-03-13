@@ -29,7 +29,7 @@ public class Starry : MonsterController, IMove {
         base.Awake();
     }
 
-    private void OnDestroy() {
+    protected override void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
 
@@ -37,6 +37,8 @@ public class Starry : MonsterController, IMove {
 
         OnCurrentStateChanged -= CurrentStateChanged;
         OnPathEnd -= PathEnd;
+
+        base.OnDestroy();
     }
 
     private void Start() {

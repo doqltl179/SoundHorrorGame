@@ -75,6 +75,7 @@ public class PlayerController : MonoBehaviour {
     private float cameraVerticalAngleLimitChecker = 0.0f;
 
     [HideInInspector] public bool IsPlaying = false;
+    [HideInInspector] public bool CheatMode = false;
 
     public Vector3 Pos {
         get => transform.position;
@@ -94,6 +95,7 @@ public class PlayerController : MonoBehaviour {
     public Vector3 HeadForward { get { return transform.forward; } }
 
     [SerializeField] private Transform pickupHandAnchor;
+    public Transform PickupHandAnchor { get { return pickupHandAnchor; } }
     public PickupItem PickupItem { get; private set; } = null;
     private PickupItem pickupCubeChecker = null;
     private RaycastHit pickupHit;
@@ -204,7 +206,7 @@ public class PlayerController : MonoBehaviour {
         if(Vector3.Magnitude(moveDirection) > 0) CurrentState |= PlayerState.Walk;
         if(!CurrentState.HasFlag(PlayerState.Crouch) && CurrentState.HasFlag(PlayerState.Walk) && Input.GetKey(key_run)) {
             if(!OverHit) {
-                runTimeChecker += Time.deltaTime;
+                if(!CheatMode) runTimeChecker += Time.deltaTime;
                 if(runTimeChecker >= runTimeMax) {
                     OverHit = true;
                     runTimeChecker = runTimeMax;
@@ -290,14 +292,31 @@ public class PlayerController : MonoBehaviour {
             }
         }
         else {
-            if(!PickupItem.AutoPickup && pickupMouseDown && !currentMouseDown) {
-                PickupItem.IsPickup = false;
+            if(PickupItem.AutoPickup) {
+                if(!pickupMouseDown && currentMouseDown) {
+                    PickupItem.Play();
+                }
+                else if(pickupMouseDown && !currentMouseDown) {
+                    PickupItem.Stop();
+                }
 
-                PickupItem = null;
+                //PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
+                //PickupItem.Rotation = Quaternion.Lerp(PickupItem.Rotation, pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset), Time.deltaTime * Mathf.Pow(2, 6));
+                PickupItem.Pos = pickupHandAnchor.position;
+                PickupItem.Rotation = pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset);
             }
             else {
-                PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
-                PickupItem.Rotation = Quaternion.Lerp(PickupItem.Rotation, pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset), Time.deltaTime * Mathf.Pow(2, 6));
+                if(pickupMouseDown && !currentMouseDown) {
+                    PickupItem.IsPickup = false;
+
+                    PickupItem = null;
+                }
+                else {
+                    //PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
+                    //PickupItem.Rotation = Quaternion.Lerp(PickupItem.Rotation, pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset), Time.deltaTime * Mathf.Pow(2, 6));
+                    PickupItem.Pos = pickupHandAnchor.position;
+                    PickupItem.Rotation = pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset);
+                }
             }
         }
         pickupMouseDown = currentMouseDown;
@@ -324,6 +343,25 @@ public class PlayerController : MonoBehaviour {
     }
 
     #region Utility
+    public void DropPickupItem() {
+        if(PickupItem != null) {
+            PickupItem.IsPickup = false;
+
+            PickupItem = null;
+        }
+    }
+
+    public void SetPickupItem(PickupItem item) {
+        if(PickupItem != null) {
+            PickupItem.IsPickup = false;
+
+            PickupItem = null;
+        }
+
+        item.IsPickup = true;
+        PickupItem = item;
+    }
+
     public void ResetPlayerStatus() {
         if(PickupItem != null) {
             PickupItem.IsPickup = false;

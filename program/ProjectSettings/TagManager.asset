@@ -10,6 +10,7 @@ TagManager:
   - Teleport
   - PickupItem
   - HandlingCube
+  - ToyHammer
   layers:
   - Default
   - TransparentFX

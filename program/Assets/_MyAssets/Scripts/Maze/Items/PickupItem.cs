@@ -82,8 +82,8 @@ public class PickupItem : MonoBehaviour {
 
     public static readonly float PickupDistance = PlayerController.PlayerHeight * 2.0f;
 
-    public const string TagName = "HandlingCube";
-    public const string LayerName = "HandlingCube";
+    public const string TagName = "PickupItem";
+    public const string LayerName = "PickupItem";
 
     protected const string MAT_RIM_THICKNESS_NAME = "_RimThickness";
     protected const string MAT_RIM_THICKNESS_OFFSET_NAME = "_RimThicknessOffset";
@@ -112,17 +112,21 @@ public class PickupItem : MonoBehaviour {
         if(!IsPlaying) return;
 
         if(isPickup) {
-            if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
+            if(guideAnchor != null && guideAnchor.activeSelf) guideAnchor.SetActive(false);
         }
         else {
             if(Vector3.Distance(UtilObjects.Instance.CamPos, Pos) < PickupDistance) {
-                if(!guideAnchor.activeSelf) guideAnchor.SetActive(true);
+                if(guideAnchor != null) {
+                    if(!guideAnchor.activeSelf) guideAnchor.SetActive(true);
 
-                guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
-                guideAnchor.transform.rotation = Quaternion.LookRotation((UtilObjects.Instance.CamPos - guideAnchor.transform.position).normalized);
+                    guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
+                    guideAnchor.transform.rotation = Quaternion.LookRotation((UtilObjects.Instance.CamPos - guideAnchor.transform.position).normalized);
+                }
             }
             else {
-                if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
+                if(guideAnchor != null) {
+                    if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
+                }
             }
         }
     }

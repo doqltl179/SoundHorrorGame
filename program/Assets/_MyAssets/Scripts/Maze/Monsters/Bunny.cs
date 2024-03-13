@@ -21,12 +21,14 @@ public class Bunny : MonsterController, IMove {
         base.Awake();
     }
 
-    private void OnDestroy() {
+    protected override void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
 
         OnCurrentStateChanged -= CurrentStateChanged;
         OnPathEnd -= PathEnd;
+
+        base.OnDestroy();
     }
 
     private void Start() {
@@ -109,7 +111,7 @@ public class Bunny : MonsterController, IMove {
             }
         }
         else {
-            physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - dt * moveBoost, 0.0f, physicsMoveSpeedMax);
+            physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - dt, 0.0f, physicsMoveSpeedMax);
         }
 
         // 위치 이동
@@ -150,7 +152,13 @@ public class Bunny : MonsterController, IMove {
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         if(!IsPlaying) return;
 
-        if(from == SoundManager.SoundFrom.Player || so.Type == SoundManager.SoundType.Scream) {
+        if(from == SoundManager.SoundFrom.Player || 
+            so.Type == SoundManager.SoundType.Empty00_5s ||
+            so.Type == SoundManager.SoundType.Empty01s ||
+            so.Type == SoundManager.SoundType.Empty02s ||
+            so.Type == SoundManager.SoundType.Empty03s ||
+            so.Type == SoundManager.SoundType.Empty04s ||
+            so.Type == SoundManager.SoundType.Empty05s) {
             Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
             if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;
 

@@ -20,12 +20,14 @@ public class Honey : MonsterController, IMove {
         base.Awake();
     }
 
-    private void OnDestroy() {
+    protected override void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
         SoundManager.Instance.OnWorldSoundRemoved -= WorldSoundRemoved;
 
         OnCurrentStateChanged -= CurrentStateChanged;
         OnPathEnd -= PathEnd;
+
+        base.OnDestroy();
     }
 
     private void Start() {
