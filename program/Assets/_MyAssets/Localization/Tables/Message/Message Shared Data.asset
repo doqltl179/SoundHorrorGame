@@ -15,8 +15,20 @@ MonoBehaviour:
   m_TableCollectionName: Message
   m_TableCollectionNameGuidString: c5881ecb15f732748a3cead6003d3c45
   m_Entries:
+  - m_Id: 3573171968393216
+    m_Key: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3573241241518080
+    m_Key: No
+    m_Metadata:
+      m_Items: []
   - m_Id: 14894931968
     m_Key: ExitOpened
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3573393423450112
+    m_Key: GoToMain
     m_Metadata:
       m_Items: []
   m_Metadata:

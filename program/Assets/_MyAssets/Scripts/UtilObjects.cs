@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Rendering.PostProcessing;
-using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #region Camera
@@ -58,6 +56,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         PauseMenu = 1 << 0, 
         Settings = 1 << 1, 
         KeyGuide = 1 << 2, 
+        ConfirmNotice = 1 << 3, 
 
     }
     private Page currentPages = Page.None;
@@ -71,10 +70,15 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
             foreach(Page flag in Enum.GetValues(typeof(Page))) {
                 if(changed.HasFlag(flag)) changedPageList.Add(flag);
             }
-            
-            foreach(Page page in changedPageList) {
-                bool isOn = ((value & page) == page);
-                OnPageChanged(page, isOn);
+
+            if(changedPageList.Count > 0) {
+                // 우선 순위가 높은 페이지를 먼저 처리하기 위함
+                changedPageList.Reverse();
+
+                foreach(Page page in changedPageList) {
+                    bool isOn = ((value & page) == page);
+                    OnPageChanged(page, isOn);
+                }
             }
 
             currentPages = value;
@@ -121,6 +125,11 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     [SerializeField] private KeyGuideController keyGuideController;
     #endregion
 
+    #region Confirm Notice
+    [Header("Confirm Notice")]
+    [SerializeField] private ConfirmNoticeController confirmNoticeController;
+    #endregion
+
     private KeyCode Key_Escape = KeyCode.Escape;
     #endregion
 
@@ -149,6 +158,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         pauseMenuController.gameObject.SetActive(false);
         settingController.gameObject.SetActive(false);
         keyGuideController.gameObject.SetActive(false);
+        confirmNoticeController.gameObject.SetActive(false);
 
         rayBlock.gameObject.SetActive(true);
         rayBlock.Color = Color.black;
@@ -177,17 +187,23 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                     }
                     break;
                 case SceneLoader.SceneType.Game: {
-                        bool isSettingOn = currentPages.HasFlag(Page.Settings);
-                        if(isSettingOn) {
-                            SetActiveSettings(false);
+                        if(currentPages == Page.None) {
+                            SetActivePauseMenu(true);
                         }
                         else {
-                            bool isPauseMenuOn = currentPages.HasFlag(Page.PauseMenu);
-                            if(isPauseMenuOn) {
-                                SetActivePauseMenu(false);
+                            if(currentPages.HasFlag(Page.Settings)) {
+                                SetActiveSettings(false);
+                            }
+                            else if(currentPages.HasFlag(Page.ConfirmNotice)) {
+                                SetActiveConfirmNotice(false);
                             }
                             else {
-                                SetActivePauseMenu(true);
+                                if(currentPages.HasFlag(Page.PauseMenu)) {
+                                    SetActivePauseMenu(false);
+                                }
+                                else {
+                                    SetActivePauseMenu(true);
+                                }
                             }
                         }
                     }
@@ -197,6 +213,10 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     }
 
     #region Utility
+
+    public void ResetPages() {
+        CurrentPages = Page.None;
+    }
 
     #region RayBlock
     public IEnumerator SetActiveRayBlockAction(bool active, float fadeTime = 0.0f, Color? color = null) {
@@ -208,6 +228,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                 yield return StartCoroutine(FadeIn(rayBlock.CanvasGroup, fadeTime));
             }
             else {
+                rayBlock.Color = color.Value;
                 rayBlock.Alpha = 1.0f;
             }
         }
@@ -340,6 +361,41 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         }
     }
     #endregion
+
+    #region Confirm Notice
+    public void SetActiveConfirmNotice(bool active) {
+        if(active) CurrentPages |= Page.ConfirmNotice;
+        else CurrentPages &= ~Page.ConfirmNotice;
+    }
+
+    public void InitConfirmNotice(string messageKey, string key1, Action action1, string key2 = null, Action action2 = null) {
+        confirmNoticeController.Init(messageKey, key1, action1, key2, action2);
+    }
+
+    private IEnumerator SetActiveConfirmNotice(bool active, float fadeTime = 0.0f) {
+        if(active) {
+            confirmNoticeController.gameObject.SetActive(true);
+            if(fadeTime > 0.0f) {
+                confirmNoticeController.Alpha = 0.0f;
+                yield return StartCoroutine(FadeIn(confirmNoticeController.CanvasGroup, fadeTime));
+            }
+            else {
+                confirmNoticeController.Alpha = 1.0f;
+            }
+        }
+        else {
+            if(fadeTime > 0.0f) {
+                yield return StartCoroutine(FadeOut(confirmNoticeController.CanvasGroup, fadeTime, false, null, () => {
+                    confirmNoticeController.gameObject.SetActive(false);
+                }));
+            }
+            else {
+                confirmNoticeController.gameObject.SetActive(false);
+            }
+        }
+    }
+    #endregion
+
     #endregion
 
     private IEnumerator FadeIn(CanvasGroup canvasGroup, float fadeTime, bool waitOneFrame = false, 
@@ -461,27 +517,40 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                 break;
             case Page.Settings: {
                     if(active) {
-                        StartCoroutine(SetActivePauseMenuAction(false, 0.1f));
+                        StartCoroutine(SetActivePauseMenuAction(false, 0.0f));
 
-                        StartCoroutine(SetActiveSettingsAction(true, 0.1f));
+                        StartCoroutine(SetActiveSettingsAction(true, 0.0f));
                     }
                     else {
-                        StartCoroutine(SetActivePauseMenuAction(true, 0.1f));
+                        StartCoroutine(SetActivePauseMenuAction(true, 0.0f));
 
-                        StartCoroutine(SetActiveSettingsAction(false, 0.1f));
+                        StartCoroutine(SetActiveSettingsAction(false, 0.0f));
                     }
                 }
                 break;
             case Page.KeyGuide: {
                     if(active) {
-                        StartCoroutine(SetActivePauseMenuAction(false, 0.1f));
+                        StartCoroutine(SetActivePauseMenuAction(false, 0.0f));
 
-                        StartCoroutine(SetActiveKeyGuideAction(true, 0.1f));
+                        StartCoroutine(SetActiveKeyGuideAction(true, 0.0f));
                     }
                     else {
-                        StartCoroutine(SetActivePauseMenuAction(true, 0.1f));
+                        StartCoroutine(SetActivePauseMenuAction(true, 0.0f));
 
-                        StartCoroutine(SetActiveKeyGuideAction(false, 0.1f));
+                        StartCoroutine(SetActiveKeyGuideAction(false, 0.0f));
+                    }
+                }
+                break;
+            case Page.ConfirmNotice: {
+                    if(active) {
+                        StartCoroutine(SetActivePauseMenuAction(false, 0.0f));
+
+                        StartCoroutine(SetActiveConfirmNotice(true, 0.0f));
+                    }
+                    else {
+                        StartCoroutine(SetActivePauseMenuAction(true, 0.0f));
+
+                        StartCoroutine(SetActiveConfirmNotice(false, 0.0f));
                     }
                 }
                 break;

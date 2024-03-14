@@ -34,7 +34,19 @@ public class PauseMenuController : MonoBehaviour {
     public void OnClickExit() {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
 
+        UtilObjects.Instance.InitConfirmNotice(
+            "GoToMain",
+            "No",
+            () => {
+                UtilObjects.Instance.SetActiveConfirmNotice(false);
+            },
+            "Yes",
+            () => {
+                SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Main);
 
+                UtilObjects.Instance.ResetPages();
+            });
+        UtilObjects.Instance.SetActiveConfirmNotice(true);
     }
     #endregion
 }

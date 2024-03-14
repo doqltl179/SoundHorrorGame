@@ -22,6 +22,18 @@ MonoBehaviour:
     m_Localized: Exit Opened
     m_Metadata:
       m_Items: []
+  - m_Id: 3573171968393216
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3573241241518080
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3573393423450112
+    m_Localized: Returning to the Main.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
