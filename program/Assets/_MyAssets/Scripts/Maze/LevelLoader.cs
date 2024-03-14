@@ -300,7 +300,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             }
         }
 
-        if(playerMaterialPropertiesGroup.CurrentArrayLength > 0) {
+        if(playerMaterialPropertiesGroup.CurrentArrayLength >= 0) {
             // Material의 Player Property는 MazeBlock 오브젝트에만 추가함
             playerMaterialPropertiesGroup.SetUpdateAlphaArray(
                 blockFloorMaterial,

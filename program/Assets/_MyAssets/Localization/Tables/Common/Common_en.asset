@@ -102,6 +102,10 @@ MonoBehaviour:
     m_Localized: Off
     m_Metadata:
       m_Items: []
+  - m_Id: 4038956188811264
+    m_Localized: Sensitive
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

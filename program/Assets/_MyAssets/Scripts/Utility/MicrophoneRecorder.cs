@@ -7,9 +7,6 @@ using UnityEngine;
 public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
     private const int CaptureLength = 1;
 
-    private const float outputInterval = 0.5f;
-    private float outputIntervalChecker = 0.0f;
-
     //private int currentFreq = 44100;
     private int currentFreq = 256;
     private string currentDevice = "";
@@ -17,11 +14,12 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
 
     private const float DecibelMin = -50f;
     private const float DecibelMax = 10f;
-    private const float DecibelCritical = -20f;
+    private float DecibelCritical { get { return Mathf.Lerp(DecibelMin, DecibelMax, (1.0f - UserSettings.MicSensitive)); } }
+
     private float decibel;
     public float Decibel { get { return decibel; } }
     public float DecibelRatio { get { return Mathf.InverseLerp(DecibelMin, DecibelMax, decibel); } }
-    public readonly float DecibelCriticalRatio = Mathf.InverseLerp(DecibelMin, DecibelMax, DecibelCritical);
+    public float DecibelCriticalRatio { get { return Mathf.InverseLerp(DecibelMin, DecibelMax, DecibelCritical); } }
     /// <summary>
     /// Decibel 값이 임계점을 넘었는지 확인하는 변수
     /// </summary>
@@ -32,16 +30,20 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
     /// </summary>
     [HideInInspector] public bool IsMute;
 
+    public Action<float> OnDecibelCriticalRatioChanged;
+
 
 
     private void Awake() {
         UserSettings.OnMicDeviceChanged += OnMicrophoneDeviceChanged;
         UserSettings.OnUseMicChanged += OnUseMicChanged;
+        //UserSettings.OnMicSensitiveChanged += OnMicSensitiveChanged;
     }
 
     private void OnDestroy() {
         UserSettings.OnMicDeviceChanged -= OnMicrophoneDeviceChanged;
         UserSettings.OnUseMicChanged -= OnUseMicChanged;
+        //UserSettings.OnMicSensitiveChanged -= OnMicSensitiveChanged;
     }
 
     private void OnEnable() {
@@ -132,5 +134,9 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
     private void OnUseMicChanged(bool value) {
         gameObject.SetActive(value);
     }
+
+    //private void OnMicSensitiveChanged(float value) {
+
+    //}
     #endregion
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Localization;
@@ -8,6 +9,7 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
 
 using Random = UnityEngine.Random;
+using Debug = UnityEngine.Debug;
 
 public class GameController : MonoBehaviour {
     [SerializeField] private StandingSpaceConrtoller standingSpaceController;
@@ -195,30 +197,32 @@ public class GameController : MonoBehaviour {
 
         LevelLoader.Instance.OnItemCollected -= OnItemCollected;
 
-        if(onGameEndCoroutine != null) {
-            StopCoroutine(onGameEndCoroutine);
-            onGameEndCoroutine = null;
-        }
-        if(onPlayerCatchedCoroutine != null) {
-            StopCoroutine(onPlayerCatchedCoroutine);
-            onPlayerCatchedCoroutine = null;
-        }
-        if(exitEnterCheckCoroutine != null) {
-            StopCoroutine(exitEnterCheckCoroutine);
-            exitEnterCheckCoroutine = null;
-        }
-        if(scenarioTextAnimationCoroutine != null) {
-            StopCoroutine(scenarioTextAnimationCoroutine);
-            scenarioTextAnimationCoroutine = null;
-        }
-        if(scenarioCameraAnimationCoroutine != null) {
-            StopCoroutine(scenarioCameraAnimationCoroutine);
-            scenarioCameraAnimationCoroutine = null;
-        }
-        if(scenarioCoroutine != null) {
-            StopCoroutine(scenarioCoroutine);
-            scenarioCoroutine = null;
-        }
+        //if(onGameEndCoroutine != null) {
+        //    StopCoroutine(onGameEndCoroutine);
+        //    onGameEndCoroutine = null;
+        //}
+        //if(onPlayerCatchedCoroutine != null) {
+        //    StopCoroutine(onPlayerCatchedCoroutine);
+        //    onPlayerCatchedCoroutine = null;
+        //}
+        //if(exitEnterCheckCoroutine != null) {
+        //    StopCoroutine(exitEnterCheckCoroutine);
+        //    exitEnterCheckCoroutine = null;
+        //}
+        //if(scenarioTextAnimationCoroutine != null) {
+        //    StopCoroutine(scenarioTextAnimationCoroutine);
+        //    scenarioTextAnimationCoroutine = null;
+        //}
+        //if(scenarioCameraAnimationCoroutine != null) {
+        //    StopCoroutine(scenarioCameraAnimationCoroutine);
+        //    scenarioCameraAnimationCoroutine = null;
+        //}
+        //if(scenarioCoroutine != null) {
+        //    StopCoroutine(scenarioCoroutine);
+        //    scenarioCoroutine = null;
+        //}
+
+        StopAllCoroutines();
     }
 
     private void Start() {
@@ -248,6 +252,12 @@ public class GameController : MonoBehaviour {
             GameLevelSettings levelSettings = (GameLevelSettings)param[0];
 
             CurrentLevelSettings = levelSettings;
+        }
+
+        // Mic Off
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = true;
+            userInterface.MicGageActive = false;
         }
 
         // Component Off
@@ -378,6 +388,12 @@ public class GameController : MonoBehaviour {
         PlayerController.Instance.ResetCameraAnchor();
         PlayerController.Instance.ResetPlayerStatus();
 
+        // Mic On
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = false;
+            userInterface.MicGageActive = true;
+        }
+
         // GameLevel 별로 세팅
         switch(UserSettings.GameLevel) {
             case 0: {
@@ -487,6 +503,11 @@ public class GameController : MonoBehaviour {
         LevelLoader.Instance.StopMonsters();
         LevelLoader.Instance.StopItems();
         LevelLoader.Instance.StopPickupItems();
+
+        // Mic Off
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = true;
+        }
 
         // Component Off
         pathGuide.gameObject.SetActive(false);
@@ -613,6 +634,12 @@ public class GameController : MonoBehaviour {
 
         PlayerController.Instance.IsPlaying = true;
 
+        // Mic On
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = false;
+            userInterface.MicGageActive = true;
+        }
+
         yield return StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(false, 2.0f));
 
         OnScenarioEnd();
@@ -732,6 +759,12 @@ public class GameController : MonoBehaviour {
 
     #region Scenario
     private IEnumerator Scenario00() {
+        // Mic Off
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = true;
+            userInterface.MicGageActive = false;
+        }
+
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
@@ -813,11 +846,7 @@ public class GameController : MonoBehaviour {
         // -1: Special Scenario 진입
         // 1: 통상 궤도 진입
         moveScenario = 0;
-        userInterface.SetMessageButtons(
-            "Yes",
-            () => { moveScenario = 1; },
-            "No",
-            () => { moveScenario = -1; });
+        userInterface.SetMessageButtons("Yes", () => { moveScenario = 1; }, "No", () => { moveScenario = -1; });
         UserSettings.OnLocaleChanged += OnLocaleChanged;
         while(moveScenario == 0) {
             yield return null;
@@ -827,7 +856,79 @@ public class GameController : MonoBehaviour {
 
         // Special Scenario 진입
         if(moveScenario == -1) {
+            const string SpecialScenarioKeyString = ScenarioStandardKeyString + "_Special";
+            int specialScenarioIndex = 0;
+            string specialScenarioKey;
+            IEnumerator TextAnimationWithScenarioButtons(string key = null) {
+                // Reset Buttons
+                userInterface.SetMessageButtons();
+                userInterface.SetScenarioButtons();
 
+                // String Animation
+                specialScenarioKey = string.IsNullOrEmpty(key) ? SpecialScenarioKeyString + specialScenarioIndex.ToString().PadLeft(2, '0') : key;
+                scenarioTextAnimationCoroutine = ScenarioTextAnimationCoroutine(specialScenarioKey);
+                yield return StartCoroutine(scenarioTextAnimationCoroutine);
+
+                moveScenario = 0;
+                switch(specialScenarioIndex) {
+                    case 0:
+                    case 3:
+                        userInterface.SetScenarioButtons(null, () => { moveScenario = 1; }); 
+                        break;
+                    //case turningPointIndex - 1: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, null); break;
+                    default: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, () => { moveScenario = 1; }); break;
+                }
+                UserSettings.OnLocaleChanged += OnLocaleChanged;
+                while(moveScenario == 0) {
+                    yield return null;
+                }
+                UserSettings.OnLocaleChanged -= OnLocaleChanged;
+
+                specialScenarioIndex += moveScenario;
+            }
+            IEnumerator TextAnimationWithMessageButtons() {
+                // Reset Buttons
+                userInterface.SetMessageButtons();
+                userInterface.SetScenarioButtons();
+
+                // String Animation
+                specialScenarioKey = SpecialScenarioKeyString + specialScenarioIndex.ToString().PadLeft(2, '0');
+                scenarioTextAnimationCoroutine = ScenarioTextAnimationCoroutine(specialScenarioKey);
+                yield return StartCoroutine(scenarioTextAnimationCoroutine);
+
+                // 0: 대기
+                // -1: Special Scenario 진입
+                // 1: 통상 궤도 진입
+                moveScenario = 0;
+                userInterface.SetMessageButtons("Yes", () => { moveScenario = 1; }, "No", () => { moveScenario = -1; });
+                UserSettings.OnLocaleChanged += OnLocaleChanged;
+                while(moveScenario == 0) {
+                    yield return null;
+                }
+                UserSettings.OnLocaleChanged -= OnLocaleChanged;
+            }
+
+            yield return StartCoroutine(TextAnimationWithScenarioButtons()); // 00
+            yield return StartCoroutine(TextAnimationWithMessageButtons()); // 01
+
+            if(moveScenario != 1) {
+                specialScenarioIndex++;
+                yield return StartCoroutine(TextAnimationWithMessageButtons()); // 02
+
+                if(moveScenario != 1) {
+                    specialScenarioIndex++;
+                    while(specialScenarioIndex < 5) {
+                        yield return StartCoroutine(TextAnimationWithScenarioButtons());
+                    }
+
+                    // 계속해서 거절당해 메인으로 돌아감
+                    SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Main);
+                    yield break;
+                }
+            }
+
+            specialScenarioIndex = 0;
+            yield return StartCoroutine(TextAnimationWithScenarioButtons(SpecialScenarioKeyString + "Exit")); // Exit
         }
 
         #region Door Open Animation
@@ -979,12 +1080,24 @@ public class GameController : MonoBehaviour {
         // 플레이어 움직임 복구
         PlayerController.Instance.IsPlaying = true;
 
+        // Mic On
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = false;
+            userInterface.MicGageActive = true;
+        }
+
         OnScenarioEnd();
 
         scenarioCoroutine = null;
     }
 
     private IEnumerator Scenario01() {
+        // Mic Off
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = true;
+            userInterface.MicGageActive = false;
+        }
+
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
@@ -1115,12 +1228,24 @@ public class GameController : MonoBehaviour {
 
         yield return new WaitForSeconds(m_standardWallAnimationTime);
 
+        // Mic On
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = false;
+            userInterface.MicGageActive = true;
+        }
+
         OnScenarioEnd();
 
         scenarioCoroutine = null;
     }
 
     private IEnumerator Scenario02() {
+        // Mic Off
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = true;
+            userInterface.MicGageActive = false;
+        }
+
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
@@ -1297,12 +1422,24 @@ public class GameController : MonoBehaviour {
         // 플레이어 움직임 복구
         PlayerController.Instance.IsPlaying = true;
 
+        // Mic On
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = false;
+            userInterface.MicGageActive = true;
+        }
+
         OnScenarioEnd();
 
         scenarioCoroutine = null;
     }
 
     private IEnumerator Scenario03() {
+        // Mic Off
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = true;
+            userInterface.MicGageActive = false;
+        }
+
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
@@ -1462,6 +1599,12 @@ public class GameController : MonoBehaviour {
         // 플레이어 움직임 복구
         PlayerController.Instance.IsPlaying = true;
 
+        // Mic On
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = false;
+            userInterface.MicGageActive = true;
+        }
+
         OnScenarioEnd();
 
         // Happy Ending
@@ -1572,6 +1715,28 @@ public class GameController : MonoBehaviour {
 
         userInterface.SetMessageBoxButton();
         UserSettings.OnLocaleChanged -= OnLocaleChanged;
+
+        scenarioTextAnimationCoroutine = null;
+    }
+
+    private IEnumerator ScenarioTextAnimationWithStringCoroutine(string text, float waitTime = 0.05f) {
+        string animationText = "";
+        int textCopyLength = 0;
+
+        userInterface.SetMessageBoxButton(() => {
+            textCopyLength = text.Length;
+        });
+
+        WaitForSeconds animationWait = new WaitForSeconds(waitTime);
+        while(textCopyLength <= text.Length) {
+            animationText = text[0..textCopyLength];
+            userInterface.MessageText = animationText;
+
+            textCopyLength++;
+            yield return animationWait;
+        }
+
+        userInterface.SetMessageBoxButton();
 
         scenarioTextAnimationCoroutine = null;
     }

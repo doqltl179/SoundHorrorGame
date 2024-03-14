@@ -107,6 +107,17 @@ public static class UserSettings {
             OnMicDeviceChanged?.Invoke(value);
         }
     }
+
+    public static Action<float> OnMicSensitiveChanged;
+    private static readonly string m_micSensitive_pref = "MicSensitive";
+    private static readonly float m_standardMicSensitive = 0.35f;
+    public static float MicSensitive {
+        get => PlayerPrefs.HasKey(m_micSensitive_pref) ? PlayerPrefs.GetFloat(m_micSensitive_pref) : m_standardMicSensitive;
+        set {
+            PlayerPrefs.SetFloat(m_micSensitive_pref, value);
+            OnMicSensitiveChanged?.Invoke(value);
+        }
+    }
     #endregion
 
     #region Display

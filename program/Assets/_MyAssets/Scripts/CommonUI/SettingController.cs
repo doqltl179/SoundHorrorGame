@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -26,9 +27,12 @@ public class SettingController : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI masterVolumeText;
 
     [Header("Microphone")]
-    [SerializeField] private Toggle useMicToggleYes;
-    [SerializeField] private Toggle useMicToggleNo;
+    //[SerializeField] private Toggle useMicToggleYes;
+    //[SerializeField] private Toggle useMicToggleNo;
+    [SerializeField] private Toggle useMicToggle;
     [SerializeField] private TMP_Dropdown micDeviceDropdown;
+    [SerializeField] private Slider micSensitiveSlider;
+    [SerializeField] private TextMeshProUGUI micSensitiveText;
 
     [Header("Display")]
     [SerializeField] private TMP_Dropdown displayModeDropdown;
@@ -68,13 +72,13 @@ public class SettingController : MonoBehaviour {
 
 
 
-    private void Awake() {
-        UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
-    }
+    //private void Awake() {
+    //    UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
+    //}
 
-    private void OnDestroy() {
-        UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
-    }
+    //private void OnDestroy() {
+    //    UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
+    //}
 
     private void OnEnable() {
         InitLanguageOptions();
@@ -83,6 +87,7 @@ public class SettingController : MonoBehaviour {
 
         InitUseMicToggles();
         InitMicDeviceOptions();
+        InitMicSensitive();
 
         InitDisplayModeOptions();
         InitDisplayResolutionOptions();
@@ -93,16 +98,16 @@ public class SettingController : MonoBehaviour {
     }
 
     #region Action
-    public void OnUseMicrophoneChanged(bool value) {
-        micDeviceDropdown.enabled = value;
-        micDeviceDropdown.image.color = value ? Color.white : Color.gray;
+    //public void OnUseMicrophoneChanged(bool value) {
+    //    micDeviceDropdown.enabled = value;
+    //    micDeviceDropdown.image.color = value ? Color.white : Color.gray;
 
-        if(value && Microphone.devices.Length <= 0) {
-            Debug.Log("Microphone not found.");
+    //    if(value && Microphone.devices.Length <= 0) {
+    //        Debug.Log("Microphone not found.");
 
-            UserSettings.UseMicBoolean = false;
-        }
-    }
+    //        UserSettings.UseMicBoolean = false;
+    //    }
+    //}
 
     public void OnLanguageChanged(int index) {
         UserSettings.LanguageCode = LocalizationSettings.AvailableLocales.Locales[index].Identifier.Code;
@@ -125,14 +130,36 @@ public class SettingController : MonoBehaviour {
         masterVolumeText.text = string.Format("{0:0.0}", UserSettings.MasterVolume);
     }
 
-    public void OnUseMicYesChanged(bool changedValue) {
-        useMicToggleNo.SetIsOnWithoutNotify(!changedValue);
-        UserSettings.UseMic = changedValue ? 1 : 0;
-    }
+    //public void OnUseMicYesChanged(bool changedValue) {
+    //    useMicToggleNo.SetIsOnWithoutNotify(!changedValue);
+    //    UserSettings.UseMic = changedValue ? 1 : 0;
+    //}
 
-    public void OnUseMicNoChanged(bool changedValue) {
-        useMicToggleYes.SetIsOnWithoutNotify(!changedValue);
-        UserSettings.UseMic = changedValue ? 0 : 1;
+    //public void OnUseMicNoChanged(bool changedValue) {
+    //    useMicToggleYes.SetIsOnWithoutNotify(!changedValue);
+    //    UserSettings.UseMic = changedValue ? 0 : 1;
+    //}
+
+    public void OnUseMicChanged(bool changedValue) {
+        if(changedValue) {
+            if(Microphone.devices.Length > 0) {
+                UserSettings.UseMicBoolean = true;
+
+                micDeviceDropdown.enabled = true;
+                micDeviceDropdown.image.color = Color.white;
+            }
+            else {
+                Debug.Log("Microphone not found.");
+
+                useMicToggle.isOn = false;
+            }
+        }
+        else {
+            UserSettings.UseMicBoolean = false;
+
+            micDeviceDropdown.enabled = false;
+            micDeviceDropdown.image.color = Color.gray;
+        }
     }
 
     public void OnMicDeviceChanged(int index) {
@@ -147,6 +174,11 @@ public class SettingController : MonoBehaviour {
         else {
             InitMicDeviceOptions();
         }
+    }
+
+    public void OnMicSensitiveChanged(Single single) {
+        UserSettings.MicSensitive = micSensitiveSlider.value;
+        micSensitiveText.text = string.Format("{0:0.0}", UserSettings.MicSensitive);
     }
 
     public void OnDisplayModeChanged(int index) {
@@ -264,8 +296,9 @@ public class SettingController : MonoBehaviour {
     }
 
     private void InitUseMicToggles() {
-        useMicToggleYes.SetIsOnWithoutNotify(UserSettings.UseMic == 1 ? true : false);
-        useMicToggleNo.SetIsOnWithoutNotify(!useMicToggleYes.isOn);
+        //useMicToggleYes.SetIsOnWithoutNotify(UserSettings.UseMic == 1 ? true : false);
+        //useMicToggleNo.SetIsOnWithoutNotify(!useMicToggleYes.isOn);
+        useMicToggle.isOn = UserSettings.UseMicBoolean;
     }
 
     private void InitMicDeviceOptions() {
@@ -301,6 +334,11 @@ public class SettingController : MonoBehaviour {
 
         micDeviceDropdown.enabled = UserSettings.UseMicBoolean;
         micDeviceDropdown.image.color = UserSettings.UseMicBoolean ? Color.white : Color.gray;
+    }
+
+    private void InitMicSensitive() {
+        micSensitiveSlider.value = UserSettings.MicSensitive;
+        micSensitiveText.text = string.Format("{0:0.0}", UserSettings.MicSensitive);
     }
 
     private void InitDisplayModeOptions() {

@@ -99,6 +99,10 @@ MonoBehaviour:
     m_Key: Off
     m_Metadata:
       m_Items: []
+  - m_Id: 4038956188811264
+    m_Key: MicrophoneSensitive
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

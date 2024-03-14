@@ -67,6 +67,30 @@ MonoBehaviour:
     m_Key: LevelStart0006
     m_Metadata:
       m_Items: []
+  - m_Id: 3268232322859008
+    m_Key: LevelStart00_Special00
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3268812340576256
+    m_Key: LevelStart00_Special01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3269808789766144
+    m_Key: LevelStart00_Special02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3270406259982336
+    m_Key: LevelStart00_Special03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3270490645184512
+    m_Key: LevelStart00_Special04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3280239071707136
+    m_Key: LevelStart00_SpecialExit
+    m_Metadata:
+      m_Items: []
   - m_Id: 111881793478656
     m_Key: LevelStart0007
     m_Metadata:

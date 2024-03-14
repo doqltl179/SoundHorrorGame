@@ -15,10 +15,6 @@ public class UserInterface : MonoBehaviour {
     [SerializeField] private Color micGageSliderStartColor;
     [SerializeField] private Color micGageSliderEndColor;
     [SerializeField] private RectTransform micGageSliderLimitLine;
-    /// <summary>
-    /// Editor상에서 Gage의 위아래로 4만큼의 padding이 들어가 있다.
-    /// </summary>
-    private const float micGageRectHeightOffset = -8;
 
     public bool MicGageActive {
         get => micGageCanvasGroup.gameObject.activeSelf;
@@ -142,12 +138,14 @@ public class UserInterface : MonoBehaviour {
         PlayerController.Instance.OnOverHitChanged += OnOverHitChanged;
 
         UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
+        UserSettings.OnMicSensitiveChanged += OnMicSensitiveChanged;
     }
 
     private void OnDestroy() {
         PlayerController.Instance.OnOverHitChanged -= OnOverHitChanged;
 
         UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
+        UserSettings.OnMicSensitiveChanged -= OnMicSensitiveChanged;
     }
 
     private void Start() {
@@ -157,10 +155,7 @@ public class UserInterface : MonoBehaviour {
         //itemCountText.text = "x" + LevelLoader.Instance.CollectedItemCount;
         messageText.text = "";
 
-        micGageSliderLimitLine.anchoredPosition =
-            Vector2.up *
-            (micGageRect.sizeDelta.y + micGageRectHeightOffset) *
-            MicrophoneRecorder.Instance.DecibelCriticalRatio;
+        micGageSliderLimitLine.anchoredPosition = Vector2.up * micGageRect.rect.height * MicrophoneRecorder.Instance.DecibelCriticalRatio;
 
         collectItemCanvasGroup.gameObject.SetActive(false);
         runGageCanvasGroup.gameObject.SetActive(false);
@@ -173,17 +168,11 @@ public class UserInterface : MonoBehaviour {
         #region Microphone
         micGageSlider.value = Mathf.Lerp(micGageSlider.value, MicrophoneRecorder.Instance.DecibelRatio, Time.deltaTime * Mathf.Pow(2, 4));
         if(MicrophoneRecorder.Instance.OverCritical) {
-            float halfOverRatio = 0.5f + 0.5f * MicrophoneRecorder.Instance.DecibelCriticalRatio;
-            if(micGageSlider.value > halfOverRatio) {
-                micGageSliderFillImage.color = micGageSliderEndColor;
-            }
-            else {
-                float ratio = Mathf.InverseLerp(MicrophoneRecorder.Instance.DecibelCriticalRatio, halfOverRatio, micGageSlider.value);
-                micGageSliderFillImage.color = Color.Lerp(micGageSliderStartColor, micGageSliderEndColor, ratio);
-            }
+            micGageSliderFillImage.color = micGageSliderEndColor;
         }
         else {
-            micGageSliderFillImage.color = micGageSliderStartColor;
+            float ratio = Mathf.InverseLerp(0.0f, MicrophoneRecorder.Instance.DecibelCriticalRatio, micGageSlider.value);
+            micGageSliderFillImage.color = Color.Lerp(micGageSliderStartColor, micGageSliderEndColor, ratio);
         }
         #endregion
 
@@ -221,7 +210,11 @@ public class UserInterface : MonoBehaviour {
     }
 
     public void OnUseMicrophoneChanged(bool value) {
-        micGageRect.gameObject.SetActive(value);
+        micGageCanvasGroup.gameObject.SetActive(value);
+    }
+
+    private void OnMicSensitiveChanged(float value) {
+        micGageSliderLimitLine.anchoredPosition = Vector2.up * micGageRect.rect.height * MicrophoneRecorder.Instance.DecibelCriticalRatio;
     }
     #endregion
 
