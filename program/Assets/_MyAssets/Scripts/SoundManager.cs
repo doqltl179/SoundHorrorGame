@@ -46,6 +46,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         ObjectHit05,
 
         ToyHammerHit, 
+        ToyHammerSwing, 
 
         // Player
         PlayerWalk,

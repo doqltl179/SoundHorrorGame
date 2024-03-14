@@ -185,6 +185,8 @@ public class Bunny : MonsterController, IMove {
         switch(state) {
             case MonsterState.None: {
                     movePath = null;
+
+                    if(TryGetAnimatorStateInfo(AnimatorLayerName_Motion)) animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = 0;
                 }
                 break;
             case MonsterState.Move: {

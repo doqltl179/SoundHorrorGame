@@ -1384,11 +1384,7 @@ public class GameController : MonoBehaviour {
         // -1: Special Scenario 진입
         // 1: 통상 궤도 진입
         moveScenario = 0;
-        userInterface.SetMessageButtons(
-            "Resist",
-            () => { moveScenario = 1; },
-            "Accept",
-            () => { moveScenario = -1; });
+        userInterface.SetMessageButtons("Resist", () => { moveScenario = 1; }, "Accept", () => { moveScenario = -1; });
         UserSettings.OnLocaleChanged += OnLocaleChanged;
         while(moveScenario == 0) {
             yield return null;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 using Random = UnityEngine.Random;
@@ -69,6 +70,8 @@ public class MonsterController : MonoBehaviour {
             return copyMaterial; 
         } 
     }
+
+    private ParticleSystem throwAwayEffect = null;
 
     public float Radius { get { return collider.radius * scaleScalar; } }
     public float Height { get { return collider.height * scaleScalar; } }
@@ -224,14 +227,50 @@ public class MonsterController : MonoBehaviour {
     private IEnumerator ThrowArrayAnimationCoroutine(Vector3 dir) {
         Stop();
 
+        if(throwAwayEffect == null) {
+            GameObject resourceObj = ResourceLoader.GetResource<GameObject>(Path.Combine("Effects", "ToyHammerHit"));
+            GameObject go = Instantiate(resourceObj, transform);
+            go.transform.localPosition = Vector3.up * Height * 0.5f;
 
+            ParticleSystem ps = go.GetComponent<ParticleSystem>();
 
-        yield return null;
+            throwAwayEffect = ps;
+        }
+        throwAwayEffect.Play();
+
+        rigidbody.useGravity = false;
+        rigidbody.AddForce(dir * rigidbody.mass * 1000);
+
+        Color originalColor = LevelLoader.Instance.GetBaseColor(Material);
+        LevelLoader.Instance.SetBaseColor(Material, Color.white);
+        SetTPos(true);
+
+        yield return new WaitForSeconds(1.0f);
+        rigidbody.useGravity = true;
+
+        // 바닥에 닿을 때까지 대기
+        Vector2Int currentCoord;
+        while(Pos.y > 0.1f) {
+            currentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
+            if(!LevelLoader.Instance.IsCoordInLevelSize(currentCoord, 0)) {
+                LevelLoader.Instance.DestroyMonster(this);
+
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        LevelLoader.Instance.SetBaseColor(Material, originalColor);
+        SetTPos(false);
+
+        Play();
+        throwAwayEffect.Stop();
 
         throwAwayAnimationCoroutine = null;
     }
 
-    public void TPos() => animator.SetTrigger(AnimatorPropertyName_TPos);
+    public void SetTPos(bool value) => animator.SetBool(AnimatorPropertyName_TPos, value);
 
     public void ResetAnimator() {
         animator.enabled = false;

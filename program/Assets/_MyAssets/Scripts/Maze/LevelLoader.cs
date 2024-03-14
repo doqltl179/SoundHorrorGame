@@ -789,6 +789,12 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
         return (startCoord.x <= coord.x && coord.x < endCoord.x && startCoord.y <= coord.y && coord.y < endCoord.y);
     }
 
+    public void DestroyMonster(MonsterController monster) {
+        monsters.Remove(monster);
+
+        Destroy(monster.gameObject);
+    }
+
     public void ResetMonsterOnLevel(int monsterIndex, Vector2Int coord, int zoom = 0, Vector2Int[] ignoreCoords = null) {
         MonsterController mc = monsters[monsterIndex];
         if(mc == null) {
@@ -1179,6 +1185,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     public void SetBaseColor(Material mat, Color color) => mat.SetColor(MAT_BASE_COLOR_NAME, color);
+    public Color GetBaseColor(Material mat) => mat.GetColor(MAT_BASE_COLOR_NAME);
 
     public void SetMazeBlockEdgeColor(Material mat, Color color) => mat.SetColor(MAT_MAZEBLOCK_EDGE_COLOR_NAME, color);
     public void SetMazeBlockEdgeThickness(Material mat, float value) => mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, value);

@@ -5,6 +5,7 @@ using UnityEngine;
 public class ToyHammer : PickupItem {
     [SerializeField] private CapsuleCollider[] colliders;
     [SerializeField] private Animator animator;
+    [SerializeField] private AudioSource audioSource;
 
     public override bool IsPickup {
         get => isPickup;
@@ -46,5 +47,11 @@ public class ToyHammer : PickupItem {
 
         animator.SetBool("Hit", false);
     }
+    #endregion
+
+    #region Animation Event
+    public void PlaySound_Swing() => audioSource.Play();
+
+    public void StopSound_Swing() => audioSource.Stop();
     #endregion
 }

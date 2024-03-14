@@ -82,6 +82,8 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DrawMazeBlockEdge: 0
+    - _DrawObjectOutline: 0
+    - _DrawOutline: 0
     - _DrawPlayerPastPos: 0
     - _DrawRim: 0
     - _DstBlend: 0
@@ -94,7 +96,9 @@ Material:
     - _Metallic: 0
     - _MetallicStrength: 0.55
     - _Mode: 0
+    - _MonsterOutlineThickness: 0.4
     - _NormalStrength: 1
+    - _ObjectOutlineThickness: 0.05
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _PlayerPastPosRadius: 0.6
@@ -111,6 +115,8 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MazeBlockEdgeColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MonsterOutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ObjectOutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _PlayerPastPosColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor_Item: {r: 1, g: 1, b: 1, a: 1}
