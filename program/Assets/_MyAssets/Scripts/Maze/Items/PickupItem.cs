@@ -108,28 +108,28 @@ public class PickupItem : MonoBehaviour {
         ObjectOutlineActive = false;
     }
 
-    private void Update() {
-        if(!IsPlaying) return;
+    //private void Update() {
+    //    if(!IsPlaying) return;
 
-        if(isPickup) {
-            if(guideAnchor != null && guideAnchor.activeSelf) guideAnchor.SetActive(false);
-        }
-        else {
-            if(Vector3.Distance(UtilObjects.Instance.CamPos, Pos) < PickupDistance) {
-                if(guideAnchor != null) {
-                    if(!guideAnchor.activeSelf) guideAnchor.SetActive(true);
+    //    if(isPickup) {
+    //        if(guideAnchor != null && guideAnchor.activeSelf) guideAnchor.SetActive(false);
+    //    }
+    //    else {
+    //        if(Vector3.Distance(UtilObjects.Instance.CamPos, Pos) < PickupDistance) {
+    //            if(guideAnchor != null) {
+    //                if(!guideAnchor.activeSelf) guideAnchor.SetActive(true);
 
-                    guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
-                    guideAnchor.transform.rotation = Quaternion.LookRotation((UtilObjects.Instance.CamPos - guideAnchor.transform.position).normalized);
-                }
-            }
-            else {
-                if(guideAnchor != null) {
-                    if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
-                }
-            }
-        }
-    }
+    //                guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
+    //                guideAnchor.transform.rotation = Quaternion.LookRotation((UtilObjects.Instance.CamPos - guideAnchor.transform.position).normalized);
+    //            }
+    //        }
+    //        else {
+    //            if(guideAnchor != null) {
+    //                if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
+    //            }
+    //        }
+    //    }
+    //}
 
     #region Utility
     public virtual void Play() {

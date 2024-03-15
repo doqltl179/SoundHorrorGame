@@ -74,7 +74,19 @@ public class PlayerController : MonoBehaviour {
     [SerializeField, Range(0.0f, 90.0f)] private float cameraVerticalAngleLimit = 75.0f;
     private float cameraVerticalAngleLimitChecker = 0.0f;
 
-    [HideInInspector] public bool IsPlaying = false;
+    private bool isPlaying;
+    public bool IsPlaying {
+        get => isPlaying;
+        set {
+            isPlaying = value;
+
+            if(!value) {
+                rigidbody.velocity = Vector3.zero;
+                rigidbody.angularVelocity = Vector3.zero;
+            }
+        }
+    }
+
     [HideInInspector] public bool CheatMode = false;
 
     public Vector3 Pos {
@@ -191,7 +203,7 @@ public class PlayerController : MonoBehaviour {
         if(Input.GetKey(key_moveB)) moveDirection += Vector3.back;
         if(Input.GetKey(key_moveR)) moveDirection += Vector3.right;
         if(Input.GetKey(key_moveL)) moveDirection += Vector3.left;
-        moveDirection = moveDirection.normalized;
+        moveDirection = transform.TransformDirection(moveDirection.normalized);
 
         if(OverHit) {
             runTimeChecker -= Time.deltaTime;
@@ -235,17 +247,20 @@ public class PlayerController : MonoBehaviour {
         else {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed - Time.deltaTime * moveBoost, 0.0f, physicsMoveSpeedMax);
         }
-        //transform.Translate(moveDirection * Time.deltaTime * speed, Space.Self);
-        rigidbody.velocity = transform.TransformDirection(moveDirection) * speed;
+
+        rigidbody.velocity = moveDirection * speed;
+        //transform.position += moveDirection * speed * Time.deltaTime;
         #endregion
 
+        //rigidbody.velocity = Vector3.zero;
         rigidbody.angularVelocity = Vector3.zero;
 
         #region Camera
         float anchorHeight = CurrentState.HasFlag(PlayerState.Crouch) ? PlayerHeight * 0.5f : PlayerHeight;
         cameraAnchor.localPosition = Vector3.up * Mathf.Lerp(cameraAnchor.localPosition.y, anchorHeight, Time.deltaTime * Mathf.Pow(2, 4));
 
-        UtilObjects.Instance.CamPos = cameraAnchor.position;
+        UtilObjects.Instance.CamPos = Vector3.Lerp(UtilObjects.Instance.CamPos, cameraAnchor.position, Time.deltaTime * Mathf.Pow(2, 4));
+        //UtilObjects.Instance.CamPos = cameraAnchor.position;
         UtilObjects.Instance.CamForward = cameraAnchor.forward;
         #endregion
 

@@ -45,6 +45,9 @@ public class MainController : MonoBehaviour {
 
         // Scene 명명
         SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Main);
+
+        // Cursor 세팅
+        UtilObjects.Instance.SetActiveCursorImage(false);
     }
 
     //private void Update() {

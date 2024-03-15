@@ -54,9 +54,13 @@ public class HandlingCube : PickupItem {
         set {
             if(value) {
                 Material.EnableKeyword(MAT_DRAW_OBJECT_OUTLINE_KEY);
+
+                if(guideAnchor != null) guideAnchor.gameObject.SetActive(true);
             }
             else {
                 Material.DisableKeyword(MAT_DRAW_OBJECT_OUTLINE_KEY);
+
+                if(guideAnchor != null) guideAnchor.gameObject.SetActive(false);
             }
 
             objectOutlineActive = value;
@@ -69,25 +73,9 @@ public class HandlingCube : PickupItem {
 
 
     private void Update() {
-        if(!IsPlaying) return;
-
-        if(isPickup) {
-            if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
-
-            calculatedVelocity = transform.position - posSaver;
-
-            posSaver = transform.position;
-        }
-        else {
-            if(Vector3.Distance(UtilObjects.Instance.CamPos, Pos) < PickupDistance) {
-                if(!guideAnchor.activeSelf) guideAnchor.SetActive(true);
-
-                guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
-                guideAnchor.transform.rotation = Quaternion.LookRotation((UtilObjects.Instance.CamPos - guideAnchor.transform.position).normalized);
-            }
-            else {
-                if(guideAnchor.activeSelf) guideAnchor.SetActive(false);
-            }
+        if(guideAnchor != null && guideAnchor.gameObject.activeSelf) {
+            guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
+            guideAnchor.transform.rotation = Quaternion.LookRotation((UtilObjects.Instance.CamPos - guideAnchor.transform.position).normalized);
         }
     }
 

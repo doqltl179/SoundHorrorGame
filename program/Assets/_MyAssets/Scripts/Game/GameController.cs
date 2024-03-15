@@ -394,6 +394,9 @@ public class GameController : MonoBehaviour {
             userInterface.MicGageActive = true;
         }
 
+        // Cursor 세팅
+        UtilObjects.Instance.SetActiveCursorImage(true);
+
         // GameLevel 별로 세팅
         switch(UserSettings.GameLevel) {
             case 0: {
@@ -657,7 +660,12 @@ public class GameController : MonoBehaviour {
                 case 3: scenarioCoroutine = Scenario03(); break;
             }
 
-            if(scenarioCoroutine != null) StartCoroutine(scenarioCoroutine);
+            if(scenarioCoroutine != null) {
+                // Cursor 세팅
+                UtilObjects.Instance.SetActiveCursorImage(false);
+
+                StartCoroutine(scenarioCoroutine);
+            }
         }
     }
     #endregion
@@ -934,6 +942,7 @@ public class GameController : MonoBehaviour {
         #region Door Open Animation
         // Hide MessageBox
         userInterface.MessageAlpha = 0.0f;
+        userInterface.MessageActive = false;
 
         // Open Door
         MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
@@ -968,6 +977,7 @@ public class GameController : MonoBehaviour {
 
         // 통상 궤도 진입
         // Show MessageBox
+        userInterface.MessageActive = true;
         userInterface.MessageAlpha = 1.0f;
 
         // 시나리오 이어서 시작
@@ -1008,6 +1018,7 @@ public class GameController : MonoBehaviour {
 
         // Hide MessageBox
         userInterface.MessageAlpha = 0.0f;
+        userInterface.MessageActive = false;
 
         // Camera Move
         PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(standingSpaceCoord);
@@ -1181,6 +1192,7 @@ public class GameController : MonoBehaviour {
 
         // Hide MessageBox
         userInterface.MessageAlpha = 0.0f;
+        userInterface.MessageActive = false;
 
         // Teleport Player
         PlayerController.Instance.Pos = standingSpaceController.BlockT.transform.position;
@@ -1575,7 +1587,8 @@ public class GameController : MonoBehaviour {
         yield return StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 2.0f));
 
         // Hide MessageBox
-        userInterface.MessageAlpha = 0.0f;// Close MessageBox
+        userInterface.MessageAlpha = 0.0f;
+        userInterface.MessageActive = false;
 
         // Player Setting
         PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(standingSpaceCoord.x, standingSpaceCoord.y + 1);
@@ -1822,6 +1835,9 @@ public class GameController : MonoBehaviour {
         userInterface.MicGageActive = UserSettings.UseMicBoolean;
         userInterface.CollectItemActive = maxItemCount > 0;
         userInterface.RunGageActive = true;
+
+        // Cursor 세팅
+        UtilObjects.Instance.SetActiveCursorImage(true);
     }
 }
 

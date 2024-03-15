@@ -1535,7 +1535,7 @@ Rigidbody:
   m_GameObject: {fileID: 501637377}
   serializedVersion: 4
   m_Mass: 1
-  m_Drag: 0.2
+  m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -1575,7 +1575,6 @@ MonoBehaviour:
   runTimeMax: 10
   moveBoost: 1.4
   cameraVerticalAngleLimit: 60
-  IsPlaying: 0
   CheatMode: 0
   pickupHandAnchor: {fileID: 115551363}
 --- !u!4 &501637380
@@ -4745,7 +4744,7 @@ MonoBehaviour:
   - {fileID: 1624686752}
   runGageStartColor: {r: 0.9411765, g: 0.9411765, b: 0.9411765, a: 1}
   runGageEndColor: {r: 0.7058824, g: 0.078431375, b: 0.078431375, a: 1}
-  runGageMaxAlpha: 0.86
+  runGageMaxAlpha: 1
   headMessageCanvasGroup: {fileID: 29392325}
   headMessageText: {fileID: 654950256}
   headMessageLocalizeEvent: {fileID: 654950258}

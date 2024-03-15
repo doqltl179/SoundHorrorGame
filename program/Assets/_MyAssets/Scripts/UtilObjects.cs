@@ -25,9 +25,17 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         get => Cam.transform.position;
         set => Cam.transform.position = value;
     }
+    public Vector3 CamLocalPos {
+        get => Cam.transform.localPosition;
+        set => Cam.transform.localPosition = value;
+    }
     public Quaternion CamRotation {
         get => Cam.transform.rotation;
         set => Cam.transform.rotation = value;
+    }
+    public Quaternion CamLocalRotation {
+        get => Cam.transform.localRotation;
+        set => Cam.transform.localRotation = value;
     }
     public Vector3 CamForward {
         get => Cam.transform.forward;
@@ -128,6 +136,12 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #region Confirm Notice
     [Header("Confirm Notice")]
     [SerializeField] private ConfirmNoticeController confirmNoticeController;
+    #endregion
+
+    #region Cursor
+    [Header("Cursor")]
+    [SerializeField] private CursorImageController cursorImageController;
+    private bool menuActiveStartCursorChecker;
     #endregion
 
     private KeyCode Key_Escape = KeyCode.Escape;
@@ -396,6 +410,23 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     }
     #endregion
 
+    #region Cursor
+    public void SetActiveCursorImage(bool active) {
+        if(active) {
+            cursorImageController.gameObject.SetActive(true);
+
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else {
+            cursorImageController.gameObject.SetActive(false);
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
+    #endregion
+
     #endregion
 
     private IEnumerator FadeIn(CanvasGroup canvasGroup, float fadeTime, bool waitOneFrame = false, 
@@ -497,6 +528,9 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                         SoundManager.Instance.PauseAllSounds();
                         Time.timeScale = 0.0f;
 
+                        menuActiveStartCursorChecker = cursorImageController.gameObject.activeSelf;
+                        SetActiveCursorImage(false);
+
                         StartCoroutine(SetActiveRayBlockAction(true, 0.0f, new Color(0, 0, 0, 210f / 255f)));
 
                         StartCoroutine(SetActivePauseMenuAction(true, 0.0f));
@@ -506,6 +540,8 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                     else {
                         SoundManager.Instance.UnPauseAllSound();
                         Time.timeScale = 1.0f;
+
+                        SetActiveCursorImage(menuActiveStartCursorChecker);
 
                         StartCoroutine(SetActiveRayBlockAction(false, 0.0f, new Color(0, 0, 0, 210f / 255f)));
 
