@@ -60,12 +60,12 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #region UI
     [Flags]
     public enum Page {
-        None = 0, 
-        PauseMenu = 1 << 0, 
-        Settings = 1 << 1, 
-        KeyGuide = 1 << 2, 
-        ConfirmNotice = 1 << 3, 
-
+        None = 0,
+        PauseMenu = 1 << 0,
+        Settings = 1 << 1,
+        KeyGuide = 1 << 2,
+        ConfirmNotice = 1 << 3,
+        ButtonSelectMenu = 1 << 4,
     }
     private Page currentPages = Page.None;
     public Page CurrentPages {
@@ -145,6 +145,11 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     private bool menuActiveStartCursorChecker;
     #endregion
 
+    #region Button Select Menu
+    [Header("Button Select Menu")] 
+    [SerializeField] private ButtonSelectMenuController buttonSelectMenuController;
+    #endregion
+
     private KeyCode Key_Escape = KeyCode.Escape;
     #endregion
 
@@ -174,6 +179,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         settingController.gameObject.SetActive(false);
         keyGuideController.gameObject.SetActive(false);
         confirmNoticeController.gameObject.SetActive(false);
+        buttonSelectMenuController.gameObject.SetActive(false);
 
         rayBlock.gameObject.SetActive(true);
         rayBlock.Color = Color.black;
@@ -198,7 +204,20 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
 
             switch(SceneLoader.Instance.CurrentLoadedScene) {
                 case SceneLoader.SceneType.Main: {
-                        SetActiveSettings(!currentPages.HasFlag(Page.Settings));
+                        if(currentPages == Page.None) {
+                            SetActiveSettings(true);
+                        }
+                        else {
+                            if(currentPages.HasFlag(Page.Settings)) {
+                                SetActiveSettings(false);
+                            }
+                            else if(currentPages.HasFlag(Page.KeyGuide)) {
+                                SetActiveKeyGuide(false);
+                            }
+                            else if(currentPages.HasFlag(Page.ButtonSelectMenu)) {
+                                SetActiveButtonSelectMenu(false);
+                            }
+                        }
                     }
                     break;
                 case SceneLoader.SceneType.Game: {
@@ -209,16 +228,14 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                             if(currentPages.HasFlag(Page.Settings)) {
                                 SetActiveSettings(false);
                             }
+                            else if(currentPages.HasFlag(Page.KeyGuide)) {
+                                SetActiveKeyGuide(false);
+                            }
                             else if(currentPages.HasFlag(Page.ConfirmNotice)) {
                                 SetActiveConfirmNotice(false);
                             }
-                            else {
-                                if(currentPages.HasFlag(Page.PauseMenu)) {
-                                    SetActivePauseMenu(false);
-                                }
-                                else {
-                                    SetActivePauseMenu(true);
-                                }
+                            else if(currentPages.HasFlag(Page.PauseMenu)) {
+                                SetActivePauseMenu(false);
                             }
                         }
                     }
@@ -316,7 +333,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #endregion
 
     #region Settings
-    public void SetActiveSettings(bool active) { 
+    public void SetActiveSettings(bool active) {
         if(active) CurrentPages |= Page.Settings;
         else CurrentPages &= ~Page.Settings;
     }
@@ -387,7 +404,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         confirmNoticeController.Init(messageKey, key1, action1, key2, action2);
     }
 
-    private IEnumerator SetActiveConfirmNotice(bool active, float fadeTime = 0.0f) {
+    private IEnumerator SetActiveConfirmNoticeAction(bool active, float fadeTime = 0.0f) {
         if(active) {
             confirmNoticeController.gameObject.SetActive(true);
             if(fadeTime > 0.0f) {
@@ -422,9 +439,42 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     }
     #endregion
 
+    #region Button Select Menu
+    public void SetActiveButtonSelectMenu(bool active, ButtonSelectMenuStruct[] structs = null) {
+        buttonSelectMenuController.InitMenu(structs);
+
+        if(active) CurrentPages |= Page.ButtonSelectMenu;
+        else CurrentPages &= ~Page.ButtonSelectMenu;
+    }
+
+    private IEnumerator SetActiveButtonSelectMenuAction(bool active, float fadeTime = 0.0f) {
+        if(active) {
+            buttonSelectMenuController.gameObject.SetActive(true);
+            if(fadeTime > 0.0f) {
+                buttonSelectMenuController.Alpha = 0.0f;
+                yield return StartCoroutine(FadeIn(buttonSelectMenuController.CanvasGroup, fadeTime));
+            }
+            else {
+                buttonSelectMenuController.Alpha = 1.0f;
+            }
+        }
+        else {
+            if(fadeTime > 0.0f) {
+                yield return StartCoroutine(FadeOut(buttonSelectMenuController.CanvasGroup, fadeTime, false, null, () => {
+                    buttonSelectMenuController.gameObject.SetActive(false);
+                }));
+            }
+            else {
+                buttonSelectMenuController.gameObject.SetActive(false);
+            }
+        }
+        yield return null;
+    }
     #endregion
 
-    private IEnumerator FadeIn(CanvasGroup canvasGroup, float fadeTime, bool waitOneFrame = false, 
+    #endregion
+
+    private IEnumerator FadeIn(CanvasGroup canvasGroup, float fadeTime, bool waitOneFrame = false,
         Action oneFrameCallback = null, Action endCallback = null) {
         if(waitOneFrame) {
             yield return null;
@@ -489,40 +539,53 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         switch(page) {
             case Page.Settings: {
                     if(active) {
-                        StartCoroutine(SetActiveRayBlockAction(true, 0.1f, new Color(0, 0, 0, 210f / 255f)));
+                        StartCoroutine(SetActiveRayBlockAction(true, 0.0f, new Color(0, 0, 0, 210f / 255f)));
 
-                        StartCoroutine(SetActiveSettingsAction(true, 0.1f));
+                        StartCoroutine(SetActiveSettingsAction(true, 0.0f));
                     }
                     else {
-                        StartCoroutine(SetActiveRayBlockAction(false, 0.1f));
+                        StartCoroutine(SetActiveRayBlockAction(false, 0.0f));
 
-                        StartCoroutine(SetActiveSettingsAction(false, 0.1f));
+                        StartCoroutine(SetActiveSettingsAction(false, 0.0f));
                     }
                 }
                 break;
             case Page.KeyGuide: {
                     if(active) {
-                        StartCoroutine(SetActiveRayBlockAction(true, 0.1f, new Color(0, 0, 0, 210f / 255f)));
+                        StartCoroutine(SetActiveRayBlockAction(true, 0.0f, new Color(0, 0, 0, 210f / 255f)));
 
-                        StartCoroutine(SetActiveKeyGuideAction(true, 0.1f));
+                        StartCoroutine(SetActiveKeyGuideAction(true, 0.0f));
                     }
                     else {
-                        StartCoroutine(SetActiveRayBlockAction(false, 0.1f));
+                        StartCoroutine(SetActiveRayBlockAction(false, 0.0f));
 
-                        StartCoroutine(SetActiveKeyGuideAction(false, 0.1f));
+                        StartCoroutine(SetActiveKeyGuideAction(false, 0.0f));
+                    }
+                }
+                break;
+            case Page.ButtonSelectMenu: {
+                    if(active) {
+                        StartCoroutine(SetActiveRayBlockAction(true, 0.0f, new Color(0, 0, 0, 210f / 255f)));
+
+                        StartCoroutine(SetActiveButtonSelectMenuAction(true, 0.0f));
+                    }
+                    else {
+                        StartCoroutine(SetActiveRayBlockAction(false, 0.0f));
+
+                        StartCoroutine(SetActiveButtonSelectMenuAction(false, 0.0f));
                     }
                 }
                 break;
             case Page.ConfirmNotice: {
                     if(active) {
-                        StartCoroutine(SetActiveRayBlockAction(true, 0.1f, new Color(0, 0, 0, 210f / 255f)));
+                        StartCoroutine(SetActiveRayBlockAction(true, 0.0f, new Color(0, 0, 0, 210f / 255f)));
 
-                        StartCoroutine(SetActiveConfirmNotice(true, 0.0f));
+                        StartCoroutine(SetActiveConfirmNoticeAction(true, 0.0f));
                     }
                     else {
-                        StartCoroutine(SetActiveRayBlockAction(false, 0.1f));
+                        StartCoroutine(SetActiveRayBlockAction(false, 0.0f));
 
-                        StartCoroutine(SetActiveConfirmNotice(false, 0.0f));
+                        StartCoroutine(SetActiveConfirmNoticeAction(false, 0.0f));
                     }
                 }
                 break;
@@ -591,12 +654,12 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                     if(active) {
                         StartCoroutine(SetActivePauseMenuAction(false, 0.0f));
 
-                        StartCoroutine(SetActiveConfirmNotice(true, 0.0f));
+                        StartCoroutine(SetActiveConfirmNoticeAction(true, 0.0f));
                     }
                     else {
                         StartCoroutine(SetActivePauseMenuAction(true, 0.0f));
 
-                        StartCoroutine(SetActiveConfirmNotice(false, 0.0f));
+                        StartCoroutine(SetActiveConfirmNoticeAction(false, 0.0f));
                     }
                 }
                 break;

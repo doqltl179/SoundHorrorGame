@@ -358,11 +358,12 @@ Shader "MyCustomShader/Maze" {
                 float metallic = tex2D(_MetallicMap, i.uv).a * _MetallicStrength; // 금속성 값을 조절
                 float occlusion = tex2D(_OcclusionMap, i.uv).r * _OcclusionStrength; // 가려짐 처리
                 
-                float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
+                //float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
                 float3 lightDir = normalize(float3(0.0, 0.0, 1.0));
                 float diff = max(dot(normal, lightDir), 0.0);
                 
-                float3 halfwayDir = normalize(lightDir + viewDir);
+                //float3 halfwayDir = normalize(lightDir + viewDir);
+                float3 halfwayDir = normalize(lightDir);
                 float specular = pow(max(dot(normal, halfwayDir), 0.0), 16.0) * metallic;
                 float3 diffuse = albedo * (1.0 - metallic) * diff;
                 

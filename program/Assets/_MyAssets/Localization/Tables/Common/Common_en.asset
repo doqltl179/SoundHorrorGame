@@ -106,6 +106,22 @@ MonoBehaviour:
     m_Localized: Sensitive
     m_Metadata:
       m_Items: []
+  - m_Id: 4741950664458240
+    m_Localized: Select Chapter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4761343989497856
+    m_Localized: Chapter 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4761742385463296
+    m_Localized: Chapter 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4761743098494976
+    m_Localized: Chapter 3
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

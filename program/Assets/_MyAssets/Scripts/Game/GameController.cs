@@ -9,149 +9,18 @@ using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
 
 using Random = UnityEngine.Random;
-using Debug = UnityEngine.Debug;
-using Newtonsoft.Json.Linq;
 
 public class GameController : MonoBehaviour {
     [SerializeField] private StandingSpaceConrtoller standingSpaceController;
     [SerializeField] private UserInterface userInterface;
     [SerializeField] private PathGuide pathGuide;
 
-    private readonly GameLevelSettings[] gameLevels = new GameLevelSettings[] {
-        new GameLevelSettings() {
-            LevelWidth = 16,
-            LevelHeight = 16,
-
-            IsEmpty = false,
-
-            Monsters = new GameLevelSettings.MonsterStruct[] {
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Bunny,
-                    generateCount = 2,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Honey,
-                    generateCount = 2,
-                },
-            },
-
-            Items = new GameLevelSettings.ItemStruct[] {
-                new GameLevelSettings.ItemStruct() {
-                    type = LevelLoader.ItemType.Crystal,
-                    generateCount = 3,
-                },
-            },
-
-            HandlingCubeCount = 8, 
-            TeleportCount = 0, 
-        },
-        new GameLevelSettings() {
-            LevelWidth = 16,
-            LevelHeight = 16,
-
-            IsEmpty = false,
-
-            Monsters = new GameLevelSettings.MonsterStruct[] {
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Bunny,
-                    generateCount = 2,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Honey,
-                    generateCount = 2,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Froggy,
-                    generateCount = 2,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Kitty,
-                    generateCount = 2,
-                },
-            },
-
-            Items = new GameLevelSettings.ItemStruct[] {
-                new GameLevelSettings.ItemStruct() {
-                    type = LevelLoader.ItemType.Crystal,
-                    generateCount = 3,
-                },
-            },
-
-            HandlingCubeCount = 8,
-            TeleportCount = 2,
-        },
-        new GameLevelSettings() {
-            LevelWidth = 16,
-            LevelHeight = 16,
-
-            IsEmpty = false,
-
-            Monsters = new GameLevelSettings.MonsterStruct[] {
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Bunny,
-                    generateCount = 2,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Honey,
-                    generateCount = 3,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Froggy,
-                    generateCount = 2,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Kitty,
-                    generateCount = 3,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Cloudy,
-                    generateCount = 3,
-                },
-                new GameLevelSettings.MonsterStruct() {
-                    type = LevelLoader.MonsterType.Starry,
-                    generateCount = 3,
-                },
-            },
-
-            Items = new GameLevelSettings.ItemStruct[] {
-                new GameLevelSettings.ItemStruct() {
-                    type = LevelLoader.ItemType.Crystal,
-                    generateCount = 3,
-                },
-            },
-
-            HandlingCubeCount = 8,
-            TeleportCount = 4,
-        },
-        //new GameLevelSettings() {
-        //    LevelWidth = 16,
-        //    LevelHeight = 16,
-
-        //    IsEmpty = false,
-
-        //    Monsters = new GameLevelSettings.MonsterStruct[] {
-        //        new GameLevelSettings.MonsterStruct() {
-        //            type = LevelLoader.MonsterType.Kitty,
-        //            generateCount = 1,
-        //        },
-        //    },
-
-        //    Items = new GameLevelSettings.ItemStruct[] {
-        //        new GameLevelSettings.ItemStruct() {
-        //            type = LevelLoader.ItemType.Crystal,
-        //            generateCount = 3,
-        //        },
-        //    },
-
-        //    HandlingCubeCount = 8,
-        //    TeleportCount = 4,
-        //},
-    };
     public GameLevelSettings CurrentLevelSettings { get; private set; }
     private ToyHammer toyHammer = null;
 
     private Vector2Int standingSpaceCoord;
 
+    private bool isBadEnding;
     private IEnumerator scenarioCoroutine = null;
     private IEnumerator scenarioCameraAnimationCoroutine = null;
     private IEnumerator scenarioTextAnimationCoroutine = null;
@@ -224,22 +93,10 @@ public class GameController : MonoBehaviour {
     }
 
     private IEnumerator InitGameCoroutine() {
-        if(SceneLoader.Instance.Param == null) {
-            if(UserSettings.GameLevel >= gameLevels.Length) {
-                Debug.LogError($"GameLevel is out of range. GameLevel: {UserSettings.GameLevel}");
+        if(UserSettings.GameLevel >= GameLevelStruct.GameLevels.Length) UserSettings.GameLevel = GameLevelStruct.GameLevels.Length - 1;
+        else if(UserSettings.GameLevel < 0) UserSettings.GameLevel = 0;
 
-                //yield break;
-                UserSettings.GameLevel = 0;
-            }
-
-            CurrentLevelSettings = gameLevels[UserSettings.GameLevel];
-        }
-        else {
-            object[] param = SceneLoader.Instance.Param;
-            GameLevelSettings levelSettings = (GameLevelSettings)param[0];
-
-            CurrentLevelSettings = levelSettings;
-        }
+        CurrentLevelSettings = GameLevelStruct.GameLevels[UserSettings.GameLevel];
 
         // Mic Off
         if(UserSettings.UseMicBoolean) {
@@ -1026,6 +883,9 @@ public class GameController : MonoBehaviour {
         // 플레이어 움직임 복구
         PlayerController.Instance.IsPlaying = true;
 
+        // Cursor 세팅
+        UtilObjects.Instance.SetActiveCursorImage(true);
+
         // 플레이어의 진입을 감지하기 위한 루프문
         Vector3 normalCheckPos = LevelLoader.Instance.GetBlockPos(standingSpaceCoord);
         normalCheckPos.y = PlayerController.PlayerHeight;
@@ -1203,6 +1063,9 @@ public class GameController : MonoBehaviour {
 
         // Player On
         PlayerController.Instance.IsPlaying = true;
+
+        // Cursor 세팅
+        UtilObjects.Instance.SetActiveCursorImage(true);
 
         // 플레이어의 진입을 감지하기 위한 루프문
         Vector3 animationWallPos = standingSpaceController.BlockT.GetSidePos(MazeCreator.ActiveWall.F);
@@ -1523,7 +1386,7 @@ public class GameController : MonoBehaviour {
         #endregion
 
         // Turning Point Setting
-        bool isBadEnding = moveScenario == -1;
+        isBadEnding = moveScenario == -1;
         string NewScenarioStandardKeyString = ScenarioStandardKeyString + (isBadEnding ? "_Accept" : "_Resist");
         int scenarioEndIndex = isBadEnding ? 3 : 4;
 
@@ -1744,6 +1607,19 @@ public class GameController : MonoBehaviour {
         scenarioCoroutine = null;
     }
 
+    // 마지막 GameLevel에서 크리스탈을 다 모아 탈출했을 때 시작
+    private IEnumerator EndingScenario() {
+        yield return null;
+        if(isBadEnding) {
+
+        }
+        else {
+
+        }
+
+        scenarioCoroutine = null;
+    }
+
     #region Help Func
     const float m_standardWallAnimationTime = 3.0f;
     const float m_standardCameraMoveTime = 3.0f;
@@ -1862,9 +1738,6 @@ public class GameController : MonoBehaviour {
     private IEnumerator OnGameEndCoroutine(bool isClear) {
         // Exit로 탈출한 경우
         if(isClear) {
-            // Level 증가
-            UserSettings.GameLevel++;
-
             // 오브젝트 Stop
             LevelLoader.Instance.StopMonsters();
             LevelLoader.Instance.StopItems();
@@ -1908,9 +1781,20 @@ public class GameController : MonoBehaviour {
     }
 
     private void OnExitEntered() {
+        // Level 증가
+        UserSettings.SetGameLevelClear(UserSettings.GameLevel, true);
+        UserSettings.GameLevel++;
 
-
-        OnGameEnd(true);
+        // Start Ending Scenario
+        if(UserSettings.GameLevel >= GameLevelStruct.GameLevels.Length) {
+            if(scenarioCoroutine == null) {
+                scenarioCoroutine = EndingScenario();
+                StartCoroutine(scenarioCoroutine);
+            }
+        }
+        else {
+            OnGameEnd(true);
+        }
     }
 
     private void OnScenarioEnd() {
@@ -1928,30 +1812,8 @@ public class GameController : MonoBehaviour {
 
         userInterface.HeadMessageActive = true;
         userInterface.MessageActive = false;
-        userInterface.MicGageActive = UserSettings.UseMicBoolean;
+        //userInterface.MicGageActive = UserSettings.UseMicBoolean;
         userInterface.CollectItemActive = maxItemCount > 0;
         userInterface.RunGageActive = true;
     }
-}
-
-public class GameLevelSettings {
-    public int LevelWidth;
-    public int LevelHeight;
-
-    public bool IsEmpty;
-
-    public struct MonsterStruct {
-        public LevelLoader.MonsterType type;
-        public int generateCount;
-    }
-    public MonsterStruct[] Monsters;
-
-    public struct ItemStruct {
-        public LevelLoader.ItemType type;
-        public int generateCount;
-    }
-    public ItemStruct[] Items;
-
-    public int HandlingCubeCount;
-    public int TeleportCount;
 }

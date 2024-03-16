@@ -131,10 +131,50 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -27.344206
       objectReference: {fileID: 0}
+    - target: {fileID: 1379146622095056604, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1379146622095056604, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1379146622095056604, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1379146622095056604, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1379146622095056604, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9a8e06bd7aaa78c4aa2902a0205732d5, type: 2}
     - target: {fileID: 1634579768966478864, guid: 108c77a6af743484b862a90d036e4949, type: 3}
       propertyPath: m_Name
       value: RedBelly
       objectReference: {fileID: 0}
+    - target: {fileID: 1903472901569989201, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1903472901569989201, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1903472901569989201, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1903472901569989201, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1903472901569989201, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9a8e06bd7aaa78c4aa2902a0205732d5, type: 2}
     - target: {fileID: 2154093977085224618, guid: 108c77a6af743484b862a90d036e4949, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -215,6 +255,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -31.184
       objectReference: {fileID: 0}
+    - target: {fileID: 2658410096837624330, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2658410096837624330, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2658410096837624330, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2658410096837624330, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2658410096837624330, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9a8e06bd7aaa78c4aa2902a0205732d5, type: 2}
     - target: {fileID: 2767833126897189364, guid: 108c77a6af743484b862a90d036e4949, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: -0.74164826
@@ -331,6 +391,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 14.39043
       objectReference: {fileID: 0}
+    - target: {fileID: 6426581695522026695, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6426581695522026695, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6426581695522026695, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6426581695522026695, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6426581695522026695, guid: 108c77a6af743484b862a90d036e4949, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 9a8e06bd7aaa78c4aa2902a0205732d5, type: 2}
     - target: {fileID: 6753260208091783939, guid: 108c77a6af743484b862a90d036e4949, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 4.681

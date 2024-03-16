@@ -8,18 +8,38 @@ using UnityEngine.Localization.Settings;
 
 public static class UserSettings {
     #region IsCleared
-    private static readonly string m_isCleared_pref = "IsCleared";
-    private static readonly int m_standardIsCleared = 0;
-    public static int IsCleared {
-        get => PlayerPrefs.HasKey(m_isCleared_pref) ? PlayerPrefs.GetInt(m_isCleared_pref) : m_standardIsCleared;
-        set => PlayerPrefs.SetInt(m_isCleared_pref, value);
+    private static readonly string m_levelClear_pref = "LevelClear";
+    public static void SetGameLevelClear(int gameLevel, bool isClear) {
+        string clear_pref = m_levelClear_pref + gameLevel.ToString().PadLeft(2, '0');
+        PlayerPrefs.SetInt(clear_pref, isClear ? 1 : 0);
     }
-    public static bool IsClearedBoolean {
-        get => IsCleared == 1 ? true : false;
-        set {
-            if(value) IsCleared = 1;
-            else IsCleared = 0;
+    public static bool GetGameLevelClearBoolean(int gameLevel) {
+        string clear_pref = m_levelClear_pref + gameLevel.ToString().PadLeft(2, '0');
+        return PlayerPrefs.HasKey(clear_pref) && PlayerPrefs.GetInt(clear_pref) == 1;
+    }
+    public static int GetClearLevelMax() {
+        int gameLevel = 0;
+        string clear_pref;
+        while(true) {
+            clear_pref = m_levelClear_pref + gameLevel.ToString().PadLeft(2, '0');
+            if(!PlayerPrefs.HasKey(clear_pref) || PlayerPrefs.GetInt(clear_pref) != 1) {
+                gameLevel--;
+
+                break;
+            }
+
+            gameLevel++;
         }
+
+        return gameLevel;
+    }
+    public static void SetEndingClear(bool isBadEnding) {
+        string clear_pref = m_levelClear_pref + (isBadEnding ? "BadEnding" : "HappyEnding");
+        PlayerPrefs.SetInt(clear_pref, 1);
+    }
+    public static bool GetEndingClearBoolean(bool isBadEnding) {
+        string clear_pref = m_levelClear_pref + (isBadEnding ? "BadEnding" : "HappyEnding");
+        return PlayerPrefs.HasKey(clear_pref) && PlayerPrefs.GetInt(clear_pref) == 1;
     }
     #endregion
 
@@ -65,7 +85,7 @@ public static class UserSettings {
     #region Sound
     public static Action<float> OnMasterVolumeChanged;
     private static readonly string m_masterVolume_pref = "MasterVolume";
-    private static readonly float m_standardMasterVolume = 70.0f;
+    private static readonly float m_standardMasterVolume = 50.0f;
     private static readonly float m_masterVolumeMin = 0.0f;
     private static readonly float m_masterVolumeMax = 100.0f;
     public static float MasterVolume {

@@ -1,9 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 
 public class MainController : MonoBehaviour {
     [SerializeField] private Canvas canvas = null;
+
+    [Header("Menu")]
+    [SerializeField] private LocalizeStringEvent firstMenuStringEvent;
 
     [Header("Camera Animation Properties")]
     [SerializeField, Range(0.1f, 10.0f)] private float cameraRotateSpeed = 1.0f;
@@ -67,7 +71,16 @@ public class MainController : MonoBehaviour {
     //}
 
     private void SetUIProperties() {
-        
+        int clearLevelMax = UserSettings.GetClearLevelMax();
+        if(clearLevelMax <= 0) {
+            firstMenuStringEvent.StringReference.TableEntryReference = "Start";
+        }
+        else if(UserSettings.GetEndingClearBoolean(true) || UserSettings.GetEndingClearBoolean(false)) {
+            firstMenuStringEvent.StringReference.TableEntryReference = "SelectChapter";
+        }
+        else {
+            firstMenuStringEvent.StringReference.TableEntryReference = "Continue";
+        }
     }
 
     private IEnumerator MainCameraAnimationCoroutine() {
@@ -99,10 +112,35 @@ public class MainController : MonoBehaviour {
     }
 
     public void OnNewGameClicked() {
-        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.GameEnter);
-        SoundManager.Instance.StopBGM(SoundManager.SoundType.Main, 0.5f);
+        if(UserSettings.GetEndingClearBoolean(true) || UserSettings.GetEndingClearBoolean(false)) {
+            SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
 
-        SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
+            ButtonSelectMenuStruct[] structs = new ButtonSelectMenuStruct[GameLevelStruct.GameLevels.Length];
+            for(int i = 0; i < structs.Length; i++) {
+                int gameLevel = i;
+                structs[i] = new ButtonSelectMenuStruct() {
+                    key = "Chapter" + (i + 1).ToString().PadLeft(2, '0'),
+                    action = () => {
+                        UserSettings.GameLevel = gameLevel;
+
+                        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.GameEnter);
+                        SoundManager.Instance.StopBGM(SoundManager.SoundType.Main, 0.5f);
+
+                        SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
+                    }
+                };
+            }
+
+            UtilObjects.Instance.SetActiveButtonSelectMenu(true, structs);
+        }
+        else {
+            UserSettings.GameLevel = UserSettings.GetClearLevelMax() + 1;
+
+            SoundManager.Instance.PlayOneShot(SoundManager.SoundType.GameEnter);
+            SoundManager.Instance.StopBGM(SoundManager.SoundType.Main, 0.5f);
+
+            SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
+        }
     }
 
     public void OnSettingsClicked() {
