@@ -433,7 +433,7 @@ Shader "MyCustomShader/Maze" {
                 #ifdef DRAW_OUTLINE
 
                     float mosnterOutlineRatio = getOutlineRatio(i);
-                    c *= _MonsterOutlineColor * mosnterOutlineRatio;
+                    c *= _MonsterOutlineColor * mosnterOutlineRatio * 2.0;
 
                 #endif
 

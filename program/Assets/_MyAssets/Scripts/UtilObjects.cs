@@ -121,6 +121,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #region PauseMenu
     [Header("Pause Menu")]
     [SerializeField] private PauseMenuController pauseMenuController;
+    public bool IsGamePaused { get; private set; }
     #endregion
 
     #region Settings
@@ -242,7 +243,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                 yield return StartCoroutine(FadeIn(rayBlock.CanvasGroup, fadeTime));
             }
             else {
-                rayBlock.Color = color.Value;
+                rayBlock.Color = color != null ? color.Value : standardRayBlockColor;
                 rayBlock.Alpha = 1.0f;
             }
         }
@@ -414,15 +415,9 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     public void SetActiveCursorImage(bool active) {
         if(active) {
             cursorImageController.gameObject.SetActive(true);
-
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
         }
         else {
             cursorImageController.gameObject.SetActive(false);
-
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
         }
     }
     #endregion
@@ -518,6 +513,19 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                     }
                 }
                 break;
+            case Page.ConfirmNotice: {
+                    if(active) {
+                        StartCoroutine(SetActiveRayBlockAction(true, 0.1f, new Color(0, 0, 0, 210f / 255f)));
+
+                        StartCoroutine(SetActiveConfirmNotice(true, 0.0f));
+                    }
+                    else {
+                        StartCoroutine(SetActiveRayBlockAction(false, 0.1f));
+
+                        StartCoroutine(SetActiveConfirmNotice(false, 0.0f));
+                    }
+                }
+                break;
         }
     }
 
@@ -535,6 +543,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
 
                         StartCoroutine(SetActivePauseMenuAction(true, 0.0f));
 
+                        IsGamePaused = true;
                         OnGamePaused?.Invoke(true);
                     }
                     else {
@@ -547,6 +556,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
 
                         StartCoroutine(SetActivePauseMenuAction(false, 0.0f));
 
+                        IsGamePaused = false;
                         OnGamePaused?.Invoke(false);
                     }
                 }

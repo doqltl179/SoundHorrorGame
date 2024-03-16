@@ -63,7 +63,7 @@ public class Froggy : MonsterController {
     }
 
     private void Update() {
-        if(!IsPlaying) return;
+        if(!IsPlaying || CurrentState == MonsterState.None) return;
 
         if(screamActionCoroutine == null && CurrentState != MonsterState.Scream) {
             //if(!isPlayerInsideCheckCoordRange) {

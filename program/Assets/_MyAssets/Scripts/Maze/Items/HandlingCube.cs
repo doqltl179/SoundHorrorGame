@@ -77,6 +77,11 @@ public class HandlingCube : PickupItem {
             guideAnchor.transform.position = Pos + Vector3.up * 0.45f;
             guideAnchor.transform.rotation = Quaternion.LookRotation((UtilObjects.Instance.CamPos - guideAnchor.transform.position).normalized);
         }
+
+        if(isPickup) {
+            calculatedVelocity = Pos - posSaver;
+            posSaver = Pos;
+        }
     }
 
     private void OnCollisionEnter(Collision collision) {

@@ -117,7 +117,7 @@ public class SoundManager : GenericSingleton<SoundManager> {
         while(true) {
             yield return wait;
 
-            if(MicrophoneRecorder.Instance.OverCritical) {
+            if(!UtilObjects.Instance.IsGamePaused && MicrophoneRecorder.Instance.OverCritical) {
                 Debug.Log($"{MicrophoneRecorder.Instance.Decibel} | {MicrophoneRecorder.Instance.DecibelRatio}");
 
                 float overRatio = Mathf.InverseLerp(

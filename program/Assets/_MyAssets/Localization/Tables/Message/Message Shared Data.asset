@@ -31,6 +31,10 @@ MonoBehaviour:
     m_Key: GoToMain
     m_Metadata:
       m_Items: []
+  - m_Id: 4163091216842752
+    m_Key: ApplicationQuit
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

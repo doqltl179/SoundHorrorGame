@@ -57,7 +57,7 @@ public class Cloudy : MonsterController, IMove {
     }
 
     private void Update() {
-        if(!IsPlaying) return;
+        if(!IsPlaying || CurrentState == MonsterState.None) return;
 
         if(CurrentState == MonsterState.Rest) {
             restTimeChecker += Time.deltaTime;

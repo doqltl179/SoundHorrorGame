@@ -127,11 +127,15 @@ public static class UserSettings {
     }
     public static Resolution DisplayResolution { get { return Screen.currentResolution; } }
 
+    public static Action<int> OnFPSChanged;
     private static readonly string m_displayFPS_pref = "DisplayFPS";
     //private static readonly float m_standardDisplayFPS = 60.0f;
-    public static float FPS {
-        get => PlayerPrefs.HasKey(m_displayFPS_pref) ? PlayerPrefs.GetFloat(m_displayFPS_pref) : (float)DisplayResolution.refreshRateRatio.value;
-        set => PlayerPrefs.SetFloat(m_displayFPS_pref, value);
+    public static int FPS {
+        get => PlayerPrefs.HasKey(m_displayFPS_pref) ? PlayerPrefs.GetInt(m_displayFPS_pref) : (int)DisplayResolution.refreshRateRatio.value;
+        set {
+            PlayerPrefs.SetInt(m_displayFPS_pref, value);
+            OnFPSChanged?.Invoke(value);
+        }
     }
 
     public static Action<float> OnDisplayFOVChanged;

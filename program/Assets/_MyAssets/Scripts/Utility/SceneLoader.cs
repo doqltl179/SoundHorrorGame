@@ -45,7 +45,6 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
         // 다른 작업에 먼저 하기 위함.
         yield return null;
 
-
         StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 0.5f));
         yield return UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f);
 

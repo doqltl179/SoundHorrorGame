@@ -40,7 +40,7 @@ public class Bunny : MonsterController, IMove {
     }
 
     private void Update() {
-        if(!IsPlaying) return;
+        if(!IsPlaying || CurrentState == MonsterState.None) return;
 
         if(CurrentState == MonsterState.Rest) {
             restTimeChecker += Time.deltaTime;
@@ -59,7 +59,7 @@ public class Bunny : MonsterController, IMove {
             if(physicsMoveSpeed > 0) {
                 float normalizedTime = animatorStateInfo[AnimatorLayerName_Motion].Info.normalizedTime;
                 int normalizedTimeInteger = (int)Mathf.Floor((normalizedTime + moveSoundOffset) / 0.5f);
-                if(animatorStateInfo[AnimatorLayerName_Motion].CompareInteger < normalizedTimeInteger) {
+                if(animatorStateInfo[AnimatorLayerName_Motion].CompareInteger != normalizedTimeInteger) {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     float clipSpreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.MonsterWalk01);
@@ -186,7 +186,7 @@ public class Bunny : MonsterController, IMove {
             case MonsterState.None: {
                     movePath = null;
 
-                    if(TryGetAnimatorStateInfo(AnimatorLayerName_Motion)) animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = 0;
+
                 }
                 break;
             case MonsterState.Move: {

@@ -34,6 +34,10 @@ MonoBehaviour:
     m_Localized: Returning to the Main.
     m_Metadata:
       m_Items: []
+  - m_Id: 4163091216842752
+    m_Localized: Exiting the game.
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

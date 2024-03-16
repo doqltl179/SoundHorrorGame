@@ -39,7 +39,195 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 3268812340576256
-    m_Localized: 
+    m_Localized: I'll ask you one more time. Want to give it a try?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62215069696
+    m_Localized: Welcome. Is this your first time here?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 357733146624
+    m_Localized: This place is detached from reality.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1151370960896
+    m_Localized: It's a space not just anyone can enter, but you've been specially
+      invited.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1352626249728
+    m_Localized: If you manage to get out safely, you'll gain immense wealth.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2240380051456
+    m_Localized: However, to achieve that, you must do 'a certain task' in a very
+      dangerous area.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2826055884800
+    m_Localized: High risk, high return. You know?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3869959430144
+    m_Localized: Want to give it a try?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3268232322859008
+    m_Localized: ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3269808789766144
+    m_Localized: This is really the last chance. Want to give it a try?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3270406259982336
+    m_Localized: Alright. I respect your choice.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3270490645184512
+    m_Localized: I hope we can meet again. Take care.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3280239071707136
+    m_Localized: You've made a good decision.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 111881793478656
+    m_Localized: If you move towards the space that just opened, a special area will
+      appear.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 112419486474240
+    m_Localized: All you need to do is collect a certain number of crystals there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 112657878130688
+    m_Localized: But, something scary is wandering in that space.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 113050041360384
+    m_Localized: They cannot see, but are sensitive to [sound].
+    m_Metadata:
+      m_Items: []
+  - m_Id: 113651726852096
+    m_Localized: It would be wise to be cautious while walking or collecting crystals.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 114525677199360
+    m_Localized: If you're unsure about the controls, check the 'Key Guide'.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 114719772811264
+    m_Localized: Then, I wish you luck.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 902828823322624
+    m_Localized: Wait, Wait!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 902964785881088
+    m_Localized: Before you go in there, there's something I need to tell you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 903565083058176
+    m_Localized: First off, I'm glad to see you again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 903898681221120
+    m_Localized: But, you should be a bit more cautious moving forward.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 904214600392704
+    m_Localized: It seems like a greater number of 'somethings' will appear to guard
+      against you collecting crystals.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 905096566054912
+    m_Localized: Among them, there are those who are [faster] and [more cunning]
+      than any you've seen so far.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 905673937166336
+    m_Localized: You'll need to carefully observe their movements and find a way
+      to escape.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 905862995419136
+    m_Localized: If you manage to collect all the crystals and reach the exit,
+    m_Metadata:
+      m_Items: []
+  - m_Id: 909885794328576
+    m_Localized: I mean...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 910059010695168
+    m_Localized: You'll gain even more wealth. Isn't that tempting?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 910320785596416
+    m_Localized: No need for a lengthy speech. I wish you luck.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2513355190214656
+    m_Localized: ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2515701530009600
+    m_Localized: To think you could return alive like this... That's impressive.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2518125816750080
+    m_Localized: I didn't really plan on letting you live.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2690880612769792
+    m_Localized: I thought I'd just play with you a bit and then let them eat you...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2690983683596288
+    m_Localized: So, you want to indulge your greed but still think your life is
+      too precious?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2691106664783872
+    m_Localized: If you want to live that badly, I'll let you live.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2691747416023040
+    m_Localized: As long as you agree to spend the rest of your life as my slave,
+      working.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2691825836924928
+    m_Localized: What will you do?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2692719898959872
+    m_Localized: You've made a wise decision.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2692855232372736
+    m_Localized: Then you know what you need to do now, right?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2692958571634688
+    m_Localized: Hurry up and bring me some crystals.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2693601747181568
+    m_Localized: ...Is that so?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2693800062263296
+    m_Localized: Well, alright. I'll watch to see how long you can hold out.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2694109144719360
+    m_Localized: It wouldn't be fun just to watch, so I'll give you a little present.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2694215323525120
+    m_Localized: Use it to struggle as much as you want.
     m_Metadata:
       m_Items: []
   references:

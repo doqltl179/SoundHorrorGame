@@ -317,7 +317,7 @@ public class PlayerController : MonoBehaviour {
 
                 //PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
                 //PickupItem.Rotation = Quaternion.Lerp(PickupItem.Rotation, pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset), Time.deltaTime * Mathf.Pow(2, 6));
-                PickupItem.Pos = pickupHandAnchor.position;
+                PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 4));
                 PickupItem.Rotation = pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset);
             }
             else {
@@ -329,7 +329,7 @@ public class PlayerController : MonoBehaviour {
                 else {
                     //PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 6));
                     //PickupItem.Rotation = Quaternion.Lerp(PickupItem.Rotation, pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset), Time.deltaTime * Mathf.Pow(2, 6));
-                    PickupItem.Pos = pickupHandAnchor.position;
+                    PickupItem.Pos = Vector3.Lerp(PickupItem.Pos, pickupHandAnchor.position, Time.deltaTime * Mathf.Pow(2, 4));
                     PickupItem.Rotation = pickupHandAnchor.rotation * Quaternion.Euler(PickupItem.PicupAngleOffset);
                 }
             }

@@ -22,6 +22,8 @@ public class MainController : MonoBehaviour {
     }
 
     private void Start() {
+        Application.targetFrameRate = 60;
+
         canvas.worldCamera = UtilObjects.Instance.Cam;
         canvas.planeDistance = 5.0f;
 
@@ -111,6 +113,19 @@ public class MainController : MonoBehaviour {
 
     public void OnExitClicked() {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
+
+        UtilObjects.Instance.InitConfirmNotice(
+            "GoToMain",
+            "No",
+            () => {
+                UtilObjects.Instance.SetActiveConfirmNotice(false);
+                StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(false));
+            },
+            "Yes",
+            () => {
+                Application.Quit();
+            });
+        UtilObjects.Instance.SetActiveConfirmNotice(true);
     }
     #endregion
 }

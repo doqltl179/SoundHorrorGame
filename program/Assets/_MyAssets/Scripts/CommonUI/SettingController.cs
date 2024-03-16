@@ -198,7 +198,7 @@ public class SettingController : MonoBehaviour {
     public void OnDisplayFPSChanged(int index) {
         int changedFPS = currentDisplayFPSOptions[index];
         if(UserSettings.FPS != changedFPS) {
-            Application.targetFrameRate = changedFPS;
+            //Application.targetFrameRate = changedFPS;
             UserSettings.FPS = changedFPS;
 
             //QualitySettings.vSyncCount = 0;

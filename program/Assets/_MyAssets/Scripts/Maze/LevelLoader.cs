@@ -203,6 +203,8 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     }
 
     private void LateUpdate() {
+        if(UtilObjects.Instance.IsGamePaused) return;
+
         noneFromRimRadiusArray = SoundManager.Instance.GetSoundObjectRadiusArray(
                 SoundManager.SoundFrom.None,
                 STANDARD_RIM_RADIUS_SPREAD_TIME,
@@ -855,7 +857,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
         MonsterController mc = go.GetComponent<MonsterController>();
         mc.Material.SetFloat(MAT_RIM_THICKNESS_NAME, MazeBlock.BlockSize * 2.0f);
-        mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 4.0f);
+        mc.Material.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, 2.0f);
         mc.Material.EnableKeyword(MAT_USE_BASE_COLOR_KEY);
         mc.Material.EnableKeyword(MAT_DRAW_RIM_KEY);
         mc.Material.EnableKeyword(MAT_DRAW_MONSTER_OUTLINE_KEY);
