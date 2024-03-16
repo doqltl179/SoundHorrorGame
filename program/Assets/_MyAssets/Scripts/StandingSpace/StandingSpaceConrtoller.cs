@@ -31,6 +31,7 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     private const string AnimatorTrigger_NPC_Surprised = "Surprised";
     private const string AnimatorTrigger_NPC_Talking = "Talking";
     private const string AnimatorTrigger_NPC_Throw = "Throw";
+    private const string AnimatorTrigger_NPC_PlayerCatch = "PlayerCatch";
 
     private MazeBlock[,] levels = null;
     private Material levelFloorMaterial = null;
@@ -237,6 +238,8 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     public void SetAnimationResetTrigger_Surprised() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Surprised);
     public void SetAnimationTrigger_Throw() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Throw);
     public void SetAnimationResetTrigger_Throw() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Throw);
+    public void SetAnimationTrigger_PlayerCatch() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_PlayerCatch);
+    public void SetAnimationResetTrigger_PlayerCatch() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_PlayerCatch);
 
     public void InitializeNPCAnchor(Vector3 pos, Vector3? forward = null) {
         npcAnchor.position = pos;

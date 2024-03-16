@@ -251,7 +251,11 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     }
 
     #region RayBlock
-    public IEnumerator SetActiveRayBlockAction(bool active, float fadeTime = 0.0f, Color? color = null) {
+    public IEnumerator SetActiveRayBlockAction(bool active, float fadeTime = 0.0f, Color? color = null, float delay = 0.0f) {
+        if(delay > 0.0f) {
+            yield return new WaitForSeconds(delay);
+        }
+
         if(active) {
             rayBlock.gameObject.SetActive(true);
             if(fadeTime > 0.0f) {

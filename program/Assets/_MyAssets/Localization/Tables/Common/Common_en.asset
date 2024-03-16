@@ -122,6 +122,10 @@ MonoBehaviour:
     m_Localized: Chapter 3
     m_Metadata:
       m_Items: []
+  - m_Id: 4813444899782656
+    m_Localized: Key Guide
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -119,6 +119,10 @@ MonoBehaviour:
     m_Key: Chapter03
     m_Metadata:
       m_Items: []
+  - m_Id: 4813444899782656
+    m_Key: KeyGuide
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

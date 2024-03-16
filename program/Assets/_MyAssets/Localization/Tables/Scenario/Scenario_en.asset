@@ -35,7 +35,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 2692080137576448
-    m_Localized: 
+    m_Localized: Accept
     m_Metadata:
       m_Items: []
   - m_Id: 3268812340576256
@@ -173,33 +173,32 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 2515701530009600
-    m_Localized: To think you could return alive like this... That's impressive.
+    m_Localized: To think you could survive this... Impressive, isn't it?
     m_Metadata:
       m_Items: []
   - m_Id: 2518125816750080
-    m_Localized: I didn't really plan on letting you live.
+    m_Localized: I never really planned on letting you go.
     m_Metadata:
       m_Items: []
   - m_Id: 2690880612769792
-    m_Localized: I thought I'd just play with you a bit and then let them eat you...
+    m_Localized: I thought I'd have a bit of fun before letting them devour you...
     m_Metadata:
       m_Items: []
   - m_Id: 2690983683596288
-    m_Localized: So, you want to indulge your greed but still think your life is
-      too precious?
+    m_Localized: But seeing you not give up so easily has made me change my mind.
     m_Metadata:
       m_Items: []
   - m_Id: 2691106664783872
-    m_Localized: If you want to live that badly, I'll let you live.
+    m_Localized: I have a proposal for you.
     m_Metadata:
       m_Items: []
   - m_Id: 2691747416023040
-    m_Localized: As long as you agree to spend the rest of your life as my slave,
-      working.
+    m_Localized: If you agree to serve as my slave for the rest of your life, I will
+      ensure your safety.
     m_Metadata:
       m_Items: []
   - m_Id: 2691825836924928
-    m_Localized: What will you do?
+    m_Localized: What will it be?
     m_Metadata:
       m_Items: []
   - m_Id: 2692719898959872
@@ -228,6 +227,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 2694215323525120
     m_Localized: Use it to struggle as much as you want.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4011738003783680
+    m_Localized: test
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2692531000090624
+    m_Localized: Resist
     m_Metadata:
       m_Items: []
   references:

@@ -223,6 +223,34 @@ MonoBehaviour:
     m_Key: LevelStart02_Resist03
     m_Metadata:
       m_Items: []
+  - m_Id: 4011738003783680
+    m_Key: LevelStart02_BadEnding00
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4029342734991360
+    m_Key: LevelStart02_BadEnding01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4029386791960576
+    m_Key: LevelStart02_BadEnding02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4030805888581632
+    m_Key: LevelStart02_BadEnding03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4031050731077632
+    m_Key: LevelStart02_BadEnding04
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4031631990308864
+    m_Key: LevelStart02_BadEnding05
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4031841940389888
+    m_Key: LevelStart02_BadEnding06
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

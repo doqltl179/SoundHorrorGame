@@ -135,17 +135,17 @@ public class UserInterface : MonoBehaviour {
 
 
     private void Awake() {
-        PlayerController.Instance.OnOverHitChanged += OnOverHitChanged;
-
         UserSettings.OnUseMicChanged += OnUseMicrophoneChanged;
         UserSettings.OnMicSensitiveChanged += OnMicSensitiveChanged;
+
+        PlayerController.Instance.OnOverHitChanged += OnOverHitChanged;
     }
 
     private void OnDestroy() {
-        PlayerController.Instance.OnOverHitChanged -= OnOverHitChanged;
-
         UserSettings.OnUseMicChanged -= OnUseMicrophoneChanged;
         UserSettings.OnMicSensitiveChanged -= OnMicSensitiveChanged;
+
+        PlayerController.Instance.OnOverHitChanged -= OnOverHitChanged;
     }
 
     private void Start() {

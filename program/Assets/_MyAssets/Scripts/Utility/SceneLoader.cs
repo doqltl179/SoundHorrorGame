@@ -12,7 +12,8 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
     public enum SceneType {
         None,
         Main, 
-        Game, 
+        Game,
+        Credits, 
     }
 
     public bool IsLoading { get { return loadSceneCoroutine != null; } }

@@ -60,6 +60,9 @@ public class Teleport : MonoBehaviour {
                 }
             }
             PlayerController.Instance.Pos = LevelLoader.Instance.GetBlockPos(randomCoord);
+
+            UtilObjects.Instance.CamPos = PlayerController.Instance.CamPos;
+            UtilObjects.Instance.CamRotation = PlayerController.Instance.CamRotation;
         }
 
         yield return null;
