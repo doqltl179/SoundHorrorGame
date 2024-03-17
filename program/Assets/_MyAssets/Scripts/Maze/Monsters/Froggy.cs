@@ -31,7 +31,7 @@ public class Froggy : MonsterController {
     protected override void Awake() {
         SoundManager.Instance.OnWorldSoundAdded += WorldSoundAdded;
 
-        PlayerController.Instance.OnCoordChanged += PlayerCoordChanged;
+        if(PlayerController.Instance != null) PlayerController.Instance.OnCoordChanged += PlayerCoordChanged;
 
         OnCurrentStateChanged += CurrentStateChanged;
 
@@ -41,7 +41,7 @@ public class Froggy : MonsterController {
     protected override void OnDestroy() {
         SoundManager.Instance.OnWorldSoundAdded -= WorldSoundAdded;
 
-        PlayerController.Instance.OnCoordChanged -= PlayerCoordChanged;
+        if(PlayerController.Instance != null) PlayerController.Instance.OnCoordChanged -= PlayerCoordChanged;
 
         OnCurrentStateChanged -= CurrentStateChanged;
 

@@ -22,6 +22,9 @@ public class PlayerController : MonoBehaviour {
                     Debug.LogError($"Component not found. name: {typeof(PlayerController).Name}");
                 }
             }
+            else if(instance.gameObject == null) {
+                instance = null;
+            }
 
             return instance;
         }

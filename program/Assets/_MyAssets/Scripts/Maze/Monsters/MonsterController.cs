@@ -78,12 +78,12 @@ public class MonsterController : MonoBehaviour {
     public Vector3 HeadPos { get { return headPos.position; } }
     public Vector3 HeadForward { get { return headPos.forward; } }
     public Vector3 Pos { 
-        get { 
-            return transform.position; 
-        } 
-        set {
-            transform.position = value;
-        }
+        get => transform.position;
+        set => transform.position = value;
+    }
+    public Quaternion Rotation {
+        get => transform.rotation;
+        set => transform.rotation = value;
     }
 
     protected const string AnimatorLayerName_Motion = "Motion";
@@ -91,7 +91,9 @@ public class MonsterController : MonoBehaviour {
     protected const string AnimatorPropertyName_MoveSpeed = "MoveSpeed";
     protected const string AnimatorPropertyName_PlayerCatch = "PlayerCatch";
     protected const string AnimatorPropertyName_TPos = "T-Pos";
-    
+    protected const string AnimatorPropertyName_BadEndingIdle = "BadEnding";
+    protected const string AnimatorPropertyName_HappyEndingIdle = "HappyEnding";
+
     protected float physicsMoveSpeed = 0.0f;
     protected float physicsMoveSpeedMax = 0.5f;
     public SoundObject FollowingSound { get; protected set; }
@@ -271,6 +273,9 @@ public class MonsterController : MonoBehaviour {
     }
 
     public void SetTPos(bool value) => animator.SetBool(AnimatorPropertyName_TPos, value);
+
+    public void SetIdleToBadEnding() => animator.SetTrigger(AnimatorPropertyName_BadEndingIdle);
+    public void SetIdleToHappyEnding() => animator.SetTrigger(AnimatorPropertyName_HappyEndingIdle);
 
     public void ResetAnimator() {
         animator.enabled = false;

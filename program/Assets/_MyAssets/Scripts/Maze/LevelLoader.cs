@@ -1189,6 +1189,9 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
     public void SetBaseColor(Material mat, Color color) => mat.SetColor(MAT_BASE_COLOR_NAME, color);
     public Color GetBaseColor(Material mat) => mat.GetColor(MAT_BASE_COLOR_NAME);
 
+    public void SetRimThickness(Material mat, float value) => mat.SetFloat(MAT_RIM_THICKNESS_NAME, value);
+    public void SetRimThicknessOffset(Material mat, float value) => mat.SetFloat(MAT_RIM_THICKNESS_OFFSET_NAME, value);
+
     public void SetMazeBlockEdgeColor(Material mat, Color color) => mat.SetColor(MAT_MAZEBLOCK_EDGE_COLOR_NAME, color);
     public void SetMazeBlockEdgeThickness(Material mat, float value) => mat.SetFloat(MAT_MAZEBLOCK_EDGE_THICKNESS_NAME, value);
     public void SetMazeBlockEdgeShowDistance(Material mat, float value) => mat.SetFloat(MAT_MAZEBLOCK_EDGE_SHOW_DISTANCE_NAME, value);

@@ -54,7 +54,9 @@ public class SoundManager : GenericSingleton<SoundManager> {
         // BGM
         Main,
         Game, 
-        Warning, 
+        Warning,
+        BadEnding, 
+        HappyEnding, 
 
         // Etc
         MouseClick, 
@@ -118,8 +120,6 @@ public class SoundManager : GenericSingleton<SoundManager> {
             yield return wait;
 
             if(!UtilObjects.Instance.IsGamePaused && MicrophoneRecorder.Instance.OverCritical) {
-                Debug.Log($"{MicrophoneRecorder.Instance.Decibel} | {MicrophoneRecorder.Instance.DecibelRatio}");
-
                 float overRatio = Mathf.InverseLerp(
                     MicrophoneRecorder.Instance.DecibelCriticalRatio,
                     1.0f,
