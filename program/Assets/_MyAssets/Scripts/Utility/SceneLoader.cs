@@ -46,7 +46,8 @@ public class SceneLoader : GenericSingleton<SceneLoader> {
         // 다른 작업에 먼저 하기 위함.
         yield return null;
 
-        StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 0.5f));
+        if(UtilObjects.Instance.RayBlockActive) StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 0.0f));
+        else StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 0.5f));
         yield return UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f);
 
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(scene.ToString());

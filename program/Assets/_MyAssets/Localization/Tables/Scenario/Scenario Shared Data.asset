@@ -251,6 +251,26 @@ MonoBehaviour:
     m_Key: LevelStart02_BadEnding06
     m_Metadata:
       m_Items: []
+  - m_Id: 4073419109634048
+    m_Key: LevelStart02_HappyEnding00
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4073457424601088
+    m_Key: LevelStart02_HappyEnding01
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4078397610070016
+    m_Key: LevelStart02_HappyEnding02
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4078553629790208
+    m_Key: LevelStart02_HappyEnding03
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4078606394134528
+    m_Key: LevelStart02_HappyEnding04
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -33,6 +33,8 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     private const string AnimatorTrigger_NPC_Throw = "Throw";
     private const string AnimatorTrigger_NPC_PlayerCatch = "PlayerCatch";
 
+    private const string AnimatorBoolean_NPC_TPos = "TPos";
+
     private MazeBlock[,] levels = null;
     private Material levelFloorMaterial = null;
     private Material levelWallMaterial = null;
@@ -232,6 +234,41 @@ public class StandingSpaceConrtoller : MonoBehaviour {
         //npcMoveAnimationCoroutine = null;
     }
 
+    public void StartNPCThrowAwayAnimation() {
+        StartCoroutine(NPCThrowAwayAnimation());
+    }
+
+    private IEnumerator NPCThrowAwayAnimation() {
+        SetAnimationBoolean_TPos(true);
+
+        GameObject resourceObj = ResourceLoader.GetResource<GameObject>("Effects/ToyHammerHit");
+        GameObject go = Instantiate(resourceObj, npcAnchor);
+        go.transform.localPosition = Vector3.up * 0.8f;
+
+        ParticleSystem ps = go.GetComponent<ParticleSystem>();
+        ps.Play();
+
+        const float animationTime = 10.0f;
+        float timeChecker = 0.0f;
+        float normalizedTime;
+
+        Vector3 startPos = npcAnchor.position;
+        Vector3 endPos = startPos + Vector3.back * MazeBlock.BlockSize * 6.5f;
+        float heightMax = MazeBlock.WallHeight * 2.0f;
+        Vector3 currentPos;
+        float currentHeight;
+        while(timeChecker < animationTime) {
+            timeChecker += Time.deltaTime;
+            normalizedTime = timeChecker / animationTime;
+
+            currentPos = Vector3.Lerp(startPos, endPos, normalizedTime);
+            currentHeight = Mathf.Lerp(startPos.y, heightMax, Mathf.Sin(Mathf.Lerp(0.0f, Mathf.PI, normalizedTime)));
+            npcAnchor.position = new Vector3(currentPos.x, currentHeight, currentPos.z);
+
+            yield return null;
+        }
+    }
+
     public void SetAnimationTrigger_Talking() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Talking);
     public void SetAnimationResetTrigger_Talking() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Talking);
     public void SetAnimationTrigger_Surprised() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_Surprised);
@@ -240,6 +277,8 @@ public class StandingSpaceConrtoller : MonoBehaviour {
     public void SetAnimationResetTrigger_Throw() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_Throw);
     public void SetAnimationTrigger_PlayerCatch() => npcAnimator.SetTrigger(AnimatorTrigger_NPC_PlayerCatch);
     public void SetAnimationResetTrigger_PlayerCatch() => npcAnimator.ResetTrigger(AnimatorTrigger_NPC_PlayerCatch);
+
+    public void SetAnimationBoolean_TPos(bool value) => npcAnimator.SetBool(AnimatorBoolean_NPC_TPos, value);
 
     public void InitializeNPCAnchor(Vector3 pos, Vector3? forward = null) {
         npcAnchor.position = pos;

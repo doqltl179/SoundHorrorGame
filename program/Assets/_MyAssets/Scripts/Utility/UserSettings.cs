@@ -1,12 +1,16 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 public static class UserSettings {
+    #region Program
+    private static readonly string m_isFirstStart_pref = "IsFirstStart";
+    public static bool IsFirstStart {
+        get => !PlayerPrefs.HasKey(m_isFirstStart_pref) || PlayerPrefs.GetInt(m_isFirstStart_pref) == 1;
+        set => PlayerPrefs.SetInt(m_isFirstStart_pref, value ? 1 : 0);
+    }
+    #endregion
+
     #region IsCleared
     private static readonly string m_levelClear_pref = "LevelClear";
     public static void SetGameLevelClear(int gameLevel, bool isClear) {

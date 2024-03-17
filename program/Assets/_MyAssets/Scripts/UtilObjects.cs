@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization.Settings;
@@ -96,6 +98,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     [Header("-------------------- UI --------------------")]
     [SerializeField] private Canvas canvas;
     [SerializeField] private RayBlock rayBlock;
+    public bool RayBlockActive { get { return rayBlock.gameObject.activeSelf; } }
     private readonly Color standardRayBlockColor = Color.black;
 
     #region Loading
@@ -174,6 +177,20 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     }
 
     private IEnumerator Start() {
+        if(UserSettings.IsFirstStart) {
+            string[] enCode = new string[] { "en", "US" };
+            string[] koCode = new string[] { "ko", "KR" };
+            string[] jaCode = new string[] { "ja", "JP" };
+            string[] zhCode = new string[] { "zh", "CN" };
+            string[] currentCode = CultureInfo.InstalledUICulture.Name.Split('-');
+
+            if(currentCode.Any(t => koCode.Contains(t))) UserSettings.LanguageCode = koCode[0];
+            else if(currentCode.Any(t => jaCode.Contains(t))) UserSettings.LanguageCode = jaCode[0];
+            else UserSettings.LanguageCode = enCode[0];
+
+            UserSettings.IsFirstStart = false;
+        }
+
         loadingGroup.gameObject.SetActive(false);
         pauseMenuController.gameObject.SetActive(false);
         settingController.gameObject.SetActive(false);
