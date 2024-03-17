@@ -26,6 +26,7 @@ public class MainController : MonoBehaviour {
     }
 
     private void Start() {
+        QualitySettings.vSyncCount = UserSettings.VSync;
         Application.targetFrameRate = 60;
 
         canvas.worldCamera = UtilObjects.Instance.Cam;
@@ -153,7 +154,7 @@ public class MainController : MonoBehaviour {
         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.ButtonClick);
 
         UtilObjects.Instance.InitConfirmNotice(
-            "GoToMain",
+            "ApplicationQuit",
             "No",
             () => {
                 UtilObjects.Instance.SetActiveConfirmNotice(false);

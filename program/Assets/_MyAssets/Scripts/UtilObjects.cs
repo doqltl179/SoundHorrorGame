@@ -188,6 +188,16 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
             else if(currentCode.Any(t => jaCode.Contains(t))) UserSettings.LanguageCode = jaCode[0];
             else UserSettings.LanguageCode = enCode[0];
 
+            if(Display.displays.Length > 1) {
+                int mostLongerIndex = 0;
+                for(int i = 1; i < Display.displays.Length; i++) {
+                    if(Display.displays[i].systemWidth > Display.displays[mostLongerIndex].systemWidth) {
+                        mostLongerIndex = i;
+                    }
+                }
+                Display.displays[mostLongerIndex].Activate();
+            }
+
             UserSettings.IsFirstStart = false;
         }
 
@@ -234,9 +244,13 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
                             else if(currentPages.HasFlag(Page.ButtonSelectMenu)) {
                                 SetActiveButtonSelectMenu(false);
                             }
+                            else if(currentPages.HasFlag(Page.ConfirmNotice)) {
+                                SetActiveConfirmNotice(false);
+                            }
                         }
                     }
                     break;
+                case SceneLoader.SceneType.Credits:
                 case SceneLoader.SceneType.Game: {
                         if(currentPages == Page.None) {
                             SetActivePauseMenu(true);
@@ -552,7 +566,10 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     private void OnPageChanged(Page page, bool active) {
         switch(SceneLoader.Instance.CurrentLoadedScene) {
             case SceneLoader.SceneType.Main: OnPageChangedInMain(page, active); break;
-            case SceneLoader.SceneType.Game: OnPageChangedInGame(page, active); break;
+            case SceneLoader.SceneType.Credits:
+            case SceneLoader.SceneType.Game: 
+                OnPageChangedInGame(page, active); 
+                break;
         }
     }
 

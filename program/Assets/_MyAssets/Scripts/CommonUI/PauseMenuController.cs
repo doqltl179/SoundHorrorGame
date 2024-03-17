@@ -42,6 +42,8 @@ public class PauseMenuController : MonoBehaviour {
             },
             "Yes",
             () => {
+                SoundManager.Instance.StopBGM(SoundManager.SoundType.Game, 0.5f);
+
                 SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Main);
 
                 UtilObjects.Instance.ResetPages();

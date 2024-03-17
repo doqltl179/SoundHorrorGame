@@ -61,9 +61,11 @@ public class GameController : MonoBehaviour {
             StartCoroutine(initGameCoroutine);
         }
 
+#if UNITY_EDITOR
         #region 나중에 삭제하세요
         SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Game);
         #endregion
+#endif
     }
 
     private IEnumerator InitGameCoroutine() {
@@ -308,7 +310,7 @@ public class GameController : MonoBehaviour {
         }
 
         // Component Off
-        pathGuide.gameObject.SetActive(false);
+        //pathGuide.gameObject.SetActive(false);
 
         // Sound 초기화
         SoundManager.Instance.ResetAllSoundObjects();
@@ -425,6 +427,9 @@ public class GameController : MonoBehaviour {
             PlayerController.Instance.SetPickupItem(toyHammer);
             toyHammer.gameObject.SetActive(true);
         }
+
+        UtilObjects.Instance.CamPos = PlayerController.Instance.CamPos;
+        UtilObjects.Instance.CamRotation = PlayerController.Instance.CamRotation;
 
         yield return StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f));
         yield return new WaitForSeconds(2.0f);
@@ -2070,12 +2075,12 @@ public class GameController : MonoBehaviour {
     }
 
     private void OnExitEntered() {
-        // Level 증가
+        // Set Level Clear
         UserSettings.SetGameLevelClear(UserSettings.GameLevel, true);
-        UserSettings.GameLevel++;
 
-        // Start Ending Scenario
-        if(UserSettings.GameLevel >= GameLevelStruct.GameLevels.Length) {
+        if(UserSettings.GameLevel + 1 >= GameLevelStruct.GameLevels.Length) {
+            UserSettings.SetEndingClear(isBadEnding);
+
             if(scenarioCoroutine == null) {
                 if(isBadEnding) scenarioCoroutine = BadEndingScenario();
                 else scenarioCoroutine = HappyEndingScenario();
@@ -2083,6 +2088,8 @@ public class GameController : MonoBehaviour {
             }
         }
         else {
+            UserSettings.GameLevel++;
+
             OnGameEnd(true);
         }
     }

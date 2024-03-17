@@ -151,6 +151,17 @@ public static class UserSettings {
     }
     public static Resolution DisplayResolution { get { return Screen.currentResolution; } }
 
+    public static Action<int> VSyncChanged;
+    private static readonly string m_vSync_pref = "VSync";
+    private static readonly int m_standardVSync = 1;
+    public static int VSync {
+        get => PlayerPrefs.HasKey(m_vSync_pref) ? PlayerPrefs.GetInt(m_vSync_pref) : m_standardVSync;
+        set {
+            PlayerPrefs.SetInt(m_vSync_pref, value);
+            VSyncChanged?.Invoke(value);
+        }
+    }
+
     public static Action<int> OnFPSChanged;
     private static readonly string m_displayFPS_pref = "DisplayFPS";
     //private static readonly float m_standardDisplayFPS = 60.0f;

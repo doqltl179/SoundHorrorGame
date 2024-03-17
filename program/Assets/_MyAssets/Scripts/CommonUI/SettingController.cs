@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
-using static UnityEditor.PlayerSettings.Switch;
 
 public class SettingController : MonoBehaviour {
     [SerializeField] private ScrollRect scrollView;
@@ -37,6 +36,7 @@ public class SettingController : MonoBehaviour {
     [Header("Display")]
     [SerializeField] private TMP_Dropdown displayModeDropdown;
     [SerializeField] private TMP_Dropdown displayResolutionDropdown;
+    [SerializeField] private Toggle vSyncToggle;
     [SerializeField] private TMP_Dropdown displayFPSDropdown;
     [SerializeField] private Slider displayFOVSlider;
     [SerializeField] private TextMeshProUGUI displayFOVText;
@@ -91,6 +91,7 @@ public class SettingController : MonoBehaviour {
 
         InitDisplayModeOptions();
         InitDisplayResolutionOptions();
+        InitVSync();
         InitDisplayFPSOptions();
         InitDisplayFOV();
         InitDisplayBrightness();
@@ -192,6 +193,33 @@ public class SettingController : MonoBehaviour {
         Resolution changedResolution = currentDisplayResolutionOptions[index];
         if(UserSettings.DisplayResolution.width !=  changedResolution.width || UserSettings.DisplayResolution.height != changedResolution.height) {
             Screen.SetResolution(changedResolution.width, changedResolution.height, UserSettings.DisplayMode);
+        }
+    }
+
+    public void OnVSyncChanged(bool changedValue) {
+        if(changedValue) {
+            UserSettings.VSync = 1;
+            QualitySettings.vSyncCount = 1;
+
+            displayFPSDropdown.enabled = false;
+            displayFPSDropdown.image.color = Color.gray;
+        }
+        else {
+            UserSettings.VSync = 0;
+            QualitySettings.vSyncCount = 0;
+
+            switch(SceneLoader.Instance.CurrentLoadedScene) {
+                case SceneLoader.SceneType.Main: 
+                    Application.targetFrameRate = 60; 
+                    break;
+                case SceneLoader.SceneType.Game:
+                case SceneLoader.SceneType.Credits:
+                    Application.targetFrameRate = UserSettings.FPS;
+                    break;
+            }
+
+            displayFPSDropdown.enabled = true;
+            displayFPSDropdown.image.color = Color.white;
         }
     }
 
@@ -382,6 +410,18 @@ public class SettingController : MonoBehaviour {
         }
         displayResolutionDropdown.AddOptions(displayResolutionList);
         if(currentResolutionIndex > 0) displayResolutionDropdown.value = currentResolutionIndex;
+    }
+
+    private void InitVSync() {
+        vSyncToggle.isOn = (UserSettings.VSync == 1);
+        if(vSyncToggle.isOn) {
+            displayFPSDropdown.enabled = false;
+            displayFPSDropdown.image.color = Color.gray;
+        }
+        else {
+            displayFPSDropdown.enabled = true;
+            displayFPSDropdown.image.color = Color.white;
+        }
     }
 
     private void InitDisplayFPSOptions() {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using static SoundManager;
 
 public class CreditsController : MonoBehaviour {
     private bool isBadEnding;
@@ -12,8 +13,16 @@ public class CreditsController : MonoBehaviour {
 
     [SerializeField] private AudioSource audioSource;
     [SerializeField, Range(0.001f, 10.0f)] private float sampleHeightMax = 0.2f;
+    private SoundManager.SoundType bgmType;
     private float soundStrengthCheckValue;
     private Vector3 levelCenterPos;
+    private readonly Color[] rimColors_BadEnding = new Color[] {
+        Color.white, Color.white, Color.white, Color.white, Color.white, Color.white
+    };
+    private readonly Color[] rimColors_HappyEnding = new Color[] {
+        Color.red, Color.green, Color.blue, Color.yellow, new Color(1.0f, 0.0f, 1.0f), new Color(0.0f, 1.0f, 1.0f)
+    };
+    private Color[] usingRimColors;
 
     private const int SampleLength = 64;
     private float[] samples = new float[SampleLength];
@@ -27,9 +36,15 @@ public class CreditsController : MonoBehaviour {
 
 
 
+    private void OnDestroy() {
+        StopAllCoroutines();
+    }
+
     private IEnumerator Start() {
-        //isBadEnding = SceneLoader.Instance.Param != null && (bool)SceneLoader.Instance.Param[0];
-        isBadEnding = true;
+        Application.targetFrameRate = UserSettings.FPS;
+
+        isBadEnding = SceneLoader.Instance.Param != null && (bool)SceneLoader.Instance.Param[0];
+        //isBadEnding = true;
 
         // Init Level
         LevelLoader.Instance.ResetLevel();
@@ -50,7 +65,7 @@ public class CreditsController : MonoBehaviour {
         UtilObjects.Instance.CamRotation = camRotation;
 
         // Set Canvas Anchor
-        canvasAnchor.position = monsterCenterPos + Vector3.up * 6;
+        canvasAnchor.position = monsterCenterPos + Vector3.up * 5;
         canvasAnchor.rotation = Quaternion.LookRotation((camPos - canvasAnchor.position).normalized);
 
         // 임의의 자리에 몬스터 생성
@@ -102,11 +117,22 @@ public class CreditsController : MonoBehaviour {
         sampleSum = new float[LevelLoader.Instance.MonsterCount];
         sampleSumMax = new float[sampleSum.Length];
 
-        //audioSource.clip = (bool)SceneLoader.Instance.Param[0] ? badEndingClip : happyEndingClip;
-        audioSource.clip = SoundManager.Instance.GetBgmClip(SoundManager.SoundType.BadEnding);
+        usingRimColors = isBadEnding ? rimColors_BadEnding : rimColors_HappyEnding;
+
+        bgmType = isBadEnding? SoundType.BadEnding : SoundType.HappyEnding;
+        audioSource.clip = SoundManager.Instance.GetBgmClip(bgmType);
         audioSource.Play();
 
         startSampling = true;
+
+#if UNITY_EDITOR
+        #region 나중에 삭제하세요
+        SceneLoader.Instance.ChangeCurrentLoadedSceneImmediately(SceneLoader.SceneType.Credits);
+        #endregion
+#endif
+
+        yield return null;
+        yield return StartCoroutine(EndCredits());
     }
 
     private void Update() {
@@ -126,7 +152,29 @@ public class CreditsController : MonoBehaviour {
 
             if(sampleSum[i] > sampleSumMax[i]) sampleSumMax[i] = Mathf.Lerp(sampleSumMax[i], sampleSum[i], Time.deltaTime * 16);
             else sampleSumMax[i] = Mathf.Lerp(sampleSumMax[i], 0.0f, Time.deltaTime * 0.2f);
-            LevelLoader.Instance.SetBaseColor(LevelLoader.Instance.Monsters[i].Material, Color.white * Mathf.InverseLerp(0.0f, sampleSumMax[i], sampleSum[i]));
+            LevelLoader.Instance.SetBaseColor(LevelLoader.Instance.Monsters[i].Material, usingRimColors[i] * Mathf.InverseLerp(0.0f, sampleSumMax[i], sampleSum[i]));
         }
+    }
+
+    private IEnumerator EndCredits() {
+        while(audioSource.time / audioSource.clip.length < 0.9f) {
+            yield return null;
+        }
+
+        StartCoroutine(UtilObjects.Instance.SetActiveRayBlockAction(true, 5.0f));
+
+        const float fadeTime = 5.0f;
+        float timeChecker = 0.0f;
+        float startVolume = audioSource.volume;
+        while(timeChecker < fadeTime) {
+            timeChecker += Time.deltaTime;
+            audioSource.volume = Mathf.Lerp(startVolume, 0.0f, timeChecker / fadeTime);
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(1.0f);
+
+        SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Main);
     }
 }

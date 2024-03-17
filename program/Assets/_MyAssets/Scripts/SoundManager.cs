@@ -399,6 +399,8 @@ public class SoundManager : GenericSingleton<SoundManager> {
     public float GetSpreadLength(SoundType type) {
         return LevelLoader.STANDARD_RIM_RADIUS_SPREAD_LENGTH * Mathf.Clamp01(GetSfxClip(type).length / LevelLoader.STANDARD_RIM_RADIUS_SPREAD_TIME);
     }
+
+    public float GetBGMNormalizedTime(SoundType type) => bgmSources[type].time / bgmSources[type].clip.length;
     #endregion
 
     private IEnumerator FadeCoroutine(AudioSource source, float fadeTime, float startVolume, float endVolume, Action callback = null) {
