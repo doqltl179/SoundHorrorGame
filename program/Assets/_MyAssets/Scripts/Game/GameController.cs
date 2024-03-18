@@ -1,3 +1,4 @@
+using Steamworks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
 using Random = UnityEngine.Random;
+using Debug = UnityEngine.Debug;
 
 public class GameController : MonoBehaviour {
     [SerializeField] private StandingSpaceConrtoller standingSpaceController;
@@ -54,6 +56,11 @@ public class GameController : MonoBehaviour {
     }
 
     private void Start() {
+        if(SteamManager.Initialized) {
+            string name = SteamFriends.GetPersonaName();
+            Debug.Log($"Steam Initialized! name: {name}");
+        }
+
         Application.targetFrameRate = UserSettings.FPS;
 
         if(initGameCoroutine == null) {
@@ -2285,7 +2292,9 @@ public class GameController : MonoBehaviour {
     private void OnScenarioEnd() {
         SoundManager.Instance.PlayBGM(SoundManager.SoundType.Game, 5.0f, 0.3f);
 
-        standingSpaceController.gameObject.SetActive(false);
+        if(LevelLoader.Instance.ItemCount > 0) {
+            standingSpaceController.gameObject.SetActive(false);
+        }
 
         LevelLoader.Instance.PlayMonsters();
         LevelLoader.Instance.PlayItems();

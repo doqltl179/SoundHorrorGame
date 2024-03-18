@@ -70,10 +70,10 @@ public class Cloudy : MonsterController, IMove {
 
         if(CurrentState != MonsterState.None) {
             // Idle Sound
-            float cameraDist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
-            float normalizedDist = cameraDist / STANDARD_RIM_RADIUS_SPREAD_LENGTH;
-            float volume = Mathf.Clamp01(1.0f - normalizedDist) * audioVolumeMax;
-            audioSource.volume = Mathf.Lerp(audioSource.volume, volume, Time.deltaTime * 0.4f);
+            //float cameraDist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
+            //float normalizedDist = cameraDist / STANDARD_RIM_RADIUS_SPREAD_LENGTH;
+            //float volume = Mathf.Clamp01(1.0f - normalizedDist) * audioVolumeMax;
+            //audioSource.volume = Mathf.Lerp(audioSource.volume, volume, Time.deltaTime * 0.4f);
         }
 
         // 위치 체크

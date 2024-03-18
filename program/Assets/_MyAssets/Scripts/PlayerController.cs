@@ -361,6 +361,13 @@ public class PlayerController : MonoBehaviour {
     }
 
     #region Utility
+    public void SetPickupItemTransformImmediately() {
+        if(PickupItem != null) {
+            PickupItem.Pos = pickupHandAnchor.position;
+            PickupItem.Rotation = pickupHandAnchor.rotation;
+        }
+    }
+
     public void DropPickupItem() {
         if(PickupItem != null) {
             PickupItem.IsPickup = false;

@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ public class MyCustomWindow : EditorWindow {
 
     private int gameLevelClear;
     private int currentGameLevel;
+
+    private string captureSavePath;
 
 
 
@@ -31,6 +34,8 @@ public class MyCustomWindow : EditorWindow {
                 textColor = Color.white,
             },
         };
+
+
 
         EditorGUILayout.LabelField("User Settings", titleStyle);
 
@@ -66,6 +71,37 @@ public class MyCustomWindow : EditorWindow {
 
             Debug.Log($"Current GameLevel Changed. GameLevel: {UserSettings.GameLevel}");
         }
+        GUILayout.EndHorizontal();
+        #endregion
+
+
+
+        GUILayout.Space(30);
+        EditorGUILayout.LabelField("Screen Capture", titleStyle);
+
+        GUILayout.Space(25);
+        GUI.DrawTexture(EditorGUILayout.GetControlRect(false, 1), EditorGUIUtility.whiteTexture);
+        GUILayout.Space(10);
+
+        #region Screen Capture
+        GUILayout.BeginHorizontal();
+
+        if(GUILayout.Button("Screen Capture")) {
+            captureSavePath = EditorUtility.SaveFilePanel(
+                "Save ScreenShot",
+                string.IsNullOrEmpty(captureSavePath) ? Application.dataPath : captureSavePath,
+                "ScreenShot" + ".png",
+                "png");
+            if(!string.IsNullOrEmpty(captureSavePath)) {
+                ScreenCapture.CaptureScreenshot(captureSavePath);
+
+                Debug.Log($"ScreenShot saved. path: {captureSavePath}");
+            }
+            else {
+                Debug.Log("ScreenShot path is NULL.");
+            }
+        }
+
         GUILayout.EndHorizontal();
         #endregion
     }

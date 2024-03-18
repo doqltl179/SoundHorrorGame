@@ -1,3 +1,4 @@
+using Steamworks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,6 +27,11 @@ public class MainController : MonoBehaviour {
     }
 
     private void Start() {
+        if(SteamManager.Initialized) {
+            string name = SteamFriends.GetPersonaName();
+            Debug.Log($"Steam Initialized! name: {name}");
+        }
+
         QualitySettings.vSyncCount = UserSettings.VSync;
         Application.targetFrameRate = 60;
 
