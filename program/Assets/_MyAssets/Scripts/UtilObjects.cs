@@ -151,6 +151,11 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
     #region Button Select Menu
     [Header("Button Select Menu")] 
     [SerializeField] private ButtonSelectMenuController buttonSelectMenuController;
+
+    #region FPS Pannel
+    [Header("FPS Pannel")]
+    [SerializeField] private GameObject fpsPannel;
+    #endregion
     #endregion
 
     private KeyCode Key_Escape = KeyCode.Escape;
@@ -207,6 +212,12 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
         keyGuideController.gameObject.SetActive(false);
         confirmNoticeController.gameObject.SetActive(false);
         buttonSelectMenuController.gameObject.SetActive(false);
+
+#if Show_FPS
+        fpsPannel.SetActive(true);
+#else
+        fpsPannel.SetActive(false);
+#endif
 
         rayBlock.gameObject.SetActive(true);
         rayBlock.Color = Color.black;

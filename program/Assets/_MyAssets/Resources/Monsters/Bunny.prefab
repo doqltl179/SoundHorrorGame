@@ -133,12 +133,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c92253fc313b6b546947ad222b6143c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  type: 0
   animator: {fileID: 1918365431212954885}
   rigidbody: {fileID: 6204383258893231526}
   collider: {fileID: 5764638596849845893}
   material: {fileID: 2100000, guid: 0b92470419ec99d4dafe0ec06c3c67d1, type: 2}
   headPos: {fileID: 878996460391872765}
-  scaleScalar: 1.7
+  scaleScalar: 2.3
   moveSpeed: 1
   twoStepDistance: 2.1
   moveBoost: 0.8

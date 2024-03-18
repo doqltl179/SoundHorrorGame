@@ -43,8 +43,8 @@ public class CreditsController : MonoBehaviour {
     private IEnumerator Start() {
         Application.targetFrameRate = UserSettings.FPS;
 
-        isBadEnding = SceneLoader.Instance.Param != null && (bool)SceneLoader.Instance.Param[0];
-        //isBadEnding = true;
+        //isBadEnding = SceneLoader.Instance.Param != null && (bool)SceneLoader.Instance.Param[0];
+        isBadEnding = true;
 
         // Init Level
         LevelLoader.Instance.ResetLevel();
@@ -58,7 +58,7 @@ public class CreditsController : MonoBehaviour {
 
         // Init Camera
         Vector3 camPos = Vector3.zero;
-        if(isBadEnding) camPos = LevelLoader.Instance.GetBlockPos(1, 0) + Vector3.up * 0.25f;
+        if(isBadEnding) camPos = LevelLoader.Instance.GetBlockPos(1, 0) + Vector3.up * MazeBlock.WallHeight * 0.35f;
         else camPos = LevelLoader.Instance.GetBlockPos(1, 0) + Vector3.up * MazeBlock.WallHeight * 0.35f;
         Quaternion camRotation = Quaternion.LookRotation(((monsterCenterPos + Vector3.up * 2.5f) - camPos).normalized);
         UtilObjects.Instance.CamPos = camPos;

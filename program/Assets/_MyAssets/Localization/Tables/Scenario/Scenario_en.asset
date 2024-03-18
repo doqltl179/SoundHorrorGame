@@ -230,11 +230,94 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 4011738003783680
-    m_Localized: test
+    m_Localized: Very well done. I compliment you.
     m_Metadata:
       m_Items: []
   - m_Id: 2692531000090624
     m_Localized: Resist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4029342734991360
+    m_Localized: Just as I expected from my slave.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4029386791960576
+    m_Localized: But, it's such a shame.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4030805888581632
+    m_Localized: I've grown tired of it now.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4031050731077632
+    m_Localized: Look at you, trying to survive, what a spectacle. It's a hilarious
+      scene.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4031631990308864
+    m_Localized: I thank you for your efforts for my brief amusement.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4031841940389888
+    m_Localized: Goodbye.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4073419109634048
+    m_Localized: How did this happen?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4073457424601088
+    m_Localized: I thought it was handled well...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4078397610070016
+    m_Localized: First, calm down, and let's try to solve this with words.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4078553629790208
+    m_Localized: Just a moment, wait!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4078606394134528
+    m_Localized: Don't come any closer!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4542523945369600
+    m_Localized: Haha! Impressive, isn't it?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4543303918141440
+    m_Localized: You keep coming back alive... I can't believe it.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4543598974844928
+    m_Localized: But the more you do, the more...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4544455892123648
+    m_Localized: ...it's nothing.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4544512452313088
+    m_Localized: This is the last time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4544770087436288
+    m_Localized: If you gather the crystals this time, you will truly obtain immense
+      wealth. Doesn't the thought excite you?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4545014757965824
+    m_Localized: However, you really should be careful this time.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4545400923340800
+    m_Localized: Your continual collection of the crystals has heightened their vigilance
+      to the utmost.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 4545462449586176
+    m_Localized: Try to escape if you can. Haha.
     m_Metadata:
       m_Items: []
   references:

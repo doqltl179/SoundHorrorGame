@@ -815,7 +815,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -845,7 +845,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -895,7 +895,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -937,7 +937,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -971,7 +971,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -1001,7 +1001,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
 
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -1036,7 +1036,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             // Item과 겹치지 않게 생성
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {
@@ -1067,7 +1067,7 @@ public class LevelLoader : GenericSingleton<LevelLoader> {
             // Item과 겹치지 않게 생성
             Vector2Int randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
             while(true) {
-                if(ignoreCoords.Where(t => t.x == randomCoord.x && t.y == randomCoord.y).Any()) {
+                if(ignoreCoords.Any(t => t.x == randomCoord.x && t.y == randomCoord.y)) {
                     randomCoord = new Vector2Int(Random.Range(startCoord.x, endCoord.x), Random.Range(startCoord.y, endCoord.y));
                 }
                 else {

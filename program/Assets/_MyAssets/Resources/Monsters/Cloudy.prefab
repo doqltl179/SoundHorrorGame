@@ -54,7 +54,7 @@ MonoBehaviour:
   collider: {fileID: 2784974047270794347}
   material: {fileID: 2100000, guid: 033dfee25b43dc0438e5d9d1d8ce793a, type: 2}
   headPos: {fileID: 1480342638733977503}
-  scaleScalar: 1.5
+  scaleScalar: 2
   moveSpeed: 1.4
   twoStepDistance: 1
   moveBoost: 0.8

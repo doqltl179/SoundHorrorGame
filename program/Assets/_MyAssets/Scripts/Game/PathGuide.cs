@@ -31,6 +31,13 @@ public class PathGuide : MonoBehaviour {
 
 
 
+    private void OnEnable() {
+        ParticleSystem[] particles = GetComponentsInChildren<ParticleSystem>();
+        foreach(ParticleSystem ps in  particles) {
+            ps.Play();
+        }
+    }
+
     private void Start() {
         guideObject.transform.localScale = Vector3.up * PlayerController.PlayerHeight;
 

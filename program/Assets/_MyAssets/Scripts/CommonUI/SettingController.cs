@@ -389,8 +389,14 @@ public class SettingController : MonoBehaviour {
     private void InitDisplayResolutionOptions() {
         displayResolutionDropdown.ClearOptions();
 
-        currentDisplayResolutionOptions = new Resolution[Screen.resolutions.Length];
-        Array.Copy(Screen.resolutions, 0, currentDisplayResolutionOptions, 0, currentDisplayResolutionOptions.Length);
+        List<Resolution> resolutionList = new List<Resolution>();
+        foreach(Resolution r in Screen.resolutions) {
+            if(resolutionList.Any(t => t.width == r.width && t.height == r.height)) { }
+            else {
+                resolutionList.Add(r);
+            }
+        }
+        currentDisplayResolutionOptions = resolutionList.ToArray();
         // Screen.resolution은 화면이 작은 순으로 정렬되어 있으므로
         // 옵션에서는 화면이 큰 순서대로 보이게 하기 위해 Reverse를 해준다.
         Array.Reverse(currentDisplayResolutionOptions); 

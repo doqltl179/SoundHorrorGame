@@ -8,6 +8,7 @@ using UnityEngine;
 public class Kitty : MonsterController, IMove {
     [SerializeField] private Transform stopSensorObject;
     private StuckHelper stopHelper;
+    public bool IsStoped { get; private set; }
 
     private const float restTime = 5.0f;
     private float restTimeChecker = 0.0f;
@@ -44,7 +45,10 @@ public class Kitty : MonsterController, IMove {
         int mask = (1 << LayerMask.NameToLayer(MazeBlock.WallLayerName));
         stuckHelper = new StuckHelper(Radius, mask);
 
-        stopHelper = new StuckHelper(0.1f, mask | (1 << LayerMask.NameToLayer(PlayerController.LayerName)));
+        stopHelper = new StuckHelper(0.01f, 
+            mask |
+            (1 << LayerMask.NameToLayer(MazeBlock.EdgeLayerName)) | 
+            (1 << LayerMask.NameToLayer(PlayerController.LayerName)));
     }
 
     private void Update() { 
@@ -69,12 +73,13 @@ public class Kitty : MonsterController, IMove {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     float clipSpreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.MonsterWalk01);
-                    if(dist < clipSpreadLength) {
+                    float compareDist = clipSpreadLength * 2;
+                    if(dist < compareDist) {
                         SoundManager.Instance.PlayOnWorld(
                             transform.position,
                             SoundManager.SoundType.MonsterWalk06,
                             SoundManager.SoundFrom.Monster,
-                            1.0f - dist / clipSpreadLength);
+                            1.0f - dist / compareDist);
                     }
 
                     animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = normalizedTimeInteger;
@@ -93,23 +98,28 @@ public class Kitty : MonsterController, IMove {
 
     #region Interface
     public void Move(float dt) {
-        stopHelper.Raycast(Pos, (UtilObjects.Instance.CamPos - Pos).normalized, float.MaxValue);
+        IsStoped = false;
+
+        stopHelper.Raycast(Pos, (PlayerController.Instance.Pos - Pos).normalized, float.MaxValue);
         if(stopHelper.IsHit && (stopHelper.HitTag == PlayerController.TagName)) {
             Vector3 viewPoint = UtilObjects.Instance.Cam.WorldToViewportPoint(stopSensorObject.position);
-            if(viewPoint.z > 0.0f && 
-                0.0f <= viewPoint.x && viewPoint.x <= 1.0f && 
-                0.0f <= viewPoint.y && viewPoint.y <= 1.0f) {
-                physicsMoveSpeed = 0.0f;
-                animator.speed = 0.0f;
-
-                rigidbody.velocity = Vector3.zero;
-
-                return;
-            }
-            else {
-                animator.speed = 1.0f;
+            if(viewPoint.z > 0.0f && 0.0f <= viewPoint.x && viewPoint.x <= 1.0f && 0.0f <= viewPoint.y && viewPoint.y <= 1.0f) {
+                IsStoped = true;
             }
         }
+
+        if(IsStoped) {
+            physicsMoveSpeed = 0.0f;
+            animator.speed = 0.0f;
+
+            rigidbody.velocity = Vector3.zero;
+
+            return;
+        }
+        else {
+            animator.speed = 1.0f;
+        }
+        
 
         if(movePath != null && movePath.Count > 0) {
             physicsMoveSpeed = Mathf.Clamp(physicsMoveSpeed + dt * moveBoost, 0.0f, physicsMoveSpeedMax);

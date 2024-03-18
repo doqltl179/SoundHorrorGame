@@ -73,12 +73,13 @@ public class Starry : MonsterController, IMove {
                     // 플레이어까지의 거리가 일정 거리 이상이라면 굳이 SoundObject를 생성하지 않음
                     float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
                     float clipSpreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.MonsterWalk01);
-                    if(dist < clipSpreadLength) {
+                    float compareDist = clipSpreadLength * 2;
+                    if(dist < compareDist) {
                         SoundManager.Instance.PlayOnWorld(
                             transform.position,
                             SoundManager.SoundType.MonsterWalk06,
                             SoundManager.SoundFrom.Monster,
-                            1.0f - dist / clipSpreadLength);
+                            1.0f - dist / compareDist);
                     }
 
                     animatorStateInfo[AnimatorLayerName_Motion].CompareInteger = normalizedTimeInteger;

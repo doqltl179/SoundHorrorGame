@@ -18,6 +18,7 @@ public class MyCustomMenu : MonoBehaviour
 
     private const string SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock = SymbolsMenuName + "/Use Two Materials On MazeBlock";
     private const string SymbolsMenuItemName_SkipScenario = SymbolsMenuName + "/Skip Scenario";
+    private const string SymbolsMenuItemName_ShowFPS = SymbolsMenuName + "/Show FPS";
     private const string FuncsMenuItemName_ResetAllSymbols = FuncsMenuName + "/Reset All Symbols";
     private const string FuncsMenuItemName_ApplyAllSymbols = FuncsMenuName + "/Apply All Symbols";
     private const string CheatMenuItemName_MoveToItem = CheatMenuName + "/Move To Item";
@@ -27,9 +28,11 @@ public class MyCustomMenu : MonoBehaviour
     private static string def_UNITY_POST_PROCESSING_STACK_V2 = "UNITY_POST_PROCESSING_STACK_V2";
     private static string def_Use_Two_Materials_On_MazeBlock = "Use_Two_Materials_On_MazeBlock";
     private static string def_Skip_Scenario = "Skip_Scenario";
+    private static string def_Show_FPS = "Show_FPS";
 
     private static bool useTwoMaterialsOnMazeBlock = false;
     private static bool skipScenario = false;
+    private static bool showFPS = false;
 
 
 
@@ -45,11 +48,15 @@ public class MyCustomMenu : MonoBehaviour
                 else if(d == def_Skip_Scenario) {
                     skipScenario = true;
                 }
+                else if(d == def_Show_FPS) {
+                    showFPS = true;
+                }
             }
         }
 
         Menu.SetChecked(SymbolsMenuItemName_UseTwoMaterialsOnMazeBlock, useTwoMaterialsOnMazeBlock);
         Menu.SetChecked(SymbolsMenuItemName_SkipScenario, skipScenario);
+        Menu.SetChecked(SymbolsMenuItemName_ShowFPS, showFPS);
     }
 
     #region Util Func
@@ -103,6 +110,14 @@ public class MyCustomMenu : MonoBehaviour
             def_Skip_Scenario,
             SymbolsMenuItemName_SkipScenario,
             ref skipScenario);
+    }
+
+    [MenuItem(SymbolsMenuItemName_ShowFPS)]
+    private static void ShowFPS() {
+        SetDefine(
+            def_Show_FPS,
+            SymbolsMenuItemName_ShowFPS,
+            ref showFPS);
     }
 
     private static void SetDefine(string def, string menuPath, ref bool property) {

@@ -101,9 +101,11 @@ public class GameController : MonoBehaviour {
         int zoomInCoordIndex;
 
         // 미로의 가장 밑 줄(플레이어가 시작하는 곳)에는 아무것도 놓지 못하게 함.
-        Vector2Int[] ignoreCoords = new Vector2Int[LevelLoader.Instance.LevelWidth];
-        for(int i = 0; i < ignoreCoords.Length; i++) {
+        //Vector2Int[] ignoreCoords = new Vector2Int[LevelLoader.Instance.LevelWidth];
+        Vector2Int[] ignoreCoords = new Vector2Int[LevelLoader.Instance.LevelWidth * 2];
+        for(int i = 0; i < LevelLoader.Instance.LevelWidth; i++) {
             ignoreCoords[i] = new Vector2Int(i, 0);
+            ignoreCoords[ignoreCoords.Length - 1 - i] = new Vector2Int(i, 1);
         }
         int ignoreCoordsCopyStartIndex = ignoreCoords.Length;
 
@@ -260,6 +262,28 @@ public class GameController : MonoBehaviour {
                 }
                 break;
             case 2: {
+                    Vector3 npcPos = standingSpaceController.BlockT.GetSidePos(MazeCreator.ActiveWall.F);
+                    standingSpaceController.InitializeNPCAnchor(npcPos);
+                    standingSpaceController.NPCActive = true;
+                    standingSpaceController.NPCModelActive = false;
+
+                    MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
+                    MazeBlock animationBlock2 = standingSpaceController.BlockT;
+                    StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, 0.0f));
+                    StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, 0.0f));
+
+                    standingSpaceController.SetColor(Color.white * 0.85f, 5.0f);
+
+                    if(toyHammer != null) {
+                        Destroy(toyHammer.gameObject);
+                        toyHammer = null;
+                    }
+
+                    yield return null;
+                    PlayerController.Instance.IsPlaying = true;
+                }
+                break;
+            case 3: {
                     Vector3 npcPos = standingSpaceController.BlockCenter.GetSidePos(MazeCreator.ActiveWall.F);
                     Vector3 npcForward = (PlayerController.Instance.Pos - npcPos).normalized;
                     standingSpaceController.InitializeNPCAnchor(npcPos, npcForward);
@@ -268,8 +292,8 @@ public class GameController : MonoBehaviour {
 
                     MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
                     MazeBlock animationBlock2 = standingSpaceController.BlockT;
-                    StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, true, 0.0f));
-                    StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, true, 0.0f));
+                    StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, 0.0f));
+                    StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, 0.0f));
 
                     standingSpaceController.SetColor(Color.white * 0.85f, 5.0f);
 
@@ -325,9 +349,10 @@ public class GameController : MonoBehaviour {
         int zoomInCoordIndex;
 
         // 미로의 가장 밑 줄(플레이어가 시작하는 곳)에는 아무것도 놓지 못하게 함.
-        Vector2Int[] ignoreCoords = new Vector2Int[LevelLoader.Instance.LevelWidth];
-        for(int i = 0; i < ignoreCoords.Length; i++) {
+        Vector2Int[] ignoreCoords = new Vector2Int[LevelLoader.Instance.LevelWidth * 2];
+        for(int i = 0; i < LevelLoader.Instance.LevelWidth; i++) {
             ignoreCoords[i] = new Vector2Int(i, 0);
+            ignoreCoords[ignoreCoords.Length - 1 - i] = new Vector2Int(i, 1);
         }
         int ignoreCoordsCopyStartIndex = ignoreCoords.Length;
 
@@ -432,7 +457,7 @@ public class GameController : MonoBehaviour {
         UtilObjects.Instance.CamRotation = PlayerController.Instance.CamRotation;
 
         yield return StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(true, 0.5f));
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(1.0f);
         yield return StartCoroutine(UtilObjects.Instance.SetActiveLoadingAction(false, 0.5f));
 
         PlayerController.Instance.IsPlaying = true;
@@ -457,7 +482,7 @@ public class GameController : MonoBehaviour {
                 case 0: scenarioCoroutine = Scenario00(); break;
                 case 1: scenarioCoroutine = Scenario01(); break;
                 case 2: scenarioCoroutine = Scenario02(); break;
-                //case 3: scenarioCoroutine = Scenario03(); break;
+                case 3: scenarioCoroutine = Scenario03(); break;
             }
 
             if(scenarioCoroutine != null) {
@@ -495,14 +520,34 @@ public class GameController : MonoBehaviour {
 
         yield return UtilObjects.Instance.SetActiveRayBlockAction(true, 0.5f);
 
+        while(monster.IsPlayerCatchAnimationPlaying) {
+            yield return null;
+        }
+
         OnGameEnd(false);
 
         onPlayerCatchedCoroutine = null;
     }
 
     private void OnItemCollected() {
-        int maxItemCount = CurrentLevelSettings.Items.Sum(t => t.generateCount);
-        int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
+        int maxItemCount = 0;
+        int collectItem = 0;
+        if(UserSettings.GameLevel == GameLevelStruct.GameLevels.Length - 1) {
+            maxItemCount = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
+            collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
+        }
+        else {
+            // 마지막 레벨은 예외 처리
+            for(int i = 0; i < GameLevelStruct.GameLevels.Length - 1; i++) {
+                maxItemCount += GameLevelStruct.GetAllGenerateItemCount(i);
+            }
+            for(int i = 0; i < UserSettings.GameLevel; i++) {
+                collectItem += GameLevelStruct.GetAllGenerateItemCount(i);
+            }
+
+            int currentLevelCollectItemCountMax = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
+            collectItem += currentLevelCollectItemCountMax - LevelLoader.Instance.ItemCount;
+        }
         userInterface.SetItemCount(maxItemCount, collectItem);
 
         // Clear
@@ -1078,6 +1123,146 @@ public class GameController : MonoBehaviour {
         // Stop Player
         PlayerController.Instance.IsPlaying = false;
 
+        // Set NPC Pos
+        Vector3 npcPos = standingSpaceController.BlockCenter.transform.position;
+        standingSpaceController.InitializeNPCAnchor(npcPos, Vector3.forward);
+        standingSpaceController.NPCModelActive = true;
+
+        // Camera Move
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = standingSpaceController.NPCCameraViewPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = standingSpaceController.NPCCameraViewRotation;
+        scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
+        yield return StartCoroutine(scenarioCameraAnimationCoroutine);
+
+        // Active MessageBox
+        userInterface.MessageActive = true;
+        userInterface.MessageAlpha = 1.0f;
+
+        // Scenario Start
+        const string ScenarioStandardKeyString = "LevelStart02";
+        string key = "";
+        void OnLocaleChanged(string languageCode) {
+            Locale currentLocale = LocalizationSettings.AvailableLocales.GetLocale(languageCode);
+            StringTable currentTable = LocalizationSettings.StringDatabase.GetTable("Scenario", currentLocale);
+            StringTableEntry currentTableEntry = currentTable.GetEntry(key);
+            userInterface.MessageText = currentTableEntry.Value;
+        }
+
+        int scenarioIndex = 0;
+        const int scenarioEndIndex = 9;
+
+        // 0: 대기
+        // -1: 이전으로
+        // 1: 다음으로
+        int moveScenario = 0;
+        while(scenarioIndex < scenarioEndIndex) {
+            // Reset Buttons
+            userInterface.SetMessageButtons();
+            userInterface.SetScenarioButtons();
+
+            // 추임새
+            standingSpaceController.SetAnimationTrigger_Talking();
+
+            // String Animation
+            key = ScenarioStandardKeyString + scenarioIndex.ToString().PadLeft(2, '0');
+            scenarioTextAnimationCoroutine = ScenarioTextAnimationCoroutine(key);
+            yield return StartCoroutine(scenarioTextAnimationCoroutine);
+
+            // 추임새 제한
+            // 완벽하지는 않지만 이거라도 하는게 좋아 보인다.
+            standingSpaceController.SetAnimationResetTrigger_Talking();
+
+            moveScenario = 0;
+            switch(scenarioIndex) {
+                case 0: userInterface.SetScenarioButtons(null, () => { moveScenario = 1; }); break;
+                //case turningPointIndex - 1: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, null); break;
+                default: userInterface.SetScenarioButtons(() => { moveScenario = -1; }, () => { moveScenario = 1; }); break;
+            }
+            UserSettings.OnLocaleChanged += OnLocaleChanged;
+            while(moveScenario == 0) {
+                yield return null;
+            }
+            UserSettings.OnLocaleChanged -= OnLocaleChanged;
+
+            scenarioIndex += moveScenario;
+        }
+
+        // Hide MessageBox
+        userInterface.MessageAlpha = 0.0f;
+        userInterface.MessageActive = false;
+
+        // Teleport Player
+        PlayerController.Instance.Pos = standingSpaceController.BlockT.transform.position;
+        PlayerController.Instance.Forward = Vector3.forward;
+        PlayerController.Instance.ResetCameraAnchor();
+
+        // Camera Move
+        m_camStartPos = UtilObjects.Instance.CamPos;
+        m_camEndPos = PlayerController.Instance.CamPos;
+        m_camStartRotation = UtilObjects.Instance.CamRotation;
+        m_camEndRotation = PlayerController.Instance.CamRotation;
+        scenarioCameraAnimationCoroutine = CameraMoveRotateAnimationCoroutine();
+        yield return StartCoroutine(scenarioCameraAnimationCoroutine);
+
+        // Turn Off NPC
+        standingSpaceController.NPCActive = false;
+
+        // Player On
+        PlayerController.Instance.IsPlaying = true;
+
+        // Cursor 세팅
+        UtilObjects.Instance.SetActiveCursorImage(true);
+
+        // 플레이어의 진입을 감지하기 위한 루프문
+        Vector3 animationWallPos = standingSpaceController.BlockT.GetSidePos(MazeCreator.ActiveWall.F);
+        Vector3 normalCheckPos = LevelLoader.Instance.GetBlockPos(standingSpaceCoord);
+        normalCheckPos.y = PlayerController.PlayerHeight;
+        Vector3 normalCheckForward = Vector3.forward;
+
+        float compareDist = MazeBlock.BlockSize * 0.5f;
+        float dist = 0.0f;
+        bool isPlayerInMaze = false;
+        float dot = 1.0f;
+        while(dist < compareDist || !isPlayerInMaze || dot < 0.05f) {
+            dist = Vector3.Distance(PlayerController.Instance.Pos, animationWallPos);
+            isPlayerInMaze = LevelLoader.Instance.IsCoordInLevelSize(PlayerController.Instance.CurrentCoord, 0);
+            dot = Vector3.Dot(normalCheckForward, PlayerController.Instance.Forward);
+
+            yield return null;
+        }
+
+        // Wall Animation
+        MazeBlock animationBlock1 = LevelLoader.Instance.GetMazeBlock(standingSpaceCoord.x, standingSpaceCoord.y + 1);
+        MazeBlock animationBlock2 = standingSpaceController.BlockT;
+        StartCoroutine(animationBlock1.WallAnimation(MazeCreator.ActiveWall.B, false, m_standardWallAnimationTime));
+        StartCoroutine(animationBlock2.WallAnimation(MazeCreator.ActiveWall.F, false, m_standardWallAnimationTime));
+        SoundManager.Instance.PlayOneShot(SoundManager.SoundType.WallAnimation);
+
+        yield return new WaitForSeconds(m_standardWallAnimationTime);
+
+        // Mic On
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = false;
+            userInterface.MicGageActive = true;
+        }
+
+        OnScenarioEnd();
+
+        scenarioCoroutine = null;
+    }
+
+    private IEnumerator Scenario03() {
+        // Mic Off
+        if(UserSettings.UseMicBoolean) {
+            MicrophoneRecorder.Instance.IsMute = true;
+            userInterface.MicGageActive = false;
+        }
+
+        // Stop Player
+        PlayerController.Instance.IsPlaying = false;
+
         // Camera Move
         m_camStartPos = UtilObjects.Instance.CamPos;
         m_camEndPos = standingSpaceController.NPCCameraViewPos + standingSpaceController.NPCCameraViewForward;
@@ -1091,7 +1276,7 @@ public class GameController : MonoBehaviour {
         userInterface.MessageAlpha = 1.0f;
 
         // Scenario Start
-        const string ScenarioStandardKeyString = "LevelStart02";
+        const string ScenarioStandardKeyString = "LevelStart03";
         string key = "";
         void OnLocaleChanged(string languageCode) {
             Locale currentLocale = LocalizationSettings.AvailableLocales.GetLocale(languageCode);
@@ -1461,7 +1646,7 @@ public class GameController : MonoBehaviour {
         userInterface.MessageAlpha = 1.0f;
 
         // Scenario Start
-        string ScenarioStandardKeyString = "LevelStart02" + "_BadEnding";
+        string ScenarioStandardKeyString = "LevelStart03" + "_BadEnding";
         string key = "";
         void OnLocaleChanged(string languageCode) {
             Locale currentLocale = LocalizationSettings.AvailableLocales.GetLocale(languageCode);
@@ -1662,7 +1847,7 @@ public class GameController : MonoBehaviour {
         userInterface.MessageAlpha = 1.0f;
 
         // Scenario Start
-        string ScenarioStandardKeyString = "LevelStart02" + "_HappyEnding";
+        string ScenarioStandardKeyString = "LevelStart03" + "_HappyEnding";
         string key = "";
         void OnLocaleChanged(string languageCode) {
             Locale currentLocale = LocalizationSettings.AvailableLocales.GetLocale(languageCode);
@@ -2056,6 +2241,9 @@ public class GameController : MonoBehaviour {
                 StartCoroutine(initGameCoroutine);
             }
 
+            // Hide UI
+            userInterface.CollectItemActive = false;
+
             // Fake Load
             yield return new WaitForSeconds(1.0f);
 
@@ -2103,8 +2291,20 @@ public class GameController : MonoBehaviour {
         LevelLoader.Instance.PlayItems();
         LevelLoader.Instance.PlayPickupItems();
 
-        int maxItemCount = CurrentLevelSettings.Items != null ? CurrentLevelSettings.Items.Sum(t => t.generateCount) : 0;
-        int collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
+        int maxItemCount = 0;
+        int collectItem = 0;
+        if(UserSettings.GameLevel == GameLevelStruct.GameLevels.Length - 1) {
+            maxItemCount = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
+        }
+        else {
+            // 마지막 레벨은 예외 처리
+            for(int i = 0; i < GameLevelStruct.GameLevels.Length - 1; i++) {
+                maxItemCount += GameLevelStruct.GetAllGenerateItemCount(i);
+            }
+            for(int i = 0; i < UserSettings.GameLevel; i++) {
+                collectItem += GameLevelStruct.GetAllGenerateItemCount(i);
+            }
+        }
         userInterface.SetItemCount(maxItemCount, collectItem);
 
         userInterface.HeadMessageActive = true;

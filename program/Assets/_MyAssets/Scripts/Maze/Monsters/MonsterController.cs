@@ -103,6 +103,8 @@ public class MonsterController : MonoBehaviour {
     protected List<Vector3> movePath = null;
     protected StuckHelper stuckHelper = null;
 
+    public bool IsPlayerCatchAnimationPlaying { get { return playerCatchAnimationCoroutine != null; } }
+
     protected IEnumerator playerCatchAnimationCoroutine = null;
     protected IEnumerator throwAwayAnimationCoroutine = null;
 

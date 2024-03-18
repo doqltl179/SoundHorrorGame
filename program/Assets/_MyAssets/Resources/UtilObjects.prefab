@@ -18490,6 +18490,7 @@ MonoBehaviour:
   confirmNoticeController: {fileID: 8879165882467869901}
   cursorImageController: {fileID: 1113546554687954551}
   buttonSelectMenuController: {fileID: 1658284069589618495}
+  fpsPannel: {fileID: 6635316938148823848}
 --- !u!1 &5778854334119972113
 GameObject:
   m_ObjectHideFlags: 0
