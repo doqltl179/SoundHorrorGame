@@ -264,8 +264,38 @@ public class UserInterface : MonoBehaviour {
         headMessageFadeAnimationCoroutine = null;
     }
 
-    public void SetItemCount(int maxCount, int collectCount) {
-        itemCountText.text = $"({collectCount}/{maxCount})";
+    public void SetItemCount() {
+        int currentLevelCollectItemCountMax = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
+        int currentLevelCollectedItemCount = currentLevelCollectItemCountMax - LevelLoader.Instance.ItemCount;
+        SetItemCount(currentLevelCollectedItemCount);
+    }
+
+    public void SetItemCount(out int currentLevelCollectedItemCount, out int currentLevelCollectItemCountMax) {
+        currentLevelCollectItemCountMax = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
+        currentLevelCollectedItemCount = currentLevelCollectItemCountMax - LevelLoader.Instance.ItemCount;
+        SetItemCount(currentLevelCollectedItemCount);
+    }
+
+    public void SetItemCount(int currentLevelCollectedItemCount) {
+        int totlaCollectItemCountMax = 0;
+        int totalCollectedItemCount = 0;
+        if(UserSettings.GameLevel == GameLevelStruct.GameLevels.Length - 1) {
+            totlaCollectItemCountMax = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
+            totalCollectedItemCount = totlaCollectItemCountMax - LevelLoader.Instance.ItemCount;
+        }
+        else {
+            // 마지막 레벨은 예외 처리
+            for(int i = 0; i < GameLevelStruct.GameLevels.Length - 1; i++) {
+                totlaCollectItemCountMax += GameLevelStruct.GetAllGenerateItemCount(i);
+            }
+            for(int i = 0; i < UserSettings.GameLevel; i++) {
+                totalCollectedItemCount += GameLevelStruct.GetAllGenerateItemCount(i);
+            }
+
+            totalCollectedItemCount += currentLevelCollectedItemCount;
+        }
+
+        itemCountText.text = $"({totalCollectedItemCount}/{totlaCollectItemCountMax})";
     }
 
     public void SetMessageBoxButton(Action action = null) {

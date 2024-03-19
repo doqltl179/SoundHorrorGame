@@ -11,9 +11,7 @@ Material:
   m_Shader: {fileID: 4800000, guid: 525a83a29f0d23f41b9df18948ebb4ad, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
-  - DRAW_OUTLINE
-  - USE_BASE_COLOR
+  m_ValidKeywords: []
   m_InvalidKeywords:
   - _METALLICGLOSSMAP
   - _NORMALMAP
@@ -84,7 +82,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DrawMazeBlockEdge: 0
     - _DrawObjectOutline: 0
-    - _DrawOutline: 1
+    - _DrawOutline: 0
     - _DrawPlayerPastPos: 0
     - _DrawRim: 0
     - _DstBlend: 0
@@ -108,7 +106,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _UseBaseColor: 1
+    - _UseBaseColor: 0
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

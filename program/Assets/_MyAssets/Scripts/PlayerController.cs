@@ -190,10 +190,10 @@ public class PlayerController : MonoBehaviour {
         if(!IsPlaying) return;
 
         #region Rotate
-        float mouseX = Input.GetAxis("Mouse X") * UserSettings.DisplaySensitive * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * UserSettings.DisplaySensitive * Time.deltaTime * 180f;
         transform.eulerAngles += transform.rotation * (Vector3.up * mouseX);
         
-        float mouseY = Input.GetAxis("Mouse Y") * UserSettings.DisplaySensitive * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * UserSettings.DisplaySensitive * Time.deltaTime * 180f;
         cameraVerticalAngleLimitChecker += (-mouseY);
         if(cameraVerticalAngleLimitChecker < -cameraVerticalAngleLimit) cameraVerticalAngleLimitChecker = -cameraVerticalAngleLimit;
         else if(cameraVerticalAngleLimitChecker > cameraVerticalAngleLimit) cameraVerticalAngleLimitChecker = cameraVerticalAngleLimit;

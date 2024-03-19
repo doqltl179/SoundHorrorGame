@@ -107,7 +107,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 4741950664458240
-    m_Localized: Select Chapter
+    m_Localized: Chapter
     m_Metadata:
       m_Items: []
   - m_Id: 4761343989497856
@@ -124,6 +124,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 4813444899782656
     m_Localized: Key Guide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 5701270952591360
+    m_Localized: Ending
     m_Metadata:
       m_Items: []
   references:

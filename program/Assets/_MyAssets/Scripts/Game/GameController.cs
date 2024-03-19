@@ -537,28 +537,11 @@ public class GameController : MonoBehaviour {
     }
 
     private void OnItemCollected() {
-        int maxItemCount = 0;
-        int collectItem = 0;
-        if(UserSettings.GameLevel == GameLevelStruct.GameLevels.Length - 1) {
-            maxItemCount = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
-            collectItem = maxItemCount - LevelLoader.Instance.ItemCount;
-        }
-        else {
-            // 마지막 레벨은 예외 처리
-            for(int i = 0; i < GameLevelStruct.GameLevels.Length - 1; i++) {
-                maxItemCount += GameLevelStruct.GetAllGenerateItemCount(i);
-            }
-            for(int i = 0; i < UserSettings.GameLevel; i++) {
-                collectItem += GameLevelStruct.GetAllGenerateItemCount(i);
-            }
-
-            int currentLevelCollectItemCountMax = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
-            collectItem += currentLevelCollectItemCountMax - LevelLoader.Instance.ItemCount;
-        }
-        userInterface.SetItemCount(maxItemCount, collectItem);
+        int currentLevelCollectedItemCount, currentLevelCollectItemCountMax;
+        userInterface.SetItemCount(out currentLevelCollectedItemCount, out currentLevelCollectItemCountMax);
 
         // Clear
-        if(collectItem >= maxItemCount) {
+        if(currentLevelCollectedItemCount >= currentLevelCollectItemCountMax) {
             if(exitEnterCheckCoroutine == null) {
                 exitEnterCheckCoroutine = ExitEnterCheckCoroutine();
                 StartCoroutine(exitEnterCheckCoroutine);
@@ -794,6 +777,8 @@ public class GameController : MonoBehaviour {
 
                     // 계속해서 거절당해 메인으로 돌아감
                     SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Main);
+                    SteamHelper.Instance.SetAchievement_GoodChoice();
+
                     yield break;
                 }
             }
@@ -2274,6 +2259,8 @@ public class GameController : MonoBehaviour {
         UserSettings.SetGameLevelClear(UserSettings.GameLevel, true);
 
         if(UserSettings.GameLevel + 1 >= GameLevelStruct.GameLevels.Length) {
+            if(isBadEnding) SteamHelper.Instance.SetAchievement_ClearBadEnding();
+            else SteamHelper.Instance.SetAchievement_ClearHappyEnding();
             UserSettings.SetEndingClear(isBadEnding);
 
             if(scenarioCoroutine == null) {
@@ -2283,6 +2270,7 @@ public class GameController : MonoBehaviour {
             }
         }
         else {
+            SteamHelper.Instance.SetAchievement_ClearChapter(UserSettings.GameLevel);
             UserSettings.GameLevel++;
 
             OnGameEnd(true);
@@ -2300,26 +2288,13 @@ public class GameController : MonoBehaviour {
         LevelLoader.Instance.PlayItems();
         LevelLoader.Instance.PlayPickupItems();
 
-        int maxItemCount = 0;
-        int collectItem = 0;
-        if(UserSettings.GameLevel == GameLevelStruct.GameLevels.Length - 1) {
-            maxItemCount = GameLevelStruct.GetAllGenerateItemCount(UserSettings.GameLevel);
-        }
-        else {
-            // 마지막 레벨은 예외 처리
-            for(int i = 0; i < GameLevelStruct.GameLevels.Length - 1; i++) {
-                maxItemCount += GameLevelStruct.GetAllGenerateItemCount(i);
-            }
-            for(int i = 0; i < UserSettings.GameLevel; i++) {
-                collectItem += GameLevelStruct.GetAllGenerateItemCount(i);
-            }
-        }
-        userInterface.SetItemCount(maxItemCount, collectItem);
+        int currentLevelCollectedItemCount, currentLevelCollectItemCountMax;
+        userInterface.SetItemCount(out currentLevelCollectedItemCount, out currentLevelCollectItemCountMax);
 
         userInterface.HeadMessageActive = true;
         userInterface.MessageActive = false;
         //userInterface.MicGageActive = UserSettings.UseMicBoolean;
-        userInterface.CollectItemActive = maxItemCount > 0;
+        userInterface.CollectItemActive = currentLevelCollectItemCountMax > 0;
         userInterface.RunGageActive = true;
     }
 }

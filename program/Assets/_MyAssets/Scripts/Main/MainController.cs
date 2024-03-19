@@ -126,13 +126,14 @@ public class MainController : MonoBehaviour {
             for(int i = 0; i < structs.Length; i++) {
                 int gameLevel = i;
                 structs[i] = new ButtonSelectMenuStruct() {
-                    key = "Chapter" + (i + 1).ToString().PadLeft(2, '0'),
+                    key = (i != structs.Length - 1) ? "Chapter" + (i + 1).ToString().PadLeft(2, '0') : "ChapterEnding",
                     action = () => {
                         UserSettings.GameLevel = gameLevel;
 
                         SoundManager.Instance.PlayOneShot(SoundManager.SoundType.GameEnter);
                         SoundManager.Instance.StopBGM(SoundManager.SoundType.Main, 0.5f);
 
+                        UtilObjects.Instance.SetActiveButtonSelectMenu(false);
                         SceneLoader.Instance.LoadScene(SceneLoader.SceneType.Game);
                     }
                 };

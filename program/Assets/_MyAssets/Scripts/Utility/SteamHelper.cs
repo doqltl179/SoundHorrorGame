@@ -40,6 +40,8 @@ public class SteamHelper : GenericSingleton<SteamHelper> {
     #endregion
 
     private void SetAchievement(string key) {
+        if(!SteamManager.Initialized) return;
+
         SteamUserStats.SetAchievement(key);
         SteamUserStats.StoreStats();
     }
