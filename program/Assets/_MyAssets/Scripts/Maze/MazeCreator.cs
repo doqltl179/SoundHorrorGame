@@ -174,7 +174,17 @@ public static class MazeCreator {
                 if(tempWallInfo.HasFlag(ActiveWall.L)) activatedWallList.Add(ActiveWall.L);
                 if(tempWallInfo.HasFlag(ActiveWall.B)) activatedWallList.Add(ActiveWall.B);
 
-                if(activatedWallList.Count >= 2 && Random.Range(0, 4) == 0) {
+                if(activatedWallList.Count > 2) {
+                    removeWall = activatedWallList[Random.Range(0, activatedWallList.Count)];
+                    wallInfos[x, y] &= ~removeWall;
+                    switch(removeWall) {
+                        case ActiveWall.R: wallInfos[x + 1, y] &= ~ActiveWall.L; break;
+                        case ActiveWall.F: wallInfos[x, y + 1] &= ~ActiveWall.B; break;
+                        case ActiveWall.L: wallInfos[x - 1, y] &= ~ActiveWall.R; break;
+                        case ActiveWall.B: wallInfos[x, y - 1] &= ~ActiveWall.F; break;
+                    }
+                }
+                else if(activatedWallList.Count >= 2 && Random.Range(0, 4) == 0) {
                     removeWall = activatedWallList[Random.Range(0, activatedWallList.Count)];
                     wallInfos[x, y] &= ~removeWall;
                     switch(removeWall) {

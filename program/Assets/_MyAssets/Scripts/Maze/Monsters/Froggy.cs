@@ -178,7 +178,8 @@ public class Froggy : MonsterController {
 
             screamSoundTimeChecker += Time.deltaTime;
             if(screamSoundTimeChecker >= screamFakeSoundTimeInterval) {
-                SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.Empty05s, SoundManager.SoundFrom.Monster, 0.0f);
+                //SoundManager.Instance.PlayOnWorld(Pos, SoundManager.SoundType.Empty05s, SoundManager.SoundFrom.Monster, 0.0f);
+                SoundManager.Instance.PlayOnWorld(PlayerController.Instance.Pos, SoundManager.SoundType.Empty05s, SoundManager.SoundFrom.Monster, 0.0f);
 
                 screamSoundTimeChecker -= screamFakeSoundTimeInterval;
                 screamCountChecker++;

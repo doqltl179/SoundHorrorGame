@@ -380,9 +380,9 @@ public class GameController : MonoBehaviour {
         //        zoomInCoordIndex++;
         //    }
         //}
-        //Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.ItemCount);
-        //Array.Copy(LevelLoader.Instance.GetAllItemCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.ItemCount);
-        //ignoreCoordsCopyStartIndex = ignoreCoords.Length;
+        Array.Resize(ref ignoreCoords, ignoreCoords.Length + LevelLoader.Instance.ItemCount);
+        Array.Copy(LevelLoader.Instance.GetAllItemCoords(), 0, ignoreCoords, ignoreCoordsCopyStartIndex, LevelLoader.Instance.ItemCount);
+        ignoreCoordsCopyStartIndex = ignoreCoords.Length;
 
         // Teleport 재배치
         itemCount = LevelLoader.Instance.TeleportCount;
@@ -493,7 +493,9 @@ public class GameController : MonoBehaviour {
             }
 
             if(scenarioCoroutine != null) {
-                // Cursor 세팅
+                // UI 세팅
+                userInterface.RunGageActive = false;
+                userInterface.CollectItemActive = false;
                 UtilObjects.Instance.SetActiveCursorImage(false);
 
                 StartCoroutine(scenarioCoroutine);

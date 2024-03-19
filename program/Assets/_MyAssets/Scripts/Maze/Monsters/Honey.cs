@@ -103,7 +103,7 @@ public class Honey : MonsterController, IMove {
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(moveDirection), dt * rotateSpeed);
             }
 
-            if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
+            if(Vector3.Distance(transform.position, movePath[0]) < Radius * 1.05f) {
                 movePath.RemoveAt(0);
                 if(movePath.Count <= 0) {
                     OnPathEnd?.Invoke();

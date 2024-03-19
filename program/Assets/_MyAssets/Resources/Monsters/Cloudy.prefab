@@ -54,7 +54,7 @@ MonoBehaviour:
   collider: {fileID: 2784974047270794347}
   material: {fileID: 2100000, guid: 033dfee25b43dc0438e5d9d1d8ce793a, type: 2}
   headPos: {fileID: 1480342638733977503}
-  scaleScalar: 2
+  scaleScalar: 1.8
   moveSpeed: 1.4
   twoStepDistance: 1
   moveBoost: 0.8
@@ -219,7 +219,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.7
+  m_Volume: 0.75
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -230,7 +230,7 @@ AudioSource:
   MinDistance: 1
   MaxDistance: 24
   Pan2D: 0
-  rolloffMode: 2
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0

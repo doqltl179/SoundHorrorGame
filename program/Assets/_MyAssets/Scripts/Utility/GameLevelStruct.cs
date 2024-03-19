@@ -49,11 +49,11 @@ public static class GameLevelStruct {
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Froggy,
-                    generateCount = 2,
+                    generateCount = 1,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Kitty,
-                    generateCount = 2,
+                    generateCount = 1,
                 },
             },
 
@@ -84,19 +84,19 @@ public static class GameLevelStruct {
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Froggy,
-                    generateCount = 2,
+                    generateCount = 1,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Kitty,
-                    generateCount = 2,
+                    generateCount = 1,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Cloudy,
-                    generateCount = 2,
+                    generateCount = 1,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Starry,
-                    generateCount = 2,
+                    generateCount = 1,
                 },
             },
 
@@ -123,7 +123,7 @@ public static class GameLevelStruct {
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Honey,
-                    generateCount = 3,
+                    generateCount = 2,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Froggy,
@@ -131,15 +131,15 @@ public static class GameLevelStruct {
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Kitty,
-                    generateCount = 3,
+                    generateCount = 1,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Cloudy,
-                    generateCount = 3,
+                    generateCount = 2,
                 },
                 new GameLevelSettings.MonsterStruct() {
                     type = LevelLoader.MonsterType.Starry,
-                    generateCount = 3,
+                    generateCount = 1,
                 },
             },
 

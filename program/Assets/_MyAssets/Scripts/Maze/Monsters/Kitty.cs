@@ -47,7 +47,7 @@ public class Kitty : MonsterController, IMove {
 
         stopHelper = new StuckHelper(0.01f, 
             mask |
-            (1 << LayerMask.NameToLayer(MazeBlock.EdgeLayerName)) | 
+            //(1 << LayerMask.NameToLayer(MazeBlock.EdgeLayerName)) | 
             (1 << LayerMask.NameToLayer(PlayerController.LayerName)));
     }
 
@@ -137,7 +137,7 @@ public class Kitty : MonsterController, IMove {
                 transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(moveDirection), dt * rotateSpeed);
             }
 
-            if(Vector3.Distance(transform.position, movePath[0]) < Radius) {
+            if(Vector3.Distance(transform.position, movePath[0]) < Radius * 1.05f) {
                 movePath.RemoveAt(0);
                 if(movePath.Count <= 0) {
                     OnPathEnd?.Invoke();
