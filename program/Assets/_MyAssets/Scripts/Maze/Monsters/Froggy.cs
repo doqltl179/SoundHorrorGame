@@ -98,9 +98,9 @@ public class Froggy : MonsterController {
 
     #region Action
     private void PlayerCoordChanged(Vector2Int coord) {
-        if(CurrentState == MonsterState.Scream) {
-            return;
-        }
+        //if(CurrentState == MonsterState.Scream) {
+        //    return;
+        //}
 
         Vector2Int currentCoord = LevelLoader.Instance.GetMazeCoordinate(Pos);
         Vector2Int lb = new Vector2Int(currentCoord.x - checkCoordRange, currentCoord.y - checkCoordRange);
@@ -143,14 +143,12 @@ public class Froggy : MonsterController {
                 }
                 break;
             case MonsterState.Scream: {
-                    transform.forward = (PlayerController.Instance.Pos - Pos).normalized;
+                    if(screamActionCoroutine == null) {
+                        transform.forward = (PlayerController.Instance.Pos - Pos).normalized;
 
-                    if(screamActionCoroutine != null) {
-                        StopCoroutine(screamActionCoroutine);
-                        audioSource.Stop();
+                        screamActionCoroutine = ScreamActionCoroutine();
+                        StartCoroutine(screamActionCoroutine);
                     }
-                    screamActionCoroutine = ScreamActionCoroutine();
-                    StartCoroutine(screamActionCoroutine);
                 }
                 break;
         }
@@ -185,6 +183,10 @@ public class Froggy : MonsterController {
                 screamCountChecker++;
             }
 
+            yield return null;
+        }
+
+        while(throwAwayAnimationCoroutine != null) {
             yield return null;
         }
 
