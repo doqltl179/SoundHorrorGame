@@ -52,7 +52,7 @@ public class ItemController : MonoBehaviour {
         itemSoundPlayTimeChecker += Time.deltaTime;
         if(itemSoundPlayTimeChecker >= ItemSoundPlayTimeInterval) {
             float dist = Vector3.Distance(Pos, UtilObjects.Instance.CamPos);
-            float spreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.Crystal);
+            float spreadLength = SoundManager.Instance.GetSpreadLength(SoundManager.SoundType.Crystal) * 1.5f;
             if(dist < spreadLength) {
                 SoundManager.Instance.PlayOnWorld(
                     Pos,
@@ -103,7 +103,7 @@ public class ItemController : MonoBehaviour {
                         case 4: playType = SoundManager.SoundType.Mining04; break;
                         case 5: playType = SoundManager.SoundType.MiningEnd; break;
                     }
-                    SoundManager.Instance.PlayOnWorld(Pos, playType, SoundManager.SoundFrom.Player);
+                    SoundManager.Instance.PlayOnWorld(PlayerController.Instance.Pos, playType, SoundManager.SoundFrom.Player);
 
                     yield return delay;
 

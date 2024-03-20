@@ -43,8 +43,8 @@ public class CreditsController : MonoBehaviour {
     private IEnumerator Start() {
         Application.targetFrameRate = UserSettings.FPS;
 
-        //isBadEnding = SceneLoader.Instance.Param != null && (bool)SceneLoader.Instance.Param[0];
-        isBadEnding = true;
+        isBadEnding = SceneLoader.Instance.Param != null && (bool)SceneLoader.Instance.Param[0];
+        //isBadEnding = true;
 
         // Init Level
         LevelLoader.Instance.ResetLevel();

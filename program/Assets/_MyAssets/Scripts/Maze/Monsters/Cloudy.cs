@@ -167,7 +167,23 @@ public class Cloudy : MonsterController, IMove {
     private void WorldSoundAdded(SoundObject so, SoundManager.SoundFrom from) {
         if(!IsPlaying) return;
 
-        if(from == SoundManager.SoundFrom.Player || so.Type == SoundManager.SoundType.Scream) {
+        bool moveTo = false;
+        switch(from) {
+            case SoundManager.SoundFrom.Player:
+                moveTo = true;
+                break;
+
+            default:
+                moveTo = so.Type == SoundManager.SoundType.Empty00_5s ||
+                    so.Type == SoundManager.SoundType.Empty01s ||
+                    so.Type == SoundManager.SoundType.Empty02s ||
+                    so.Type == SoundManager.SoundType.Empty03s ||
+                    so.Type == SoundManager.SoundType.Empty04s ||
+                    so.Type == SoundManager.SoundType.Empty05s;
+                break;
+        }
+
+        if(moveTo) {
             Vector2Int coordChecker = LevelLoader.Instance.GetMazeCoordinate(so.Position);
             if(!LevelLoader.Instance.IsCoordInLevelSize(coordChecker, 0)) return;
 
