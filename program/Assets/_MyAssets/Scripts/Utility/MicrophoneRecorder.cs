@@ -54,8 +54,15 @@ public class MicrophoneRecorder : GenericSingleton<MicrophoneRecorder> {
         //    currentFreq = minFreq;
         //}
 
-        currentDevice = UserSettings.MicDevice;
-        input = Microphone.Start(currentDevice, true, CaptureLength, currentFreq);
+        try {
+            currentDevice = UserSettings.MicDevice;
+            input = Microphone.Start(currentDevice, true, CaptureLength, currentFreq);
+        }
+        catch(Exception ex) {
+            Debug.LogError(ex.ToString());
+
+            gameObject.SetActive(false);
+        }
     }
 
     private void OnDisable() {

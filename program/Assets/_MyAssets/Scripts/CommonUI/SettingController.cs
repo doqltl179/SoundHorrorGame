@@ -354,7 +354,10 @@ public class SettingController : MonoBehaviour {
             }
         }
         else {
-            UserSettings.UseMicBoolean = false;
+            if(UserSettings.UseMicBoolean) {
+                useMicToggle.isOn = false;
+                UserSettings.UseMicBoolean = false;
+            }
         }
         micDeviceDropdown.AddOptions(micList);
         // Dropdown의 value가 기본적으로 0이기 때문에 0은 제외
