@@ -18,19 +18,25 @@ MonoBehaviour:
   m_GUID: e29295e6376c90243a71f7676a1ed555
   m_SerializeEntries:
   - m_GUID: 6ad394f57167a6749a1ed93da74369be
-    m_Address: English
+    m_Address: English (en)
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eed668f0a915899459a52da0fd53582e
-    m_Address: Japanese
+    m_Address: Japanese (ja)
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f0b88e61e6603cd478ee40a50102cb63
-    m_Address: Korean
+    m_Address: Korean (ko)
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ebb581ca146126a4ba2e2a32e332696f
+    m_Address: Chinese (Simplified) (zh)
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale

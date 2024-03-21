@@ -191,6 +191,7 @@ public class UtilObjects : ResourceGenericSingleton<UtilObjects> {
 
             if(currentCode.Any(t => koCode.Contains(t))) UserSettings.LanguageCode = koCode[0];
             else if(currentCode.Any(t => jaCode.Contains(t))) UserSettings.LanguageCode = jaCode[0];
+            else if(currentCode.Any(t => zhCode.Contains(t))) UserSettings.LanguageCode = zhCode[0];
             else UserSettings.LanguageCode = enCode[0];
 
             if(Display.displays.Length > 1) {
