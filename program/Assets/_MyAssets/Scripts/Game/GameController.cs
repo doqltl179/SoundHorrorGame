@@ -61,7 +61,7 @@ public class GameController : MonoBehaviour {
             Debug.Log($"Steam Initialized! name: {name}");
         }
 
-        Application.targetFrameRate = UserSettings.FPS;
+        if(UserSettings.VSync == 0) Application.targetFrameRate = UserSettings.FPS;
 
         if(initGameCoroutine == null) {
             initGameCoroutine = InitGameCoroutine();
@@ -507,6 +507,7 @@ public class GameController : MonoBehaviour {
     #region Action
     private void OnFPSChanged(int value) {
         Application.targetFrameRate = value;
+        Time.fixedDeltaTime = 1.0f / (value * 2);
     }
 
     private void OnPlayerCatched(MonsterController monster) {

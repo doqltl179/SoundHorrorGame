@@ -201,6 +201,16 @@ public class SettingController : MonoBehaviour {
             UserSettings.VSync = 1;
             QualitySettings.vSyncCount = 1;
 
+            switch(SceneLoader.Instance.CurrentLoadedScene) {
+                case SceneLoader.SceneType.Main:
+                    Application.targetFrameRate = 60;
+                    break;
+                case SceneLoader.SceneType.Game:
+                case SceneLoader.SceneType.Credits:
+                    Application.targetFrameRate = currentDisplayFPSOptions[0];
+                    break;
+            }
+
             displayFPSDropdown.enabled = false;
             displayFPSDropdown.image.color = Color.gray;
         }
@@ -221,6 +231,7 @@ public class SettingController : MonoBehaviour {
             displayFPSDropdown.enabled = true;
             displayFPSDropdown.image.color = Color.white;
         }
+        Time.fixedDeltaTime = 1.0f / (Application.targetFrameRate * 2);
     }
 
     public void OnDisplayFPSChanged(int index) {
