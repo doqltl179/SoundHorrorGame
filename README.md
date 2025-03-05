@@ -1,4 +1,10 @@
-[![Watch the video](https://img.youtube.com/vi/rbei7quiAF4/maxresdefault.jpg)](https://youtu.be/rbei7quiAF4)
+<p align="center">
+    <a href="https://youtu.be/rbei7quiAF4">
+        <img src="https://img.youtube.com/vi/rbei7quiAF4/mqdefault.jpg" width="500"/>
+    </a>
+    <br>
+    (Click and Play Video)
+</p>
 
 # README
 
